@@ -37,11 +37,13 @@ class LLMConfigBase(BaseModel):
     chatbot_system_prompt: str
     draft_system_prompt: str
     enable_weather_api: bool
+    ai_insights_cron: Optional[str] = None
 
 class LLMConfigUpdate(BaseModel):
     chatbot_system_prompt: Optional[str] = None
     draft_system_prompt: Optional[str] = None
     enable_weather_api: Optional[bool] = None
+    ai_insights_cron: Optional[str] = None
 
 class LLMConfigOut(LLMConfigBase):
     id: str

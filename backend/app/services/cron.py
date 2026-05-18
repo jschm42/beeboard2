@@ -10,6 +10,7 @@ from app.models.hive import Hive
 from app.models.ai_insight import AIInsight
 from app.services.weather import fetch_current_weather
 from app.services.ai_assistant import get_effective_model_and_key, get_llm_config
+from app.models.administration import LLMConfig
 import litellm
 from app.core.config import settings
 
@@ -73,7 +74,28 @@ async def generate_insight_for_apiary(db: Session, apiary: Apiary):
         logger.error(f"LiteLLM error in cron job: {e}")
 
 def start_scheduler():
-    # Run every 12 hours
-    scheduler.add_job(generate_ai_insights_job, 'interval', hours=12)
+    # Load cron expression from LLMConfig (fallback to every 12 hours)
+    db = SessionLocal()
+    try:
+        config = db.query(LLMConfig).first()
+        cron_expr = (config.ai_insights_cron if config and config.ai_insights_cron else "0 */12 * * *")
+    finally:
+        db.close()
+
+    try:
+        minute, hour, day, month, day_of_week = cron_expr.split()
+    except ValueError:
+        logger.error(f"Invalid AI insights cron expression '{cron_expr}', falling back to '0 */12 * * *'.")
+        minute, hour, day, month, day_of_week = "0", "*/12", "*", "*", "*"
+
+    scheduler.add_job(
+        generate_ai_insights_job,
+        'cron',
+        minute=minute,
+        hour=hour,
+        day=day,
+        month=month,
+        day_of_week=day_of_week,
+    )
     scheduler.start()
-    logger.info("APScheduler started.")
+    logger.info(f"APScheduler started (AI insights cron='{cron_expr}').")

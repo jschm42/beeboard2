@@ -36,7 +36,7 @@ Follow the quick automated setup below to get everything up and running in secon
 ### 🚀 Quick Automated Setup (Recommended)
 
 We provide interactive setup scripts for both **PowerShell (Windows)** and **Bash (macOS / Linux / Git Bash)**. These scripts will:
-1. Verify your Python installation (Python 3.12+).
+1. Verify your Python installation (**Python 3.13**).
 2. Create a Python Virtual Environment (`.venv`) inside the `backend/` directory.
 3. Upgrade `pip` and install all required dependencies from `backend/requirements.txt`.
 4. Copy the environment configuration template `backend/.env.example` to `backend/.env`.
@@ -64,7 +64,7 @@ Once the setup script finishes, you are ready to seed the database and start the
 
 ### 1. Manual Backend Setup (Alternative)
 
-The backend is built with Python 3.12+ (Python 3.13 recommended) and FastAPI.
+The backend is built with **Python 3.13** and FastAPI.
 
 #### 📁 Navigate to the backend directory
 ```bash
@@ -158,8 +158,15 @@ GEMINI_API_KEY=your_gemini_api_key_here
 # OPENAI_API_KEY=your_openai_api_key_here
 ```
 
+#### 🧱 Run Database Migrations (Alembic)
+Before seeding data, apply the database schema migrations using Alembic:
+
+```bash
+alembic upgrade head
+```
+
 #### 🌱 Seed the Database
-Before running the app, execute the seed script to set up default configurations (e.g., default Hive Frame Types like *Zander* or *Dadant*, and Seasonal Varroa Multipliers):
+After the schema is in place, execute the seed script to set up default configurations (e.g., default Hive Frame Types like *Zander* or *Dadant*, and Seasonal Varroa Multipliers):
 
 ```bash
 python -m app.scripts.seed

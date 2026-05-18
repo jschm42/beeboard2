@@ -218,6 +218,43 @@
           </div>
         </div>
 
+        <!-- AI Insights Cron Config -->
+        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
+          <div class="flex items-start justify-between">
+            <div class="space-y-1">
+              <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center">
+                <span>🕒 AI-Insights Zeitplan</span>
+                <span class="ml-2 text-[10px] bg-blue-500/10 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded uppercase font-black">
+                  Cron-Format
+                </span>
+              </h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400 max-w-2xl">
+                Lege fest, wann automatisch neue AI-Insights für deine Stände generiert werden.
+                Verwende eine Cron-Expression im Format
+                <code class="bg-gray-100 dark:bg-dark-bg px-1 py-0.5 rounded font-mono">MINUTE STUNDE TAG MONAT WOCHENTAG</code>.
+                Beispiel: <code class="bg-gray-100 dark:bg-dark-bg px-1 py-0.5 rounded font-mono">0 */12 * * *</code> für alle 12 Stunden.
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-4 items-center">
+            <input
+              v-model="llmConfig.ai_insights_cron"
+              type="text"
+              placeholder="z.B. 0 6 * * * (täglich um 06:00)"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+            />
+            <div class="text-[11px] text-gray-500 dark:text-gray-400">
+              <div class="font-semibold mb-1">Beispiele:</div>
+              <ul class="space-y-0.5">
+                <li><code class="bg-gray-100 dark:bg-dark-bg px-1 py-0.5 rounded font-mono">0 */12 * * *</code> – alle 12 Stunden</li>
+                <li><code class="bg-gray-100 dark:bg-dark-bg px-1 py-0.5 rounded font-mono">0 6 * * *</code> – täglich um 06:00</li>
+                <li><code class="bg-gray-100 dark:bg-dark-bg px-1 py-0.5 rounded font-mono">0 6,18 * * *</code> – 06:00 und 18:00</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
         <!-- Chatbot System Prompt Card -->
         <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm space-y-4">
           <div>
@@ -532,7 +569,8 @@ const togglingUser = ref(null)
 const llmConfig = ref({
   chatbot_system_prompt: '',
   draft_system_prompt: '',
-  enable_weather_api: false
+  enable_weather_api: false,
+  ai_insights_cron: ''
 })
 const loadingLLM = ref(false)
 const savingLLM = ref(false)
@@ -625,7 +663,8 @@ async function saveLLMConfig() {
     const res = await axios.put('/api/admin/llm-config', {
       chatbot_system_prompt: llmConfig.value.chatbot_system_prompt,
       draft_system_prompt: llmConfig.value.draft_system_prompt,
-      enable_weather_api: llmConfig.value.enable_weather_api
+      enable_weather_api: llmConfig.value.enable_weather_api,
+      ai_insights_cron: llmConfig.value.ai_insights_cron || null
     })
     llmConfig.value = res.data
     showToast('KI- und Wettereinstellungen erfolgreich aktualisiert.')

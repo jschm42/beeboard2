@@ -89,6 +89,8 @@ def update_llm_config(
         config.draft_system_prompt = payload.draft_system_prompt
     if payload.enable_weather_api is not None:
         config.enable_weather_api = payload.enable_weather_api
+    if payload.ai_insights_cron is not None:
+        config.ai_insights_cron = payload.ai_insights_cron
 
     db.commit()
     db.refresh(config)

@@ -59,7 +59,8 @@ def get_llm_config(db: Session) -> LLMConfig:
         config = LLMConfig(
             chatbot_system_prompt=DEFAULT_CHATBOT_PROMPT,
             draft_system_prompt=DEFAULT_DRAFT_PROMPT,
-            enable_weather_api=False
+            enable_weather_api=False,
+            ai_insights_cron="0 */12 * * *",
         )
         db.add(config)
         db.commit()

@@ -27,4 +27,5 @@ class LLMConfig(UUIDTimeStampedModel):
     chatbot_system_prompt: Mapped[str] = mapped_column(Text, nullable=False)
     draft_system_prompt: Mapped[str] = mapped_column(Text, nullable=False)
     enable_weather_api: Mapped[bool] = mapped_column(Boolean, default=False)
+    ai_insights_cron: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
