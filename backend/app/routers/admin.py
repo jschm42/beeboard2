@@ -132,7 +132,10 @@ def admin_create_frame_type(
         is_default=payload.is_default,
         brood_multiplier=payload.brood_multiplier,
         food_multiplier=payload.food_multiplier,
-        bee_multiplier=payload.bee_multiplier
+        bee_multiplier=payload.bee_multiplier,
+        drone_multiplier=payload.drone_multiplier,
+        drone_brood_multiplier=payload.drone_brood_multiplier,
+        pollen_multiplier=payload.pollen_multiplier
     )
     db.add(new_ft)
     db.commit()
@@ -171,6 +174,9 @@ def admin_update_frame_type(
     ft.brood_multiplier = payload.brood_multiplier
     ft.food_multiplier = payload.food_multiplier
     ft.bee_multiplier = payload.bee_multiplier
+    ft.drone_multiplier = payload.drone_multiplier
+    ft.drone_brood_multiplier = payload.drone_brood_multiplier
+    ft.pollen_multiplier = payload.pollen_multiplier
     
     db.commit()
     db.refresh(ft)

@@ -11,6 +11,9 @@ class FrameType(UUIDTimeStampedModel):
     brood_multiplier: Mapped[float] = mapped_column(Float, default=1.00)
     food_multiplier: Mapped[float] = mapped_column(Float, default=1.00)
     bee_multiplier: Mapped[float] = mapped_column(Float, default=1.00)
+    drone_multiplier: Mapped[float] = mapped_column(Float, default=1.00)
+    drone_brood_multiplier: Mapped[float] = mapped_column(Float, default=1.00)
+    pollen_multiplier: Mapped[float] = mapped_column(Float, default=1.00)
 
 class VarroaMultiplier(UUIDTimeStampedModel):
     __tablename__ = "varroa_multipliers"

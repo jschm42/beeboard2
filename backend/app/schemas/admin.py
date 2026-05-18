@@ -8,6 +8,9 @@ class FrameTypeBase(BaseModel):
     brood_multiplier: float = 1.0
     food_multiplier: float = 1.0
     bee_multiplier: float = 1.0
+    drone_multiplier: float = 1.0
+    drone_brood_multiplier: float = 1.0
+    pollen_multiplier: float = 1.0
 
 class FrameTypeCreate(FrameTypeBase):
     pass

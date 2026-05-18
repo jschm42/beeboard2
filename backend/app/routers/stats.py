@@ -59,6 +59,9 @@ def get_aggregated_stats(
     brood_values = []
     food_values = []
     bee_values = []
+    drone_values = []
+    drone_brood_values = []
+    pollen_values = []
 
     for entry in entries:
         if not entry.inspection_detail or not entry.inspection_detail.frames:
@@ -75,10 +78,16 @@ def get_aggregated_stats(
         brood_values.append(float(totals["brood"]))
         food_values.append(float(totals["food"]))
         bee_values.append(float(totals["bees"]))
+        drone_values.append(float(totals.get("drones", 0.0)))
+        drone_brood_values.append(float(totals.get("drone_brood", 0.0)))
+        pollen_values.append(float(totals.get("pollen", 0.0)))
 
     return {
         "labels": labels,
         "brood": brood_values,
         "food": food_values,
-        "bees": bee_values
+        "bees": bee_values,
+        "drones": drone_values,
+        "drone_brood": drone_brood_values,
+        "pollen": pollen_values
     }

@@ -69,7 +69,7 @@ def ai_chat(
         detail_desc = ""
         if entry.entry_type == "INSPECTION" and entry.inspection_detail:
             totals = calculate_inspection_totals(entry.inspection_detail.frames, db)
-            detail_desc = f"Brut={totals['brood']} Waben, Futter={totals['food']} Waben, Bienen={totals['bees']} Waben"
+            detail_desc = f"Brut={totals['brood']} Waben, Futter={totals['food']} Waben, Bienen={totals['bees']} Waben, Drohnen={totals.get('drones', 0)} Waben, Drohnenbrut={totals.get('drone_brood', 0)} Waben, Pollen={totals.get('pollen', 0)} Waben"
         elif entry.entry_type == "VARROA_COUNT" and entry.varroa_count_detail:
             detail_desc = (
                 f"Milbenfall={entry.varroa_count_detail.raw_count} (Rohwert), "

@@ -80,6 +80,17 @@ class InspectionFrame(UUIDTimeStampedModel):
     brood_eighths: Mapped[int] = mapped_column(Integer, default=0)
     food_eighths: Mapped[int] = mapped_column(Integer, default=0)
     bee_eighths: Mapped[int] = mapped_column(Integer, default=0)
+    drone_eighths: Mapped[int] = mapped_column(Integer, default=0)
+    drone_brood_eighths: Mapped[int] = mapped_column(Integer, default=0)
+    pollen_eighths: Mapped[int] = mapped_column(Integer, default=0)
+
+    # Snapshotted multipliers for biology statistics resilience
+    brood_multiplier: Mapped[float] = mapped_column(Float, default=1.0)
+    food_multiplier: Mapped[float] = mapped_column(Float, default=1.0)
+    bee_multiplier: Mapped[float] = mapped_column(Float, default=1.0)
+    drone_multiplier: Mapped[float] = mapped_column(Float, default=1.0)
+    drone_brood_multiplier: Mapped[float] = mapped_column(Float, default=1.0)
+    pollen_multiplier: Mapped[float] = mapped_column(Float, default=1.0)
 
     # Relationships
     inspection: Mapped["InspectionDetail"] = relationship("InspectionDetail", back_populates="frames")

@@ -1,9 +1,9 @@
 from typing import List, Dict, Any, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import date, datetime
 
 class LogSessionBase(BaseModel):
-    title: str
+    title: str = Field(..., max_length=30)
     hive_id: Optional[str] = None
 
 class LogSessionCreate(LogSessionBase):
@@ -24,6 +24,15 @@ class InspectionFrameBase(BaseModel):
     brood_eighths: int
     food_eighths: int
     bee_eighths: int
+    drone_eighths: int = 0
+    drone_brood_eighths: int = 0
+    pollen_eighths: int = 0
+    brood_multiplier: Optional[float] = 1.0
+    food_multiplier: Optional[float] = 1.0
+    bee_multiplier: Optional[float] = 1.0
+    drone_multiplier: Optional[float] = 1.0
+    drone_brood_multiplier: Optional[float] = 1.0
+    pollen_multiplier: Optional[float] = 1.0
 
 class InspectionFrameCreate(InspectionFrameBase):
     pass

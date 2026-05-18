@@ -347,7 +347,7 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
             <div>
               <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Brut-Multiplikator *</label>
               <input 
@@ -374,6 +374,39 @@
               <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Bienen-Multiplikator *</label>
               <input 
                 v-model.number="formFrameType.bee_multiplier" 
+                type="number" 
+                step="0.01" 
+                min="0.1" 
+                required 
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Drohnen-Multiplikator *</label>
+              <input 
+                v-model.number="formFrameType.drone_multiplier" 
+                type="number" 
+                step="0.01" 
+                min="0.1" 
+                required 
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Dr.Brut-Multiplikator *</label>
+              <input 
+                v-model.number="formFrameType.drone_brood_multiplier" 
+                type="number" 
+                step="0.01" 
+                min="0.1" 
+                required 
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Pollen-Multiplikator *</label>
+              <input 
+                v-model.number="formFrameType.pollen_multiplier" 
                 type="number" 
                 step="0.01" 
                 min="0.1" 
@@ -417,6 +450,9 @@
                 <th class="px-6 py-4 text-center">Brut-Faktor</th>
                 <th class="px-6 py-4 text-center">Futter-Faktor</th>
                 <th class="px-6 py-4 text-center">Bienen-Faktor</th>
+                <th class="px-6 py-4 text-center">Drohnen-Faktor</th>
+                <th class="px-6 py-4 text-center">Dr.Brut-Faktor</th>
+                <th class="px-6 py-4 text-center">Pollen-Faktor</th>
                 <th class="px-6 py-4 text-center">Standard</th>
                 <th class="px-6 py-4 text-right">Aktionen</th>
               </tr>
@@ -438,6 +474,15 @@
                 </td>
                 <td class="px-6 py-4 text-center font-mono text-xs text-gray-600 dark:text-gray-300">
                   x{{ ft.bee_multiplier.toFixed(2) }}
+                </td>
+                <td class="px-6 py-4 text-center font-mono text-xs text-gray-600 dark:text-gray-300">
+                  x{{ (ft.drone_multiplier || 1.0).toFixed(2) }}
+                </td>
+                <td class="px-6 py-4 text-center font-mono text-xs text-gray-600 dark:text-gray-300">
+                  x{{ (ft.drone_brood_multiplier || 1.0).toFixed(2) }}
+                </td>
+                <td class="px-6 py-4 text-center font-mono text-xs text-gray-600 dark:text-gray-300">
+                  x{{ (ft.pollen_multiplier || 1.0).toFixed(2) }}
                 </td>
                 <td class="px-6 py-4 text-center">
                   <span v-if="ft.is_default" class="text-amber-500 font-bold text-lg" title="Standardmaß">★</span>
@@ -657,7 +702,10 @@ const formFrameType = reactive({
   is_default: false,
   brood_multiplier: 1.0,
   food_multiplier: 1.0,
-  bee_multiplier: 1.0
+  bee_multiplier: 1.0,
+  drone_multiplier: 1.0,
+  drone_brood_multiplier: 1.0,
+  pollen_multiplier: 1.0
 })
 
 async function fetchFrameTypes() {
@@ -681,6 +729,9 @@ function openCreateFrameType() {
   formFrameType.brood_multiplier = 1.0
   formFrameType.food_multiplier = 1.0
   formFrameType.bee_multiplier = 1.0
+  formFrameType.drone_multiplier = 1.0
+  formFrameType.drone_brood_multiplier = 1.0
+  formFrameType.pollen_multiplier = 1.0
   showFrameTypeForm.value = true
 }
 
@@ -692,6 +743,9 @@ function openEditFrameType(ft) {
   formFrameType.brood_multiplier = ft.brood_multiplier
   formFrameType.food_multiplier = ft.food_multiplier
   formFrameType.bee_multiplier = ft.bee_multiplier
+  formFrameType.drone_multiplier = ft.drone_multiplier || 1.0
+  formFrameType.drone_brood_multiplier = ft.drone_brood_multiplier || 1.0
+  formFrameType.pollen_multiplier = ft.pollen_multiplier || 1.0
   showFrameTypeForm.value = true
 }
 
@@ -703,7 +757,10 @@ async function submitFrameTypeForm() {
       is_default: formFrameType.is_default,
       brood_multiplier: Number(formFrameType.brood_multiplier),
       food_multiplier: Number(formFrameType.food_multiplier),
-      bee_multiplier: Number(formFrameType.bee_multiplier)
+      bee_multiplier: Number(formFrameType.bee_multiplier),
+      drone_multiplier: Number(formFrameType.drone_multiplier),
+      drone_brood_multiplier: Number(formFrameType.drone_brood_multiplier),
+      pollen_multiplier: Number(formFrameType.pollen_multiplier)
     }
     if (isEditFrameType.value) {
       await axios.put(`/api/admin/frame-types/${editingFrameTypeId.value}`, payload)

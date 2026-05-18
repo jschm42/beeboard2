@@ -10,16 +10,42 @@ def seed_database(db: Session):
         {
             "name": "Zander",
             "is_default": True,
-            "brood_multiplier": 1.00,
-            "food_multiplier": 1.00,
-            "bee_multiplier": 1.00,
+            "brood_multiplier": 400.0,
+            "food_multiplier": 125.0,
+            "bee_multiplier": 125.0,
+            "drone_multiplier": 100.0,
+            "drone_brood_multiplier": 230.0,
+            "pollen_multiplier": 40.0,
+        },
+        {
+            "name": "DeutschNormal",
+            "is_default": False,
+            "brood_multiplier": 357.0,
+            "food_multiplier": 111.0,
+            "bee_multiplier": 111.0,
+            "drone_multiplier": 89.0,
+            "drone_brood_multiplier": 205.0,
+            "pollen_multiplier": 36.0,
+        },
+        {
+            "name": "Langstroth",
+            "is_default": False,
+            "brood_multiplier": 450.0,
+            "food_multiplier": 140.0,
+            "bee_multiplier": 140.0,
+            "drone_multiplier": 112.0,
+            "drone_brood_multiplier": 259.0,
+            "pollen_multiplier": 45.0,
         },
         {
             "name": "Dadant",
             "is_default": False,
-            "brood_multiplier": 1.45,
-            "food_multiplier": 1.45,
-            "bee_multiplier": 1.45,
+            "brood_multiplier": 564.0,
+            "food_multiplier": 176.0,
+            "bee_multiplier": 176.0,
+            "drone_multiplier": 141.0,
+            "drone_brood_multiplier": 324.0,
+            "pollen_multiplier": 56.0,
         },
     ]
 
@@ -35,6 +61,9 @@ def seed_database(db: Session):
             existing.brood_multiplier = ft_data["brood_multiplier"]
             existing.food_multiplier = ft_data["food_multiplier"]
             existing.bee_multiplier = ft_data["bee_multiplier"]
+            existing.drone_multiplier = ft_data["drone_multiplier"]
+            existing.drone_brood_multiplier = ft_data["drone_brood_multiplier"]
+            existing.pollen_multiplier = ft_data["pollen_multiplier"]
             print(f"FrameType bereits vorhanden, aktualisiert: {ft_data['name']}")
 
     # 2. Seed Varroa Multipliers

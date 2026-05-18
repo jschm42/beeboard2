@@ -10,7 +10,7 @@ from app.core.database import get_db
 from app.core.security import get_current_user
 from app.core.config import settings
 from app.models.user import User
-from app.models.hive import Hive
+from app.models.hive import Hive, HiveBox
 from app.models.logbook import (
     LogSession, LogEntry, InspectionDetail, InspectionFrame,
     VarroaCountDetail, VarroaTreatmentDetail, LogEntryImage
@@ -22,6 +22,37 @@ from app.routers.apiaries import check_access
 from app.services.calculations import estimate_varroa
 
 router = APIRouter(prefix="/logbook", tags=["logbook"])
+
+
+def get_frame_multipliers(hive: Hive, frame_number: int):
+    # Sort boxes by order
+    sorted_boxes = sorted(hive.boxes, key=lambda b: b.order)
+    current_start = 1
+    for box in sorted_boxes:
+        current_end = current_start + box.frame_count - 1
+        if current_start <= frame_number <= current_end:
+            # We found the box! Use this box's frame_type
+            ft = box.frame_type
+            return (
+                float(ft.brood_multiplier),
+                float(ft.food_multiplier),
+                float(ft.bee_multiplier),
+                float(ft.drone_multiplier or 1.0),
+                float(ft.drone_brood_multiplier or 1.0),
+                float(ft.pollen_multiplier or 1.0)
+            )
+        current_start = current_end + 1
+    
+    # Fallback to the hive's main frame_type if frame_number is out of bounds or no boxes configured
+    ft = hive.frame_type
+    return (
+        float(ft.brood_multiplier),
+        float(ft.food_multiplier),
+        float(ft.bee_multiplier),
+        float(ft.drone_multiplier or 1.0),
+        float(ft.drone_brood_multiplier or 1.0),
+        float(ft.pollen_multiplier or 1.0)
+    )
 
 # -----------------
 # SESSIONS ENDPOINTS
@@ -164,7 +195,10 @@ def create_entry(
     check_access(apiary_id, current_user, db)
     
     # Verify hive exists and belongs to the active apiary
-    hive = db.query(Hive).filter(Hive.id == entry_in.hive_id, Hive.apiary_id == apiary_id).first()
+    hive = db.query(Hive).options(
+        joinedload(Hive.boxes).joinedload(HiveBox.frame_type),
+        joinedload(Hive.frame_type)
+    ).filter(Hive.id == entry_in.hive_id, Hive.apiary_id == apiary_id).first()
     if not hive:
         raise HTTPException(status_code=400, detail="Bienenvolk gehört nicht zu dieser Imkerei oder existiert nicht")
 
@@ -189,13 +223,23 @@ def create_entry(
         db.refresh(detail)
         
         for frame_in in entry_in.inspection_detail.frames:
+            b_mult, f_mult, bee_mult, dr_mult, dr_b_mult, p_mult = get_frame_multipliers(hive, frame_in.frame_number)
             frame = InspectionFrame(
                 inspection_id=detail.id,
                 frame_number=frame_in.frame_number,
                 side=frame_in.side,
                 brood_eighths=frame_in.brood_eighths,
                 food_eighths=frame_in.food_eighths,
-                bee_eighths=frame_in.bee_eighths
+                bee_eighths=frame_in.bee_eighths,
+                drone_eighths=frame_in.drone_eighths,
+                drone_brood_eighths=frame_in.drone_brood_eighths,
+                pollen_eighths=frame_in.pollen_eighths,
+                brood_multiplier=b_mult,
+                food_multiplier=f_mult,
+                bee_multiplier=bee_mult,
+                drone_multiplier=dr_mult,
+                drone_brood_multiplier=dr_b_mult,
+                pollen_multiplier=p_mult
             )
             db.add(frame)
         db.commit()
@@ -263,14 +307,31 @@ def update_entry(
             db.add(detail)
             db.commit()
             db.refresh(detail)
+            
+            # Fetch hive with boxes/frame_types preloaded
+            hive = db.query(Hive).options(
+                joinedload(Hive.boxes).joinedload(HiveBox.frame_type),
+                joinedload(Hive.frame_type)
+            ).filter(Hive.id == entry.hive_id).first()
+            
             for frame_in in entry_in.inspection_detail.frames:
+                b_mult, f_mult, bee_mult, dr_mult, dr_b_mult, p_mult = get_frame_multipliers(hive, frame_in.frame_number)
                 frame = InspectionFrame(
                     inspection_id=detail.id,
                     frame_number=frame_in.frame_number,
                     side=frame_in.side,
                     brood_eighths=frame_in.brood_eighths,
                     food_eighths=frame_in.food_eighths,
-                    bee_eighths=frame_in.bee_eighths
+                    bee_eighths=frame_in.bee_eighths,
+                    drone_eighths=frame_in.drone_eighths,
+                    drone_brood_eighths=frame_in.drone_brood_eighths,
+                    pollen_eighths=frame_in.pollen_eighths,
+                    brood_multiplier=b_mult,
+                    food_multiplier=f_mult,
+                    bee_multiplier=bee_mult,
+                    drone_multiplier=dr_mult,
+                    drone_brood_multiplier=dr_b_mult,
+                    pollen_multiplier=p_mult
                 )
                 db.add(frame)
             db.commit()

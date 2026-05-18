@@ -113,27 +113,68 @@ def translate_wmo_code(code: int) -> str:
     }
     return wmo_codes.get(code, "Unbekannte Wetterbedingungen")
 
+def get_effective_model_and_key(model: str) -> tuple[str, Optional[str]]:
+    """
+    Resolves the effective model name and API key to use.
+    If the direct provider API key is missing but OPENROUTER_API_KEY is configured,
+    automatically routes the request via OpenRouter by prefixing 'openrouter/' to the model.
+    """
+    # 1. If the model explicitly requests openrouter
+    if "openrouter" in model:
+        return model, (settings.OPENROUTER_API_KEY or os.getenv("OPENROUTER_API_KEY"))
+
+    # 2. Check direct provider keys
+    if "claude" in model or "anthropic" in model:
+        direct_key = settings.ANTHROPIC_API_KEY or os.getenv("ANTHROPIC_API_KEY")
+        if direct_key:
+            return model, direct_key
+    elif "gemini" in model:
+        direct_key = settings.GEMINI_API_KEY or os.getenv("GEMINI_API_KEY")
+        if direct_key:
+            return model, direct_key
+    elif "gpt" in model or "openai" in model:
+        direct_key = settings.OPENAI_API_KEY or os.getenv("OPENAI_API_KEY")
+        if direct_key:
+            return model, direct_key
+    else:
+        direct_key = None
+
+    # 3. Fallback to OpenRouter if configured
+    openrouter_key = settings.OPENROUTER_API_KEY or os.getenv("OPENROUTER_API_KEY")
+    if openrouter_key:
+        effective_model = model
+        if not model.startswith("openrouter/"):
+            effective_model = f"openrouter/{model}"
+        return effective_model, openrouter_key
+
+    # 4. If no openrouter key, return direct key even if None (to trigger fallback warning)
+    if "claude" in model or "anthropic" in model:
+        return model, (settings.ANTHROPIC_API_KEY or os.getenv("ANTHROPIC_API_KEY"))
+    if "gemini" in model:
+        return model, (settings.GEMINI_API_KEY or os.getenv("GEMINI_API_KEY"))
+    if "gpt" in model or "openai" in model:
+        return model, (settings.OPENAI_API_KEY or os.getenv("OPENAI_API_KEY"))
+
+    return model, None
+
 def get_api_key_for_model(model: str) -> Optional[str]:
     """Helper to resolve the correct API key from settings or environment."""
-    if "gemini" in model:
-        return settings.GEMINI_API_KEY or os.getenv("GEMINI_API_KEY")
-    if "gpt" in model or "openai" in model:
-        return settings.OPENAI_API_KEY or os.getenv("OPENAI_API_KEY")
-    return None
+    _, key = get_effective_model_and_key(model)
+    return key
 
 def chatbot_completion(query: str, context_str: str, db: Optional[Session] = None) -> str:
     """
     Sends the user query along with apiary status context to the LLM
     to generate helpful, context-aware advice for the beekeeper.
     """
-    api_key = get_api_key_for_model(settings.LITELLM_MODEL)
+    effective_model, api_key = get_effective_model_and_key(settings.LITELLM_MODEL)
     
     # If no API key is provided, gracefully inform the user or fall back
-    if not api_key and not settings.LITELLM_MODEL.startswith("ollama"):
+    if not api_key and not effective_model.startswith("ollama"):
         return (
             "Der KI-Assistent ist bereit, aber es wurde kein API-Schlüssel für "
             f"'{settings.LITELLM_MODEL}' konfiguriert. Bitte hinterlege einen "
-            "GEMINI_API_KEY in den Umgebungsvariablen."
+            "passenden API-Schlüssel (z.B. GEMINI_API_KEY, OPENROUTER_API_KEY, ANTHROPIC_API_KEY) in den Umgebungsvariablen."
         )
 
     # Load system prompt from DB if db session is provided, otherwise fallback to default
@@ -147,7 +188,7 @@ def chatbot_completion(query: str, context_str: str, db: Optional[Session] = Non
 
     try:
         response = litellm.completion(
-            model=settings.LITELLM_MODEL,
+            model=effective_model,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": query}
@@ -167,10 +208,10 @@ def draft_entry_from_text(freetext: str, date_str: Optional[str] = None, db: Opt
     if not date_str:
         date_str = date.today().isoformat()
 
-    api_key = get_api_key_for_model(settings.LITELLM_MODEL)
+    effective_model, api_key = get_effective_model_and_key(settings.LITELLM_MODEL)
     
     # Graceful fallback if no API key is set, so the app remains usable
-    if not api_key and not settings.LITELLM_MODEL.startswith("ollama"):
+    if not api_key and not effective_model.startswith("ollama"):
         logger.warning("No API key configured for auto-drafting. Using rule-based fallback.")
         return get_fallback_draft(freetext, date_str)
 
@@ -185,7 +226,7 @@ def draft_entry_from_text(freetext: str, date_str: Optional[str] = None, db: Opt
 
     try:
         response = litellm.completion(
-            model=settings.LITELLM_MODEL,
+            model=effective_model,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": freetext}

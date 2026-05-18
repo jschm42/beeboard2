@@ -56,46 +56,59 @@
       <!-- VIEW 1: TILES (Kachelansicht) -->
       <div v-if="viewMode === 'tiles'" class="space-y-6 animate-scale">
         
-        <!-- 1.1: SESSIONS GRID OVERVIEW (when no session is selected) -->
-        <div v-if="!selectedSession" class="space-y-6">
-          
-          <!-- Inline Create Session Card (if modal is open) -->
-          <div v-if="showSessionModal" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-md max-w-xl mx-auto space-y-4 animate-scale">
-            <div class="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-dark-border">
-              <h4 class="font-extrabold text-sm text-gray-900 dark:text-white">Neue Arbeitssitzung</h4>
-              <button @click="showSessionModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        <!-- Inline Create/Edit Session Card (if modal is open) -->
+        <div v-if="showSessionModal" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-md max-w-xl mx-auto space-y-4 animate-scale mb-6">
+          <div class="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-dark-border">
+            <h4 class="font-extrabold text-sm text-gray-900 dark:text-white">
+              {{ isEditSessionMode ? 'Arbeitssitzung bearbeiten' : 'Neue Arbeitssitzung' }}
+            </h4>
+            <button @click="showSessionModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+              <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <form @submit.prevent="submitSessionForm" class="space-y-4">
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Bezeichnung *</label>
+                <span 
+                  class="text-[9px] font-mono font-bold"
+                  :class="sessionForm.title.length >= 30 ? 'text-red-500 font-extrabold animate-pulse' : sessionForm.title.length > 25 ? 'text-amber-500' : 'text-gray-400'"
+                >
+                  {{ sessionForm.title.length }}/30
+                </span>
+              </div>
+              <input 
+                v-model="sessionForm.title" 
+                type="text" 
+                required
+                maxlength="30"
+                placeholder="z.B. Honigraum aufsetzen & Varroakontrolle"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs"
+              />
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Bienenvolk (Optional)</label>
+              <select 
+                v-model="sessionForm.hiveId" 
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs"
+              >
+                <option value="">Keines (Global für Imkerei)</option>
+                <option v-for="hive in hives" :key="hive.id" :value="hive.id">
+                  {{ hive.name }}
+                </option>
+              </select>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+              <button type="button" @click="showSessionModal = false" class="px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">Abbrechen</button>
+              <button type="submit" class="px-4 py-1.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs rounded-xl shadow-md">
+                {{ isEditSessionMode ? 'Speichern' : 'Erstellen' }}
               </button>
             </div>
-            <form @submit.prevent="submitSessionForm" class="space-y-4">
-              <div>
-                <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Bezeichnung *</label>
-                <input 
-                  v-model="sessionForm.title" 
-                  type="text" 
-                  required
-                  placeholder="z.B. Honigraum aufsetzen & Varroakontrolle"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs"
-                />
-              </div>
-              <div>
-                <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Bienenvolk (Optional)</label>
-                <select 
-                  v-model="sessionForm.hiveId" 
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs"
-                >
-                  <option value="">Keines (Global für Imkerei)</option>
-                  <option v-for="hive in hives" :key="hive.id" :value="hive.id">
-                    {{ hive.name }}
-                  </option>
-                </select>
-              </div>
-              <div class="flex justify-end space-x-2 pt-2">
-                <button type="button" @click="showSessionModal = false" class="px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">Abbrechen</button>
-                <button type="submit" class="px-4 py-1.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs rounded-xl shadow-md">Erstellen</button>
-              </div>
-            </form>
-          </div>
+          </form>
+        </div>
+
+        <!-- 1.1: SESSIONS GRID OVERVIEW (when no session is selected) -->
+        <div v-if="!selectedSession" class="space-y-6">
 
           <div v-if="sessionsLoading" class="flex justify-center py-20 bg-white dark:bg-dark-card rounded-3xl border border-gray-200 dark:border-dark-border">
             <svg class="animate-spin h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -115,13 +128,22 @@
               <div>
                 <div class="flex justify-between items-start">
                   <span class="text-[9px] font-black uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded">Sitzung</span>
-                  <button 
-                    @click.stop="deleteSession(session)"
-                    class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all opacity-0 group-hover:opacity-100"
-                    title="Sitzung löschen"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                  </button>
+                  <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      @click.stop="openEditSessionModal(session)"
+                      class="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-xl transition-all"
+                      title="Sitzung umbenennen"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                    </button>
+                    <button 
+                      @click.stop="deleteSession(session)"
+                      class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
+                      title="Sitzung löschen"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                  </div>
                 </div>
                 <h4 class="font-extrabold text-base text-gray-900 dark:text-white mt-3 line-clamp-2">
                   {{ session.title }}
@@ -158,7 +180,16 @@
               <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm flex justify-between items-center">
                 <div>
                   <span class="text-[10px] font-black uppercase text-gray-400">Aktive Arbeitssitzung</span>
-                  <h2 class="text-xl font-extrabold text-gray-900 dark:text-white mt-1">{{ selectedSession.title }}</h2>
+                  <div class="flex items-center space-x-2 mt-1">
+                    <h2 class="text-xl font-extrabold text-gray-900 dark:text-white">{{ selectedSession.title }}</h2>
+                    <button 
+                      @click="openEditSessionModal(selectedSession)"
+                      class="p-1 text-gray-400 hover:text-primary rounded-lg hover:bg-gray-100 dark:hover:bg-dark-border transition-colors inline-flex items-center"
+                      title="Sitzung umbenennen"
+                    >
+                      <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                    </button>
+                  </div>
                   <p v-if="selectedSession.hive" class="text-xs text-gray-500 mt-1">Gekoppeltes Volk: <span class="font-bold text-primary">{{ selectedSession.hive.name }}</span></p>
                 </div>
                 
@@ -268,8 +299,8 @@
                         :key="index"
                         class="p-3 bg-gray-50 dark:bg-dark-bg/60 border border-gray-100 dark:border-gray-800 rounded-xl flex items-center justify-between space-x-4 text-xs font-bold"
                       >
-                        <span class="w-16">Wabe #{{ frame.frame_number }}</span>
-                        <div class="flex items-center space-x-3 flex-grow justify-end">
+                        <span class="w-16 shrink-0">Wabe #{{ frame.frame_number }}</span>
+                        <div class="flex flex-wrap items-center gap-3 flex-grow justify-end">
                           <div class="flex flex-col items-center">
                             <span class="text-[9px] text-amber-500 font-bold uppercase">Brut (achtel)</span>
                             <input 
@@ -284,6 +315,36 @@
                             <span class="text-[9px] text-green-500 font-bold uppercase">Bienen (achtel)</span>
                             <input 
                               v-model.number="frame.bee_eighths" 
+                              type="number" 
+                              min="0" 
+                              max="8" 
+                              class="w-12 px-1 py-0.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-card rounded text-center font-mono"
+                            />
+                          </div>
+                          <div class="flex flex-col items-center">
+                            <span class="text-[9px] text-sky-500 font-bold uppercase">Drohnen (achtel)</span>
+                            <input 
+                              v-model.number="frame.drone_eighths" 
+                              type="number" 
+                              min="0" 
+                              max="8" 
+                              class="w-12 px-1 py-0.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-card rounded text-center font-mono"
+                            />
+                          </div>
+                          <div class="flex flex-col items-center">
+                            <span class="text-[9px] text-orange-500 font-bold uppercase">Drohnenbrut (achtel)</span>
+                            <input 
+                              v-model.number="frame.drone_brood_eighths" 
+                              type="number" 
+                              min="0" 
+                              max="8" 
+                              class="w-12 px-1 py-0.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-card rounded text-center font-mono"
+                            />
+                          </div>
+                          <div class="flex flex-col items-center">
+                            <span class="text-[9px] text-purple-500 font-bold uppercase">Pollen (achtel)</span>
+                            <input 
+                              v-model.number="frame.pollen_eighths" 
                               type="number" 
                               min="0" 
                               max="8" 
@@ -345,7 +406,7 @@
                             </span>
                           </div>
 
-                          <div class="grid grid-cols-3 gap-3 text-center">
+                          <div class="grid grid-cols-2 sm:grid-cols-6 gap-3 text-center">
                             <!-- Brood -->
                             <div class="space-y-1">
                               <span class="text-[9px] text-amber-500 font-bold uppercase">Brut</span>
@@ -359,7 +420,7 @@
                                 :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? '0' : '0/8'"
                               />
                               <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[8px] text-gray-400 font-mono">
-                                ≙ {{ calculatedBoxTotals[idx].brood }} Standard-Waben
+                                ≙ {{ calculatedBoxTotals[idx].brood }}
                               </div>
                             </div>
 
@@ -376,7 +437,58 @@
                                 :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? '0' : '0/8'"
                               />
                               <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[8px] text-gray-400 font-mono">
-                                ≙ {{ calculatedBoxTotals[idx].bees }} Standard-Waben
+                                ≙ {{ calculatedBoxTotals[idx].bees }}
+                              </div>
+                            </div>
+
+                            <!-- Drones -->
+                            <div class="space-y-1">
+                              <span class="text-[9px] text-sky-500 font-bold uppercase">Drohnen</span>
+                              <input 
+                                v-model.number="box.drones" 
+                                type="number" 
+                                step="any"
+                                min="0" 
+                                :max="entryForm.inspectionDetail.boxMode === 'exact' ? box.frame_count : 8" 
+                                class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
+                                :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? '0' : '0/8'"
+                              />
+                              <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[8px] text-gray-400 font-mono">
+                                ≙ {{ calculatedBoxTotals[idx].drones }}
+                              </div>
+                            </div>
+
+                            <!-- Drone Brood -->
+                            <div class="space-y-1">
+                              <span class="text-[9px] text-orange-500 font-bold uppercase">Drohnenbrut</span>
+                              <input 
+                                v-model.number="box.drone_brood" 
+                                type="number" 
+                                step="any"
+                                min="0" 
+                                :max="entryForm.inspectionDetail.boxMode === 'exact' ? box.frame_count : 8" 
+                                class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
+                                :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? '0' : '0/8'"
+                              />
+                              <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[8px] text-gray-400 font-mono">
+                                ≙ {{ calculatedBoxTotals[idx].drone_brood }}
+                              </div>
+                            </div>
+
+                            <!-- Pollen -->
+                            <div class="space-y-1">
+                              <span class="text-[9px] text-purple-500 font-bold uppercase">Pollen</span>
+                              <input 
+                                v-model.number="box.pollen" 
+                                type="number" 
+                                step="any"
+                                min="0" 
+                                :max="entryForm.inspectionDetail.boxMode === 'exact' ? box.frame_count : 8" 
+                                class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
+                                :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? '0' : '0/8'"
+                              />
+                              <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[8px] text-gray-400 font-mono">
+                                ≙ {{ calculatedBoxTotals[idx].pollen }}
                               </div>
                             </div>
 
@@ -393,7 +505,7 @@
                                 :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? '0' : '0/8'"
                               />
                               <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[8px] text-gray-400 font-mono">
-                                ≙ {{ calculatedBoxTotals[idx].food }} Standard-Waben
+                                ≙ {{ calculatedBoxTotals[idx].food }}
                               </div>
                             </div>
                           </div>
@@ -508,31 +620,89 @@
                   <p class="text-sm text-gray-700 dark:text-gray-300 font-medium italic">"{{ entry.notes || 'Keine Anmerkungen erfasst.' }}"</p>
 
                   <!-- Nested Inspections -->
-                  <div v-if="entry.entry_type === 'INSPECTION' && entry.inspection_detail" class="space-y-2">
-                    <span class="text-[10px] font-black uppercase text-gray-400">🔎 Brut- & Raumbelegung:</span>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                      <div 
-                        v-for="frame in sortedFrames(entry.inspection_detail.frames)" 
-                        :key="frame.id"
-                        class="p-3 bg-gray-50 dark:bg-dark-bg/60 border border-gray-100 dark:border-dark-border rounded-2xl flex flex-col justify-between items-center text-center"
-                      >
-                        <span class="text-[10px] font-black text-gray-500 mb-1.5">Wabe #{{ frame.frame_number }}</span>
-                        <!-- Progress info -->
-                        <div class="w-full space-y-1 text-[9px] font-mono font-bold">
-                          <div class="flex justify-between items-center text-amber-500">
-                            <span>Brut:</span>
-                            <span>{{ frame.brood_eighths }}/8</span>
+                  <div v-if="entry.entry_type === 'INSPECTION' && entry.inspection_detail" class="space-y-3">
+                    <span class="text-[10px] font-black uppercase text-gray-400">🔎 Brut- & Raumbelegung (Zargen- & Volkssummen):</span>
+                    
+                    <div v-if="getBoxTotalsForEntry(entry)" class="space-y-3">
+                      <!-- Box Grid -->
+                      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        <div 
+                          v-for="box in getBoxTotalsForEntry(entry).boxes" 
+                          :key="box.id"
+                          class="p-4 bg-gray-50 dark:bg-dark-bg/60 border border-gray-100 dark:border-dark-border rounded-2xl flex flex-col justify-between"
+                        >
+                          <div class="flex justify-between items-center mb-2 pb-1.5 border-b border-gray-200/50 dark:border-dark-border">
+                            <span class="text-[10px] font-black text-gray-500">Zarge {{ box.order }}: {{ box.box_type === 'BROOD' ? 'Brutraum' : 'Honigraum' }}</span>
+                            <span class="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{{ box.frame_count }} Waben ({{ box.frame_type_name }})</span>
                           </div>
-                          <div class="flex justify-between items-center text-green-500">
-                            <span>Biene:</span>
-                            <span>{{ frame.bee_eighths }}/8</span>
-                          </div>
-                          <div class="flex justify-between items-center text-yellow-500">
-                            <span>Futter:</span>
-                            <span>{{ frame.food_eighths }}/8</span>
+                          <!-- Box values -->
+                          <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono font-bold">
+                            <div class="flex justify-between items-center text-amber-500">
+                              <span>Brut:</span>
+                              <span>{{ box.brood.toFixed(0) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-green-500">
+                              <span>Bienen:</span>
+                              <span>{{ box.bees.toFixed(0) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sky-500">
+                              <span>Drohnen:</span>
+                              <span>{{ box.drones.toFixed(0) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-orange-500">
+                              <span>Dr.Brut:</span>
+                              <span>{{ box.drone_brood.toFixed(0) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-purple-500">
+                              <span>Pollen:</span>
+                              <span>{{ box.pollen.toFixed(0) }} g</span>
+                            </div>
+                            <div class="flex justify-between items-center text-yellow-500">
+                              <span>Futter:</span>
+                              <span>{{ box.food.toFixed(0) }} g</span>
+                            </div>
                           </div>
                         </div>
                       </div>
+
+                      <!-- Hive Total Summary -->
+                      <div class="p-4 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0 shadow-sm">
+                        <div>
+                          <span class="text-[9px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider">🐝 Volk Gesamt (Beute):</span>
+                          <h4 class="text-sm font-extrabold text-gray-900 dark:text-white">Summe über alle Zargen</h4>
+                        </div>
+                        <div class="flex flex-wrap gap-2 font-mono font-black text-[10px]">
+                          <div class="flex items-center space-x-1 text-amber-500 bg-amber-500/10 px-2 py-1 rounded-xl">
+                            <span>Brut:</span>
+                            <span>{{ getBoxTotalsForEntry(entry).hive.brood.toFixed(0) }}</span>
+                          </div>
+                          <div class="flex items-center space-x-1 text-green-500 bg-green-500/10 px-2 py-1 rounded-xl">
+                            <span>Bienen:</span>
+                            <span>{{ getBoxTotalsForEntry(entry).hive.bees.toFixed(0) }}</span>
+                          </div>
+                          <div class="flex items-center space-x-1 text-sky-500 bg-sky-500/10 px-2 py-1 rounded-xl">
+                            <span>Drohnen:</span>
+                            <span>{{ getBoxTotalsForEntry(entry).hive.drones.toFixed(0) }}</span>
+                          </div>
+                          <div class="flex items-center space-x-1 text-orange-500 bg-orange-500/10 px-2 py-1 rounded-xl">
+                            <span>Dr.Brut:</span>
+                            <span>{{ getBoxTotalsForEntry(entry).hive.drone_brood.toFixed(0) }}</span>
+                          </div>
+                          <div class="flex items-center space-x-1 text-purple-500 bg-purple-500/10 px-2 py-1 rounded-xl">
+                            <span>Pollen:</span>
+                            <span>{{ getBoxTotalsForEntry(entry).hive.pollen.toFixed(0) }} g</span>
+                          </div>
+                          <div class="flex items-center space-x-1 text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded-xl">
+                            <span>Futter:</span>
+                            <span>{{ getBoxTotalsForEntry(entry).hive.food.toFixed(0) }} g</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Fallback if getBoxTotalsForEntry returns null -->
+                    <div v-else class="text-xs text-gray-400 italic">
+                      Zargen- und Volksdaten konnten nicht berechnet werden.
                     </div>
                   </div>
 
@@ -778,6 +948,13 @@
 
             <!-- SUB-FORM: INSPECTION DETAILS -->
             <div v-if="entryForm.entryType === 'INSPECTION'" class="space-y-4 border-t border-gray-100 dark:border-dark-border pt-4">
+              
+              <!-- Warning card when hive has no boxes -->
+              <div v-if="activeHive && (!activeHive.boxes || activeHive.boxes.length === 0)" class="p-3.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/60 rounded-xl text-xs font-bold text-amber-700 dark:text-amber-400 flex items-start space-x-2">
+                <span class="mt-0.5 text-base shrink-0">⚠️</span>
+                <span>Dieses Volk hat noch keine Zargen konfiguriert. Eingaben sind nur Waben-weise möglich. Füge in der Völker-Ansicht Zargen hinzu, um die vereinfachte Zargen-weise Erfassung freizuschalten.</span>
+              </div>
+
               <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                 <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">Erfassungs-Variante</h4>
                 
@@ -793,8 +970,9 @@
                   </button>
                   <button 
                     type="button"
+                    :disabled="!activeHive || !activeHive.boxes || activeHive.boxes.length === 0"
                     @click="entryForm.inspectionDetail.assessmentMode = 'boxes'" 
-                    class="px-3 py-1 rounded-lg text-[10px] font-black transition-all"
+                    class="px-3 py-1 rounded-lg text-[10px] font-black transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                     :class="entryForm.inspectionDetail.assessmentMode === 'boxes' ? 'bg-white dark:bg-dark-card text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
                   >
                     📦 Zargen-weise (Vereinfacht)
@@ -809,8 +987,8 @@
                   :key="index"
                   class="p-3 bg-gray-50 dark:bg-dark-bg/60 border border-gray-100 dark:border-gray-800 rounded-xl flex items-center justify-between space-x-4 text-xs font-bold"
                 >
-                  <span class="w-16">Wabe #{{ frame.frame_number }}</span>
-                  <div class="flex items-center space-x-3 flex-grow justify-end">
+                  <span class="w-16 shrink-0">Wabe #{{ frame.frame_number }}</span>
+                  <div class="flex flex-wrap items-center gap-3 flex-grow justify-end">
                     <div class="flex flex-col items-center">
                       <span class="text-[9px] text-amber-500 font-bold uppercase">Brut (achtel)</span>
                       <input 
@@ -825,6 +1003,36 @@
                       <span class="text-[9px] text-green-500 font-bold uppercase">Bienen (achtel)</span>
                       <input 
                         v-model.number="frame.bee_eighths" 
+                        type="number" 
+                        min="0" 
+                        max="8" 
+                        class="w-12 px-1 py-0.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-card rounded text-center font-mono"
+                      />
+                    </div>
+                    <div class="flex flex-col items-center">
+                      <span class="text-[9px] text-sky-500 font-bold uppercase">Drohnen (achtel)</span>
+                      <input 
+                        v-model.number="frame.drone_eighths" 
+                        type="number" 
+                        min="0" 
+                        max="8" 
+                        class="w-12 px-1 py-0.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-card rounded text-center font-mono"
+                      />
+                    </div>
+                    <div class="flex flex-col items-center">
+                      <span class="text-[9px] text-orange-500 font-bold uppercase">Drohnenbrut (achtel)</span>
+                      <input 
+                        v-model.number="frame.drone_brood_eighths" 
+                        type="number" 
+                        min="0" 
+                        max="8" 
+                        class="w-12 px-1 py-0.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-card rounded text-center font-mono"
+                      />
+                    </div>
+                    <div class="flex flex-col items-center">
+                      <span class="text-[9px] text-purple-500 font-bold uppercase">Pollen (achtel)</span>
+                      <input 
+                        v-model.number="frame.pollen_eighths" 
                         type="number" 
                         min="0" 
                         max="8" 
@@ -886,7 +1094,7 @@
                       </span>
                     </div>
 
-                    <div class="grid grid-cols-3 gap-3 text-center">
+                    <div class="grid grid-cols-2 sm:grid-cols-6 gap-3 text-center">
                       <!-- Brood -->
                       <div class="space-y-1">
                         <span class="text-[9px] text-amber-500 font-bold uppercase">Brut</span>
@@ -918,6 +1126,57 @@
                         />
                         <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[8px] text-gray-400 font-mono">
                           ≙ {{ calculatedBoxTotals[idx].bees }} Standard-Waben
+                        </div>
+                      </div>
+
+                      <!-- Drones -->
+                      <div class="space-y-1">
+                        <span class="text-[9px] text-sky-500 font-bold uppercase">Drohnen</span>
+                        <input 
+                          v-model.number="box.drones" 
+                          type="number" 
+                          step="any"
+                          min="0" 
+                          :max="entryForm.inspectionDetail.boxMode === 'exact' ? box.frame_count : 8" 
+                          class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
+                          :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? '0' : '0/8'"
+                        />
+                        <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[8px] text-gray-400 font-mono">
+                          ≙ {{ calculatedBoxTotals[idx].drones }} Standard-Waben
+                        </div>
+                      </div>
+
+                      <!-- Drone Brood -->
+                      <div class="space-y-1">
+                        <span class="text-[9px] text-orange-500 font-bold uppercase">Drohnenbrut</span>
+                        <input 
+                          v-model.number="box.drone_brood" 
+                          type="number" 
+                          step="any"
+                          min="0" 
+                          :max="entryForm.inspectionDetail.boxMode === 'exact' ? box.frame_count : 8" 
+                          class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
+                          :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? '0' : '0/8'"
+                        />
+                        <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[8px] text-gray-400 font-mono">
+                          ≙ {{ calculatedBoxTotals[idx].drone_brood }} Standard-Waben
+                        </div>
+                      </div>
+
+                      <!-- Pollen -->
+                      <div class="space-y-1">
+                        <span class="text-[9px] text-purple-500 font-bold uppercase">Pollen</span>
+                        <input 
+                          v-model.number="box.pollen" 
+                          type="number" 
+                          step="any"
+                          min="0" 
+                          :max="entryForm.inspectionDetail.boxMode === 'exact' ? box.frame_count : 8" 
+                          class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
+                          :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? '0' : '0/8'"
+                        />
+                        <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[8px] text-gray-400 font-mono">
+                          ≙ {{ calculatedBoxTotals[idx].pollen }} Standard-Waben
                         </div>
                       </div>
 
@@ -1063,16 +1322,35 @@
                     <p class="text-gray-700 dark:text-gray-300 italic mb-2">"{{ entry.notes || 'Keine Anmerkungen erfasst.' }}"</p>
                     
                     <!-- Nested details rendering -->
-                    <div v-if="entry.entry_type === 'INSPECTION' && entry.inspection_detail" class="mt-2 text-[10px] bg-gray-50 dark:bg-dark-bg/40 p-2 rounded-xl border space-y-1 border-gray-100 dark:border-dark-border">
-                      <span class="font-bold text-gray-500 uppercase tracking-wide">🔎 Brut- & Raumbelegung:</span>
-                      <div class="flex flex-wrap gap-1 mt-1">
-                        <span 
-                          v-for="frame in sortedFrames(entry.inspection_detail.frames)" 
-                          :key="frame.id"
-                          class="px-1.5 py-0.5 bg-white dark:bg-dark-card border rounded text-[9px] font-mono border-gray-100 dark:border-dark-border"
-                        >
-                          W#{{ frame.frame_number }}: B{{ frame.brood_eighths }} F{{ frame.food_eighths }} N{{ frame.bee_eighths }}
+                    <div v-if="entry.entry_type === 'INSPECTION' && entry.inspection_detail" class="mt-2 text-[10px] bg-gray-50 dark:bg-dark-bg/40 p-2.5 rounded-xl border space-y-1.5 border-gray-100 dark:border-dark-border">
+                      <div class="flex justify-between items-center pb-1 border-b border-gray-200/40 dark:border-dark-border">
+                        <span class="font-bold text-gray-500 uppercase tracking-wide">🔎 Belegung nach Zarge & Volk:</span>
+                        <span v-if="getBoxTotalsForEntry(entry)" class="font-black text-amber-500 text-[10px] flex flex-wrap gap-2">
+                          <span>B: {{ getBoxTotalsForEntry(entry).hive.brood.toFixed(0) }}</span>
+                          <span>N: {{ getBoxTotalsForEntry(entry).hive.bees.toFixed(0) }}</span>
+                          <span>D: {{ getBoxTotalsForEntry(entry).hive.drones.toFixed(0) }}</span>
+                          <span>DB: {{ getBoxTotalsForEntry(entry).hive.drone_brood.toFixed(0) }}</span>
+                          <span>P: {{ getBoxTotalsForEntry(entry).hive.pollen.toFixed(0) }} g</span>
+                          <span>F: {{ getBoxTotalsForEntry(entry).hive.food.toFixed(0) }} g</span>
                         </span>
+                      </div>
+                      <div v-if="getBoxTotalsForEntry(entry)" class="flex flex-wrap gap-1.5 mt-1">
+                        <span 
+                          v-for="box in getBoxTotalsForEntry(entry).boxes" 
+                          :key="box.id"
+                          class="px-2 py-0.5 bg-white dark:bg-dark-card border rounded-lg text-[9px] font-mono border-gray-100 dark:border-dark-border flex flex-wrap gap-x-1.5 font-bold shadow-sm"
+                        >
+                          <span class="text-gray-400">Z{{ box.order }}:</span>
+                          <span class="text-amber-500">B:{{ box.brood.toFixed(1) }}</span>
+                          <span class="text-green-500">N:{{ box.bees.toFixed(1) }}</span>
+                          <span class="text-sky-500">D:{{ box.drones.toFixed(1) }}</span>
+                          <span class="text-orange-500">DB:{{ box.drone_brood.toFixed(1) }}</span>
+                          <span class="text-purple-500">P:{{ box.pollen.toFixed(1) }}</span>
+                          <span class="text-yellow-500">F:{{ box.food.toFixed(1) }}</span>
+                        </span>
+                      </div>
+                      <div v-else class="text-[9px] text-gray-400 italic">
+                        Zargen- und Volksdaten konnten nicht berechnet werden.
                       </div>
                     </div>
 
@@ -1185,6 +1463,8 @@ const tableFilters = reactive({
 
 // Modals toggles
 const showSessionModal = ref(false)
+const isEditSessionMode = ref(false)
+const editingSessionId = ref(null)
 const showEntryModal = ref(false)
 const isEditEntryMode = ref(false)
 const editingEntryId = ref(null)
@@ -1247,6 +1527,8 @@ watch(viewMode, async (newVal) => {
 })
 
 // Dropdown unique filter computed values
+const activeHive = computed(() => hives.value.find(h => h.id === entryForm.hiveId))
+
 const uniqueLocations = computed(() => {
   const map = new Map()
   allEntries.value.forEach(e => {
@@ -1316,21 +1598,33 @@ const calculatedBoxTotals = computed(() => {
     let broodVal = 0
     let beeVal = 0
     let foodVal = 0
+    let droneVal = 0
+    let droneBroodVal = 0
+    let pollenVal = 0
     
     if (entryForm.inspectionDetail.boxMode === 'exact') {
       broodVal = Number(box.brood || 0)
       beeVal = Number(box.bees || 0)
       foodVal = Number(box.food || 0)
+      droneVal = Number(box.drones || 0)
+      droneBroodVal = Number(box.drone_brood || 0)
+      pollenVal = Number(box.pollen || 0)
     } else {
       broodVal = (Number(box.brood || 0) / 8) * C * M
       beeVal = (Number(box.bees || 0) / 8) * C * M
       foodVal = (Number(box.food || 0) / 8) * C * M
+      droneVal = (Number(box.drones || 0) / 8) * C * M
+      droneBroodVal = (Number(box.drone_brood || 0) / 8) * C * M
+      pollenVal = (Number(box.pollen || 0) / 8) * C * M
     }
     
     return {
-      brood: broodVal.toFixed(1),
-      bees: beeVal.toFixed(1),
-      food: foodVal.toFixed(1)
+      brood: broodVal.toFixed(0) + ' Stk.',
+      bees: beeVal.toFixed(0) + ' Stk.',
+      food: foodVal.toFixed(0) + ' g',
+      drones: droneVal.toFixed(0) + ' Stk.',
+      drone_brood: droneBroodVal.toFixed(0) + ' Stk.',
+      pollen: pollenVal.toFixed(0) + ' g'
     }
   })
 })
@@ -1419,27 +1713,61 @@ function selectSession(session) {
 }
 
 function openCreateSessionModal() {
+  isEditSessionMode.value = false
+  editingSessionId.value = null
   sessionForm.title = ''
   sessionForm.hiveId = ''
   showSessionModal.value = true
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
+function openEditSessionModal(session) {
+  isEditSessionMode.value = true
+  editingSessionId.value = session.id
+  sessionForm.title = session.title
+  sessionForm.hiveId = session.hive_id || ''
+  showSessionModal.value = true
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 async function submitSessionForm() {
   if (!sessionForm.title.trim()) return
+  if (sessionForm.title.trim().length > 30) {
+    if (errorStore && typeof errorStore.showError === 'function') {
+      errorStore.showError('Die Bezeichnung darf maximal 30 Zeichen lang sein.')
+    } else {
+      alert('Die Bezeichnung darf maximal 30 Zeichen lang sein.')
+    }
+    return
+  }
   try {
-    const session = await axios.post('/api/logbook/sessions', {
-      title: sessionForm.title.trim(),
-      hive_id: sessionForm.hiveId || null
-    }, {
-      params: { apiary_id: apiaryStore.activeApiaryId }
-    })
-    
-    showSessionModal.value = false
-    await fetchSessions()
-    selectSession(session.data)
+    if (isEditSessionMode.value) {
+      const response = await axios.put(`/api/logbook/sessions/${editingSessionId.value}`, {
+        title: sessionForm.title.trim(),
+        hive_id: sessionForm.hiveId || null
+      })
+      
+      // Update selectedSession if it is the one being renamed
+      if (selectedSession.value?.id === editingSessionId.value) {
+        selectedSession.value = response.data
+      }
+      
+      showSessionModal.value = false
+      await fetchSessions()
+    } else {
+      const session = await axios.post('/api/logbook/sessions', {
+        title: sessionForm.title.trim(),
+        hive_id: sessionForm.hiveId || null
+      }, {
+        params: { apiary_id: apiaryStore.activeApiaryId }
+      })
+      
+      showSessionModal.value = false
+      await fetchSessions()
+      selectSession(session.data)
+    }
   } catch (err) {
-    console.error('Create session error:', err)
+    console.error('Session form submission failed:', err)
   }
 }
 
@@ -1492,12 +1820,18 @@ function openEditEntryModal(entry) {
       side: f.side || 1,
       brood_eighths: f.brood_eighths,
       bee_eighths: f.bee_eighths,
-      food_eighths: f.food_eighths
+      food_eighths: f.food_eighths,
+      drone_eighths: f.drone_eighths || 0,
+      drone_brood_eighths: f.drone_brood_eighths || 0,
+      pollen_eighths: f.pollen_eighths || 0
     }))
 
     // Try to reconstruct boxes assessment
     const hive = hives.value.find(h => h.id === entry.hive_id)
-    if (hive && hive.boxes && hive.boxes.length > 0) {
+    const totalCurrentFrames = hive?.boxes ? hive.boxes.reduce((acc, b) => acc + b.frame_count, 0) : 0
+    const historicalFramesCount = entryForm.inspectionDetail.frames.length
+
+    if (hive && hive.boxes && hive.boxes.length > 0 && totalCurrentFrames === historicalFramesCount) {
       let currentFrameOffset = 0
       entryForm.inspectionDetail.boxes = hive.boxes.map(box => {
         const C = box.frame_count
@@ -1509,10 +1843,16 @@ function openEditEntryModal(entry) {
         const sumBrood = boxFrames.reduce((acc, f) => acc + (f.brood_eighths || 0), 0)
         const sumBees = boxFrames.reduce((acc, f) => acc + (f.bee_eighths || 0), 0)
         const sumFood = boxFrames.reduce((acc, f) => acc + (f.food_eighths || 0), 0)
+        const sumDrones = boxFrames.reduce((acc, f) => acc + (f.drone_eighths || 0), 0)
+        const sumDroneBrood = boxFrames.reduce((acc, f) => acc + (f.drone_brood_eighths || 0), 0)
+        const sumPollen = boxFrames.reduce((acc, f) => acc + (f.pollen_eighths || 0), 0)
         
         const exactBrood = sumBrood / 8
         const exactBees = sumBees / 8
         const exactFood = sumFood / 8
+        const exactDrones = sumDrones / 8
+        const exactDroneBrood = sumDroneBrood / 8
+        const exactPollen = sumPollen / 8
         
         return {
           id: box.id,
@@ -1523,12 +1863,16 @@ function openEditEntryModal(entry) {
           frame_type_name: box.frame_type?.name || 'Standard',
           brood: exactBrood,
           bees: exactBees,
-          food: exactFood
+          food: exactFood,
+          drones: exactDrones,
+          drone_brood: exactDroneBrood,
+          pollen: exactPollen
         }
       })
       entryForm.inspectionDetail.assessmentMode = 'boxes'
       entryForm.inspectionDetail.boxMode = 'exact'
     } else {
+      entryForm.inspectionDetail.boxes = []
       entryForm.inspectionDetail.assessmentMode = 'frames'
     }
   }
@@ -1564,24 +1908,19 @@ function onHiveSelected() {
       frame_type_name: box.frame_type?.name || 'Standard',
       brood: 0,
       bees: 0,
-      food: 0
+      food: 0,
+      drones: 0,
+      drone_brood: 0,
+      pollen: 0
     }))
   } else {
-    entryForm.inspectionDetail.boxes = [{
-      id: 'default',
-      order: 1,
-      box_type: 'BROOD',
-      frame_count: 10,
-      multiplier: 1.0,
-      frame_type_name: 'Standard',
-      brood: 0,
-      bees: 0,
-      food: 0
-    }]
+    // If no boxes are configured, empty the boxes and force frames mode
+    entryForm.inspectionDetail.boxes = []
+    entryForm.inspectionDetail.assessmentMode = 'frames'
   }
 
   // Build frames
-  let count = 10
+  let count = 0
   if (hive.boxes && hive.boxes.length > 0) {
     count = hive.boxes.reduce((acc, box) => acc + box.frame_count, 0)
   }
@@ -1593,7 +1932,10 @@ function onHiveSelected() {
       side: 1,
       brood_eighths: 0,
       bee_eighths: 0,
-      food_eighths: 0
+      food_eighths: 0,
+      drone_eighths: 0,
+      drone_brood_eighths: 0,
+      pollen_eighths: 0
     })
   }
   entryForm.inspectionDetail.frames = frames
@@ -1613,33 +1955,51 @@ async function submitEntryForm() {
         let total_brood_eighths = 0
         let total_bee_eighths = 0
         let total_food_eighths = 0
+        let total_drone_eighths = 0
+        let total_drone_brood_eighths = 0
+        let total_pollen_eighths = 0
         
         if (entryForm.inspectionDetail.boxMode === 'exact') {
           total_brood_eighths = Math.round(Number(box.brood || 0) * 8)
           total_bee_eighths = Math.round(Number(box.bees || 0) * 8)
           total_food_eighths = Math.round(Number(box.food || 0) * 8)
+          total_drone_eighths = Math.round(Number(box.drones || 0) * 8)
+          total_drone_brood_eighths = Math.round(Number(box.drone_brood || 0) * 8)
+          total_pollen_eighths = Math.round(Number(box.pollen || 0) * 8)
         } else {
           // Eighths mode
           const standard_brood = (Number(box.brood || 0) / 8) * C * M
           const standard_bees = (Number(box.bees || 0) / 8) * C * M
           const standard_food = (Number(box.food || 0) / 8) * C * M
+          const standard_drone = (Number(box.drones || 0) / 8) * C * M
+          const standard_drone_brood = (Number(box.drone_brood || 0) / 8) * C * M
+          const standard_pollen = (Number(box.pollen || 0) / 8) * C * M
           
           total_brood_eighths = Math.round(standard_brood * 8)
           total_bee_eighths = Math.round(standard_bees * 8)
           total_food_eighths = Math.round(standard_food * 8)
+          total_drone_eighths = Math.round(standard_drone * 8)
+          total_drone_brood_eighths = Math.round(standard_drone_brood * 8)
+          total_pollen_eighths = Math.round(standard_pollen * 8)
         }
         
         for (let f = 1; f <= C; f++) {
           const f_brood = Math.min(8, Math.max(0, total_brood_eighths - (f - 1) * 8))
           const f_bee = Math.min(8, Math.max(0, total_bee_eighths - (f - 1) * 8))
           const f_food = Math.min(8, Math.max(0, total_food_eighths - (f - 1) * 8))
+          const f_drone = Math.min(8, Math.max(0, total_drone_eighths - (f - 1) * 8))
+          const f_drone_brood = Math.min(8, Math.max(0, total_drone_brood_eighths - (f - 1) * 8))
+          const f_pollen = Math.min(8, Math.max(0, total_pollen_eighths - (f - 1) * 8))
           
           synthesizedFrames.push({
             frame_number: frameIndex++,
             side: 1,
             brood_eighths: f_brood,
             bee_eighths: f_bee,
-            food_eighths: f_food
+            food_eighths: f_food,
+            drone_eighths: f_drone,
+            drone_brood_eighths: f_drone_brood,
+            pollen_eighths: f_pollen
           })
         }
       })
@@ -1798,6 +2158,87 @@ function getEntryTypeName(type) {
 
 function sortedFrames(frames) {
   return [...frames].sort((a, b) => a.frame_number - b.frame_number)
+}
+
+function getBoxTotalsForEntry(entry) {
+  if (!entry.inspection_detail || !entry.inspection_detail.frames) return null
+
+  const sorted = [...entry.inspection_detail.frames].sort((a, b) => a.frame_number - b.frame_number)
+  const hive = hives.value.find(h => h.id === entry.hive_id)
+  
+  // Calculate raw hive totals as fallback
+  const rawHiveTotal = {
+    brood: sorted.reduce((acc, f) => acc + (f.brood_eighths || 0) * (f.brood_multiplier ?? 1.0), 0),
+    bees: sorted.reduce((acc, f) => acc + (f.bee_eighths || 0) * (f.bee_multiplier ?? 1.0), 0),
+    food: sorted.reduce((acc, f) => acc + (f.food_eighths || 0) * (f.food_multiplier ?? 1.0), 0),
+    drones: sorted.reduce((acc, f) => acc + (f.drone_eighths || 0) * (f.drone_multiplier ?? 1.0), 0),
+    drone_brood: sorted.reduce((acc, f) => acc + (f.drone_brood_eighths || 0) * (f.drone_brood_multiplier ?? 1.0), 0),
+    pollen: sorted.reduce((acc, f) => acc + (f.pollen_eighths || 0) * (f.pollen_multiplier ?? 1.0), 0)
+  }
+
+  if (!hive || !hive.boxes || hive.boxes.length === 0) {
+    return {
+      boxes: [{
+        id: 'virtual',
+        order: 1,
+        box_type: 'BROOD',
+        frame_count: sorted.length,
+        multiplier: 1.0,
+        frame_type_name: 'Standard',
+        brood: rawHiveTotal.brood,
+        bees: rawHiveTotal.bees,
+        food: rawHiveTotal.food,
+        drones: rawHiveTotal.drones,
+        drone_brood: rawHiveTotal.drone_brood,
+        pollen: rawHiveTotal.pollen
+      }],
+      hive: rawHiveTotal
+    }
+  }
+
+  let currentFrameOffset = 0
+  const boxTotals = hive.boxes.map(box => {
+    const C = box.frame_count
+    
+    const boxFrames = sorted.slice(currentFrameOffset, currentFrameOffset + C)
+    currentFrameOffset += C
+    
+    const sumBrood = boxFrames.reduce((acc, f) => acc + (f.brood_eighths || 0) * (f.brood_multiplier ?? box.frame_type?.brood_multiplier ?? 1.0), 0)
+    const sumBees = boxFrames.reduce((acc, f) => acc + (f.bee_eighths || 0) * (f.bee_multiplier ?? box.frame_type?.bee_multiplier ?? 1.0), 0)
+    const sumFood = boxFrames.reduce((acc, f) => acc + (f.food_eighths || 0) * (f.food_multiplier ?? box.frame_type?.food_multiplier ?? 1.0), 0)
+    const sumDrones = boxFrames.reduce((acc, f) => acc + (f.drone_eighths || 0) * (f.drone_multiplier ?? box.frame_type?.drone_multiplier ?? 1.0), 0)
+    const sumDroneBrood = boxFrames.reduce((acc, f) => acc + (f.drone_brood_eighths || 0) * (f.drone_brood_multiplier ?? box.frame_type?.drone_brood_multiplier ?? 1.0), 0)
+    const sumPollen = boxFrames.reduce((acc, f) => acc + (f.pollen_eighths || 0) * (f.pollen_multiplier ?? box.frame_type?.pollen_multiplier ?? 1.0), 0)
+    
+    return {
+      id: box.id,
+      order: box.order,
+      box_type: box.box_type,
+      frame_count: box.frame_count,
+      multiplier: box.frame_type?.multiplier || 1.0,
+      frame_type_name: box.frame_type?.name || 'Standard',
+      brood: sumBrood,
+      bees: sumBees,
+      food: sumFood,
+      drones: sumDrones,
+      drone_brood: sumDroneBrood,
+      pollen: sumPollen
+    }
+  })
+
+  const hiveTotal = {
+    brood: boxTotals.reduce((acc, b) => acc + b.brood, 0),
+    bees: boxTotals.reduce((acc, b) => acc + b.bees, 0),
+    food: boxTotals.reduce((acc, b) => acc + b.food, 0),
+    drones: boxTotals.reduce((acc, b) => acc + b.drones, 0),
+    drone_brood: boxTotals.reduce((acc, b) => acc + b.drone_brood, 0),
+    pollen: boxTotals.reduce((acc, b) => acc + b.pollen, 0)
+  }
+
+  return {
+    boxes: boxTotals,
+    hive: hiveTotal
+  }
 }
 </script>
 
