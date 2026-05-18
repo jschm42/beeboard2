@@ -6,15 +6,23 @@ import os
 from app.core.config import settings
 from app.core.database import engine
 from app.models import Base
-from app.routers import auth, apiaries, locations, hives, logbook, stats, ai, admin
+from app.routers import auth, apiaries, locations, hives, logbook, stats, ai, admin, ai_insights
+from contextlib import asynccontextmanager
+from app.services.cron import start_scheduler
 
 # Initialize SQLite tables on startup
 Base.metadata.create_all(bind=engine)
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    start_scheduler()
+    yield
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description="FastAPI Backend for BeeBoard - Reactive Beekeeping Log",
-    version="2.0.0"
+    version="2.0.0",
+    lifespan=lifespan
 )
 
 # Configure CORS so that our Vue 3 SPA frontend can talk to the API
@@ -41,6 +49,7 @@ app.include_router(logbook.router, prefix="/api")
 app.include_router(stats.router, prefix="/api")
 app.include_router(ai.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
+app.include_router(ai_insights.router, prefix="/api")
 
 @app.get("/api/health")
 def health_check():

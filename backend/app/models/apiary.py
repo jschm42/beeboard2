@@ -17,6 +17,12 @@ class Apiary(UUIDTimeStampedModel):
         back_populates="apiary",
         cascade="all, delete-orphan"
     )
+    ai_insights: Mapped[List["AIInsight"]] = relationship(
+        "AIInsight",
+        back_populates="apiary",
+        cascade="all, delete-orphan",
+        order_by="desc(AIInsight.created_at)"
+    )
 
 class ApiaryMembership(UUIDTimeStampedModel):
     __tablename__ = "apiary_memberships"

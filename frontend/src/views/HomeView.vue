@@ -212,8 +212,20 @@
 
           </div>
 
-          <!-- Quick AI Assistant Banner -->
-          <div class="bg-gradient-to-r from-amber-500 to-amber-600 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden">
+          <!-- Quick AI Assistant / Insight Banner -->
+          <div v-if="latestInsight" class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 dark:from-dark-card dark:to-dark-bg dark:border-amber-900/50 rounded-3xl p-6 shadow-sm relative overflow-hidden">
+            <div class="flex items-center gap-2 mb-4">
+              <span class="bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 text-xs font-black uppercase px-3 py-1 rounded-full">KI-Analyse</span>
+              <span class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">{{ formatDate(latestInsight.created_at) }}</span>
+            </div>
+            <h3 class="text-xl font-black mb-3 text-gray-900 dark:text-white">{{ latestInsight.title }}</h3>
+            <div class="prose dark:prose-invert max-w-none text-sm text-gray-700 dark:text-gray-300 line-clamp-4 markdown-content mb-4" v-html="renderMarkdown(latestInsight.content)"></div>
+            <router-link to="/ai-insights" class="inline-block px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-sm rounded-xl shadow-sm hover-scale transition-colors">
+              Ganzer Beitrag & Mehr Insights 🐝
+            </router-link>
+          </div>
+          
+          <div v-else class="bg-gradient-to-r from-amber-500 to-amber-600 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden">
             <!-- Bee vector background design -->
             <div class="absolute right-0 bottom-0 opacity-10 transform translate-y-1/4 translate-x-1/4">
               <svg class="w-72 h-72 fill-white" viewBox="0 0 24 24"><path d="M12 2C11.5 2 11 2.2 10.6 2.6L7.4 5.8C6.9 6.3 6.9 7.1 7.4 7.6L8.4 8.6C7.6 9.8 7 11 7 12H5C3.3 12 2 13.3 2 15C2 16.7 3.3 18 5 18H7C7 19.1 7.9 20 9 20H15C16.1 20 17 19.1 17 18H19C20.7 18 22 16.7 22 15C22 13.3 20.7 12 19 12H17C17 11 16.4 9.8 15.6 8.6L16.6 7.6C17.1 7.1 17.1 6.3 16.6 5.8L13.4 2.6C13 2.2 12.5 2 12 2Z"/></svg>
@@ -223,8 +235,8 @@
             <p class="text-sm opacity-90 max-w-lg mb-4">
               Unser KI-Imkerassistent analysiert deine Standorte, die Volksstärken und Varroaverläufe, um dir kompetenten Rat zu geben oder gesprochene Notizen automatisch in Logbucheinträge umzuwandeln.
             </p>
-            <router-link to="/logbook" class="inline-block px-5 py-2.5 bg-white text-amber-700 font-extrabold text-sm rounded-xl shadow-md hover:bg-gray-100 hover-scale">
-              KI-Assistenten öffnen 🐝
+            <router-link to="/ai-insights" class="inline-block px-5 py-2.5 bg-white text-amber-700 font-extrabold text-sm rounded-xl shadow-md hover:bg-gray-100 hover-scale">
+              KI-Insights öffnen 🐝
             </router-link>
           </div>
 
@@ -293,6 +305,8 @@ import { useAuthStore } from '../stores/auth'
 import { useApiaryStore } from '../stores/apiary'
 import { useErrorStore } from '../stores/error'
 import axios from 'axios'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 
 const authStore = useAuthStore()
 const apiaryStore = useApiaryStore()
@@ -304,6 +318,7 @@ const hives = ref([])
 const recentEntries = ref([])
 const tasks = ref([])
 const newTaskTitle = ref('')
+const latestInsight = ref(null)
 
 const newApiaryName = ref('')
 const newApiaryNotes = ref('')
@@ -327,15 +342,17 @@ async function fetchDashboardData() {
     const apiaryId = apiaryStore.activeApiaryId
     
     // Fetch locations, hives, and entries in parallel
-    const [locRes, hiveRes, logRes] = await Promise.all([
+    const [locRes, hiveRes, logRes, insightRes] = await Promise.all([
       axios.get('/api/locations', { params: { apiary_id: apiaryId } }),
       axios.get('/api/hives', { params: { apiary_id: apiaryId } }),
-      axios.get('/api/logbook/entries', { params: { apiary_id: apiaryId } })
+      axios.get('/api/logbook/entries', { params: { apiary_id: apiaryId } }),
+      axios.get('/api/ai-insights/latest', { params: { apiary_id: apiaryId } }).catch(() => ({ data: null }))
     ])
     
     locations.value = locRes.data
     hives.value = hiveRes.data
     recentEntries.value = logRes.data.slice(0, 5) // recent 5 entries
+    latestInsight.value = insightRes.data
 
     // Calculate biological aggregates from recent hive inspections
     calculateBiologicalAggregates(logRes.data)
@@ -522,6 +539,12 @@ function formatDate(dateStr) {
 
 function formatNumber(num) {
   return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(num)
+}
+
+function renderMarkdown(text) {
+  if (!text) return ''
+  const html = marked(text, { breaks: true })
+  return DOMPurify.sanitize(html)
 }
 
 function getEntryTypeName(type) {

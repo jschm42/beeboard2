@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: Optional[str] = None
     OPENROUTER_API_KEY: Optional[str] = None
     ANTHROPIC_API_KEY: Optional[str] = None
+    OPENWEATHERMAP_API_KEY: Optional[str] = None
     
     # Uploads Configuration
     UPLOAD_DIR: str = "./data/uploads"

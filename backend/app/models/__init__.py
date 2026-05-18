@@ -13,6 +13,7 @@ from app.models.logbook import (
     VarroaTreatmentDetail, 
     LogEntryImage
 )
+from app.models.ai_insight import AIInsight
 
 # Export all models for easier importing
 __all__ = [
@@ -32,5 +33,6 @@ __all__ = [
     "InspectionFrame",
     "VarroaCountDetail",
     "VarroaTreatmentDetail",
-    "LogEntryImage"
+    "LogEntryImage",
+    "AIInsight"
 ]

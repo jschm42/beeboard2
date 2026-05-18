@@ -127,7 +127,8 @@ const navItems = [
   { name: 'Standorte', path: '/locations' },
   { name: 'Bienenvölker', path: '/hives' },
   { name: 'Logbuch', path: '/logbook' },
-  { name: 'Statistiken', path: '/stats' }
+  { name: 'Statistiken', path: '/stats' },
+  { name: 'AI Insights', path: '/ai-insights' }
 ]
 
 const filteredNavItems = computed(() => {
