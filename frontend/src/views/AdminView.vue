@@ -58,6 +58,17 @@
       >
         🤖 KI-Assistent & Wetter
       </button>
+      <button 
+        @click="activeTab = 'frame-types'"
+        class="pb-4 text-sm font-bold tracking-wide border-b-2 transition-all duration-200"
+        :class="[
+          activeTab === 'frame-types' 
+            ? 'border-primary text-primary' 
+            : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+        ]"
+      >
+        📏 Wabenmaße
+      </button>
     </div>
 
     <!-- Tab Content: User Management -->
@@ -292,11 +303,174 @@
       </div>
     </div>
 
+    <!-- Tab Content: Frame Types Management -->
+    <div v-if="activeTab === 'frame-types'" class="space-y-6">
+      <div class="flex justify-between items-center bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm animate-scale">
+        <div>
+          <h2 class="text-lg font-bold text-gray-900 dark:text-white">📏 Wabenmaße & Multiplikatoren</h2>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Verwalte Wabenmaße und definiere deren Umrechnungsfaktoren für Honig-, Brut- und Bienenvolumen bei der Beuteninspektion.</p>
+        </div>
+        <button 
+          @click="openCreateFrameType" 
+          class="px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl shadow-md flex items-center space-x-1 hover-scale"
+        >
+          <span>+ Neues Maß</span>
+        </button>
+      </div>
+
+      <!-- Frame Type Form (embedded/inline) -->
+      <div v-if="showFrameTypeForm" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
+        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">
+          {{ isEditFrameType ? '📏 Wabenmaß bearbeiten' : '📏 Neues Wabenmaß anlegen' }}
+        </h3>
+        <form @submit.prevent="submitFrameTypeForm" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Bezeichnung *</label>
+              <input 
+                v-model="formFrameType.name" 
+                type="text" 
+                required 
+                placeholder="z.B. Dadant Blatt, Zander..." 
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div class="flex items-center pt-5">
+              <label class="flex items-center space-x-2 cursor-pointer">
+                <input 
+                  v-model="formFrameType.is_default" 
+                  type="checkbox" 
+                  class="rounded text-primary focus:ring-primary h-4 w-4"
+                />
+                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Als Standard für neue Völker vorauswählen</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Brut-Multiplikator *</label>
+              <input 
+                v-model.number="formFrameType.brood_multiplier" 
+                type="number" 
+                step="0.01" 
+                min="0.1" 
+                required 
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Futter-Multiplikator *</label>
+              <input 
+                v-model.number="formFrameType.food_multiplier" 
+                type="number" 
+                step="0.01" 
+                min="0.1" 
+                required 
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Bienen-Multiplikator *</label>
+              <input 
+                v-model.number="formFrameType.bee_multiplier" 
+                type="number" 
+                step="0.01" 
+                min="0.1" 
+                required 
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+              />
+            </div>
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-2">
+            <button 
+              type="button" 
+              @click="showFrameTypeForm = false" 
+              class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-100 dark:hover:bg-dark-border text-gray-700 dark:text-gray-300"
+            >
+              Abbrechen
+            </button>
+            <button 
+              type="submit" 
+              class="px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl shadow-md hover-scale"
+              :disabled="savingFrameType"
+            >
+              Speichern
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Frame Types Table -->
+      <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl overflow-hidden shadow-sm">
+        <div v-if="loadingFrameTypes" class="flex flex-col items-center justify-center py-20">
+          <svg class="animate-spin h-8 w-8 text-primary mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span class="text-xs text-gray-400 font-bold">Lade Wabenmaße...</span>
+        </div>
+
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
+                <th class="px-6 py-4">Bezeichnung</th>
+                <th class="px-6 py-4 text-center">Brut-Faktor</th>
+                <th class="px-6 py-4 text-center">Futter-Faktor</th>
+                <th class="px-6 py-4 text-center">Bienen-Faktor</th>
+                <th class="px-6 py-4 text-center">Standard</th>
+                <th class="px-6 py-4 text-right">Aktionen</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-dark-border text-sm">
+              <tr 
+                v-for="ft in frameTypes" 
+                :key="ft.id" 
+                class="hover:bg-gray-50/50 dark:hover:bg-dark-bg/30 transition-colors duration-150"
+              >
+                <td class="px-6 py-4 font-bold text-gray-800 dark:text-gray-200">
+                  {{ ft.name }}
+                </td>
+                <td class="px-6 py-4 text-center font-mono text-xs text-gray-600 dark:text-gray-300">
+                  x{{ ft.brood_multiplier.toFixed(2) }}
+                </td>
+                <td class="px-6 py-4 text-center font-mono text-xs text-gray-600 dark:text-gray-300">
+                  x{{ ft.food_multiplier.toFixed(2) }}
+                </td>
+                <td class="px-6 py-4 text-center font-mono text-xs text-gray-600 dark:text-gray-300">
+                  x{{ ft.bee_multiplier.toFixed(2) }}
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <span v-if="ft.is_default" class="text-amber-500 font-bold text-lg" title="Standardmaß">★</span>
+                  <span v-else class="text-gray-300 dark:text-gray-700">-</span>
+                </td>
+                <td class="px-6 py-4 text-right space-x-2">
+                  <button 
+                    @click="openEditFrameType(ft)" 
+                    class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border rounded-lg transition-all duration-150 inline-flex"
+                    title="Bearbeiten"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                  </button>
+                  <button 
+                    @click="deleteFrameType(ft)" 
+                    class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all duration-150 inline-flex"
+                    title="Löschen"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, reactive } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import axios from 'axios'
 
@@ -470,9 +644,104 @@ const sortedUsers = computed(() => {
   })
 })
 
+// Frame Types States
+const frameTypes = ref([])
+const loadingFrameTypes = ref(false)
+const savingFrameType = ref(false)
+const showFrameTypeForm = ref(false)
+const isEditFrameType = ref(false)
+const editingFrameTypeId = ref(null)
+
+const formFrameType = reactive({
+  name: '',
+  is_default: false,
+  brood_multiplier: 1.0,
+  food_multiplier: 1.0,
+  bee_multiplier: 1.0
+})
+
+async function fetchFrameTypes() {
+  loadingFrameTypes.value = true
+  try {
+    const res = await axios.get('/api/admin/frame-types')
+    frameTypes.value = res.data
+  } catch (err) {
+    console.error('Fetch frame types error:', err)
+    showToast('Fehler beim Laden der Wabenmaße', 'error')
+  } finally {
+    loadingFrameTypes.value = false
+  }
+}
+
+function openCreateFrameType() {
+  isEditFrameType.value = false
+  editingFrameTypeId.value = null
+  formFrameType.name = ''
+  formFrameType.is_default = false
+  formFrameType.brood_multiplier = 1.0
+  formFrameType.food_multiplier = 1.0
+  formFrameType.bee_multiplier = 1.0
+  showFrameTypeForm.value = true
+}
+
+function openEditFrameType(ft) {
+  isEditFrameType.value = true
+  editingFrameTypeId.value = ft.id
+  formFrameType.name = ft.name
+  formFrameType.is_default = ft.is_default
+  formFrameType.brood_multiplier = ft.brood_multiplier
+  formFrameType.food_multiplier = ft.food_multiplier
+  formFrameType.bee_multiplier = ft.bee_multiplier
+  showFrameTypeForm.value = true
+}
+
+async function submitFrameTypeForm() {
+  savingFrameType.value = true
+  try {
+    const payload = {
+      name: formFrameType.name,
+      is_default: formFrameType.is_default,
+      brood_multiplier: Number(formFrameType.brood_multiplier),
+      food_multiplier: Number(formFrameType.food_multiplier),
+      bee_multiplier: Number(formFrameType.bee_multiplier)
+    }
+    if (isEditFrameType.value) {
+      await axios.put(`/api/admin/frame-types/${editingFrameTypeId.value}`, payload)
+      showToast(`Wabenmaß '${payload.name}' erfolgreich aktualisiert.`)
+    } else {
+      await axios.post('/api/admin/frame-types', payload)
+      showToast(`Wabenmaß '${payload.name}' erfolgreich erstellt.`)
+    }
+    showFrameTypeForm.value = false
+    await fetchFrameTypes()
+  } catch (err) {
+    console.error('Save frame type error:', err)
+    const errDetail = err.response?.data?.detail || 'Fehler beim Speichern des Wabenmaßes.'
+    showToast(errDetail, 'error')
+  } finally {
+    savingFrameType.value = false
+  }
+}
+
+async function deleteFrameType(ft) {
+  if (!confirm(`Möchtest du das Wabenmaß '${ft.name}' wirklich löschen?`)) {
+    return
+  }
+  try {
+    await axios.delete(`/api/admin/frame-types/${ft.id}`)
+    showToast(`Wabenmaß '${ft.name}' erfolgreich gelöscht.`)
+    await fetchFrameTypes()
+  } catch (err) {
+    console.error('Delete frame type error:', err)
+    const errDetail = err.response?.data?.detail || 'Fehler beim Löschen des Wabenmaßes.'
+    showToast(errDetail, 'error')
+  }
+}
+
 onMounted(() => {
   fetchUsers()
   fetchLLMConfig()
+  fetchFrameTypes()
 })
 </script>
 

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from datetime import date
 from typing import List, Optional
 import os
@@ -114,15 +114,37 @@ def delete_session(
 
 @router.get("/entries", response_model=List[LogEntryOut])
 def list_entries(
-    apiary_id: str = Query(..., description="Scope search to a specific apiary"),
+    apiary_id: Optional[str] = Query(None, description="Scope search to a specific apiary"),
     hive_id: Optional[str] = Query(None, description="Filter by hive"),
     session_id: Optional[str] = Query(None, description="Filter by session"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Lists entries with optional hive or session filtering, ordered by date desc."""
-    check_access(apiary_id, current_user, db)
-    query = db.query(LogEntry).filter(LogEntry.apiary_id == apiary_id)
+    """Lists entries with optional hive, session, or apiary filtering, ordered by date desc."""
+    if apiary_id:
+        check_access(apiary_id, current_user, db)
+        query = db.query(LogEntry).filter(LogEntry.apiary_id == apiary_id)
+    else:
+        if current_user.role == "SYSTEM_ADMIN":
+            query = db.query(LogEntry)
+        else:
+            from app.models.apiary import Apiary, ApiaryMembership
+            authorized_apiary_ids = [
+                a.id for a in db.query(Apiary).join(ApiaryMembership).filter(
+                    ApiaryMembership.user_id == current_user.id
+                ).all()
+            ]
+            query = db.query(LogEntry).filter(LogEntry.apiary_id.in_(authorized_apiary_ids))
+
+    query = query.options(
+        joinedload(LogEntry.created_by),
+        joinedload(LogEntry.apiary),
+        joinedload(LogEntry.hive).joinedload(Hive.location),
+        joinedload(LogEntry.inspection_detail).joinedload(InspectionDetail.frames),
+        joinedload(LogEntry.varroa_count_detail),
+        joinedload(LogEntry.varroa_treatment_detail),
+        joinedload(LogEntry.images)
+    )
     
     if hive_id:
         query = query.filter(LogEntry.hive_id == hive_id)

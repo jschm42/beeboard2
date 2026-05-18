@@ -93,3 +93,113 @@ def update_llm_config(
     db.commit()
     db.refresh(config)
     return config
+
+# --------------------
+# FRAME TYPE ENDPOINTS
+# --------------------
+from app.models.administration import FrameType
+from app.schemas.admin import FrameTypeCreate, FrameTypeOut
+from app.models.hive import Hive, HiveBox
+
+@router.get("/frame-types", response_model=List[FrameTypeOut])
+def admin_list_frame_types(
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin)
+):
+    """Lists all frame types."""
+    return db.query(FrameType).order_by(FrameType.name).all()
+
+@router.post("/frame-types", response_model=FrameTypeOut, status_code=status.HTTP_201_CREATED)
+def admin_create_frame_type(
+    payload: FrameTypeCreate,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin)
+):
+    """Creates a new frame type."""
+    # Check duplicate
+    existing = db.query(FrameType).filter(FrameType.name.ilike(payload.name)).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Ein Wabenmaß mit diesem Namen existiert bereits."
+        )
+        
+    if payload.is_default:
+        db.query(FrameType).update({FrameType.is_default: False})
+        
+    new_ft = FrameType(
+        name=payload.name,
+        is_default=payload.is_default,
+        brood_multiplier=payload.brood_multiplier,
+        food_multiplier=payload.food_multiplier,
+        bee_multiplier=payload.bee_multiplier
+    )
+    db.add(new_ft)
+    db.commit()
+    db.refresh(new_ft)
+    return new_ft
+
+@router.put("/frame-types/{frame_type_id}", response_model=FrameTypeOut)
+def admin_update_frame_type(
+    frame_type_id: str,
+    payload: FrameTypeCreate,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin)
+):
+    """Updates multipliers and default status of a frame type."""
+    ft = db.query(FrameType).filter(FrameType.id == frame_type_id).first()
+    if not ft:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Wabenmaß nicht gefunden."
+        )
+        
+    # Check duplicate name if changed
+    if payload.name.lower() != ft.name.lower():
+        existing = db.query(FrameType).filter(FrameType.name.ilike(payload.name)).first()
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Ein Wabenmaß mit diesem Namen existiert bereits."
+            )
+            
+    if payload.is_default and not ft.is_default:
+        db.query(FrameType).update({FrameType.is_default: False})
+        
+    ft.name = payload.name
+    ft.is_default = payload.is_default
+    ft.brood_multiplier = payload.brood_multiplier
+    ft.food_multiplier = payload.food_multiplier
+    ft.bee_multiplier = payload.bee_multiplier
+    
+    db.commit()
+    db.refresh(ft)
+    return ft
+
+@router.delete("/frame-types/{frame_type_id}", status_code=status.HTTP_204_NO_CONTENT)
+def admin_delete_frame_type(
+    frame_type_id: str,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin)
+):
+    """Deletes a frame type if not referenced by any hive or box."""
+    ft = db.query(FrameType).filter(FrameType.id == frame_type_id).first()
+    if not ft:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Wabenmaß nicht gefunden."
+        )
+        
+    # Check if used by hives or boxes
+    hives_count = db.query(Hive).filter(Hive.frame_type_id == frame_type_id).count()
+    boxes_count = db.query(HiveBox).filter(HiveBox.frame_type_id == frame_type_id).count()
+    
+    if hives_count > 0 or boxes_count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Dieses Wabenmaß wird noch von Bienenvölkern oder Zargen verwendet und kann nicht gelöscht werden."
+        )
+        
+    db.delete(ft)
+    db.commit()
+    return

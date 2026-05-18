@@ -96,10 +96,42 @@ class LogEntryCreate(LogEntryBase):
     varroa_count_detail: Optional[VarroaCountDetailCreate] = None
     varroa_treatment_detail: Optional[VarroaTreatmentDetailCreate] = None
 
+class LogEntryUserOut(BaseModel):
+    id: str
+    username: str
+
+    class Config:
+        from_attributes = True
+
+class LogEntryApiaryOut(BaseModel):
+    id: str
+    name: str
+
+    class Config:
+        from_attributes = True
+
+class LogEntryLocationOut(BaseModel):
+    id: str
+    name: str
+
+    class Config:
+        from_attributes = True
+
+class LogEntryHiveOut(BaseModel):
+    id: str
+    name: str
+    location: Optional[LogEntryLocationOut] = None
+
+    class Config:
+        from_attributes = True
+
 class LogEntryOut(LogEntryBase):
     id: str
     apiary_id: str
     created_by_id: Optional[str] = None
+    created_by: Optional[LogEntryUserOut] = None
+    apiary: Optional[LogEntryApiaryOut] = None
+    hive: Optional[LogEntryHiveOut] = None
     inspection_detail: Optional[InspectionDetailOut] = None
     varroa_count_detail: Optional[VarroaCountDetailOut] = None
     varroa_treatment_detail: Optional[VarroaTreatmentDetailOut] = None

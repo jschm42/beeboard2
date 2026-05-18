@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 
 from app.core.database import get_db
@@ -19,7 +19,7 @@ def list_locations(
 ):
     """Lists all locations for a specific authorized apiary."""
     check_access(apiary_id, current_user, db)
-    return db.query(Location).filter(
+    return db.query(Location).options(joinedload(Location.hives)).filter(
         Location.apiary_id == apiary_id
     ).order_by(Location.name).all()
 

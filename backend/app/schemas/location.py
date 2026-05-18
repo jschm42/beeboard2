@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -12,9 +12,18 @@ class LocationBase(BaseModel):
 class LocationCreate(LocationBase):
     pass
 
+class LocationHiveOut(BaseModel):
+    id: str
+    name: str
+    is_active: bool
+
+    class Config:
+        from_attributes = True
+
 class LocationOut(LocationBase):
     id: str
     apiary_id: str
+    hives: List[LocationHiveOut] = []
     created_at: datetime
     updated_at: datetime
 
