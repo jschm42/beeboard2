@@ -26,12 +26,37 @@ class AIInsightSchema(BaseModel):
 @router.get("", response_model=List[AIInsightSchema])
 def list_insights(
     apiary_id: str = Query(...),
+    start_date: Optional[datetime] = Query(None, description="Filter: nur Insights ab diesem Datum"),
+    end_date: Optional[datetime] = Query(None, description="Filter: nur Insights bis zu diesem Datum"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     check_access(apiary_id, current_user, db)
-    insights = db.query(AIInsight).filter(AIInsight.apiary_id == apiary_id).order_by(AIInsight.created_at.desc()).all()
+    query = db.query(AIInsight).filter(AIInsight.apiary_id == apiary_id)
+
+    if start_date:
+        query = query.filter(AIInsight.created_at >= start_date)
+    if end_date:
+        query = query.filter(AIInsight.created_at <= end_date)
+
+    insights = query.order_by(AIInsight.created_at.desc()).all()
     return insights
+
+
+@router.delete("/{insight_id}", status_code=204)
+def delete_insight(
+    insight_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    insight = db.query(AIInsight).filter(AIInsight.id == insight_id).first()
+    if not insight:
+        raise HTTPException(status_code=404, detail="Insight nicht gefunden")
+
+    check_access(insight.apiary_id, current_user, db)
+    db.delete(insight)
+    db.commit()
+    return None
 
 @router.get("/latest", response_model=Optional[AIInsightSchema])
 def get_latest_insight(

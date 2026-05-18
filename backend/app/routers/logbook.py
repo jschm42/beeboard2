@@ -12,7 +12,7 @@ from app.core.config import settings
 from app.models.user import User
 from app.models.hive import Hive, HiveBox
 from app.models.logbook import (
-    LogSession, LogEntry, InspectionDetail, InspectionFrame,
+    LogSession, LogEntry, InspectionDetail, InspectionBox,
     VarroaCountDetail, VarroaTreatmentDetail, LogEntryImage
 )
 from app.schemas.logbook import (
@@ -171,7 +171,7 @@ def list_entries(
         joinedload(LogEntry.created_by),
         joinedload(LogEntry.apiary),
         joinedload(LogEntry.hive).joinedload(Hive.location),
-        joinedload(LogEntry.inspection_detail).joinedload(InspectionDetail.frames),
+            joinedload(LogEntry.inspection_detail).joinedload(InspectionDetail.boxes),
         joinedload(LogEntry.varroa_count_detail),
         joinedload(LogEntry.varroa_treatment_detail),
         joinedload(LogEntry.images)
@@ -215,33 +215,31 @@ def create_entry(
     db.commit()
     db.refresh(new_entry)
 
-    # 1. Inspection details
+    # 1. Inspection details (box-based)
     if entry_in.entry_type == "INSPECTION" and entry_in.inspection_detail:
         detail = InspectionDetail(log_entry_id=new_entry.id)
         db.add(detail)
         db.commit()
         db.refresh(detail)
-        
-        for frame_in in entry_in.inspection_detail.frames:
-            b_mult, f_mult, bee_mult, dr_mult, dr_b_mult, p_mult = get_frame_multipliers(hive, frame_in.frame_number)
-            frame = InspectionFrame(
+
+        for box_in in entry_in.inspection_detail.boxes:
+            box = InspectionBox(
                 inspection_id=detail.id,
-                frame_number=frame_in.frame_number,
-                side=frame_in.side,
-                brood_eighths=frame_in.brood_eighths,
-                food_eighths=frame_in.food_eighths,
-                bee_eighths=frame_in.bee_eighths,
-                drone_eighths=frame_in.drone_eighths,
-                drone_brood_eighths=frame_in.drone_brood_eighths,
-                pollen_eighths=frame_in.pollen_eighths,
-                brood_multiplier=b_mult,
-                food_multiplier=f_mult,
-                bee_multiplier=bee_mult,
-                drone_multiplier=dr_mult,
-                drone_brood_multiplier=dr_b_mult,
-                pollen_multiplier=p_mult
+                box_index=box_in.box_index,
+                brood_total=box_in.brood_total,
+                food_total=box_in.food_total,
+                bee_total=box_in.bee_total,
+                drone_total=box_in.drone_total,
+                drone_brood_total=box_in.drone_brood_total,
+                pollen_total=box_in.pollen_total,
+                brood_eighths=box_in.brood_eighths,
+                food_eighths=box_in.food_eighths,
+                bee_eighths=box_in.bee_eighths,
+                drone_eighths=box_in.drone_eighths,
+                drone_brood_eighths=box_in.drone_brood_eighths,
+                pollen_eighths=box_in.pollen_eighths,
             )
-            db.add(frame)
+            db.add(box)
         db.commit()
 
     # 2. Varroa counts
@@ -294,46 +292,38 @@ def update_entry(
     entry.notes = entry_in.notes
     entry.session_id = entry_in.session_id
     
-    # 1. Update Inspection details
+    # 1. Update Inspection details (box-based)
     if entry.entry_type == "INSPECTION":
-        # Delete old frames & detail if we need to recreate, or overwrite
+        # Delete old boxes & detail if we need to recreate, or overwrite
         if entry.inspection_detail:
-            db.query(InspectionFrame).filter(InspectionFrame.inspection_id == entry.inspection_detail.id).delete()
+            db.query(InspectionBox).filter(InspectionBox.inspection_id == entry.inspection_detail.id).delete()
             db.delete(entry.inspection_detail)
             db.commit()
-            
+
         if entry_in.inspection_detail:
             detail = InspectionDetail(log_entry_id=entry.id)
             db.add(detail)
             db.commit()
             db.refresh(detail)
-            
-            # Fetch hive with boxes/frame_types preloaded
-            hive = db.query(Hive).options(
-                joinedload(Hive.boxes).joinedload(HiveBox.frame_type),
-                joinedload(Hive.frame_type)
-            ).filter(Hive.id == entry.hive_id).first()
-            
-            for frame_in in entry_in.inspection_detail.frames:
-                b_mult, f_mult, bee_mult, dr_mult, dr_b_mult, p_mult = get_frame_multipliers(hive, frame_in.frame_number)
-                frame = InspectionFrame(
+
+            for box_in in entry_in.inspection_detail.boxes:
+                box = InspectionBox(
                     inspection_id=detail.id,
-                    frame_number=frame_in.frame_number,
-                    side=frame_in.side,
-                    brood_eighths=frame_in.brood_eighths,
-                    food_eighths=frame_in.food_eighths,
-                    bee_eighths=frame_in.bee_eighths,
-                    drone_eighths=frame_in.drone_eighths,
-                    drone_brood_eighths=frame_in.drone_brood_eighths,
-                    pollen_eighths=frame_in.pollen_eighths,
-                    brood_multiplier=b_mult,
-                    food_multiplier=f_mult,
-                    bee_multiplier=bee_mult,
-                    drone_multiplier=dr_mult,
-                    drone_brood_multiplier=dr_b_mult,
-                    pollen_multiplier=p_mult
+                    box_index=box_in.box_index,
+                    brood_total=box_in.brood_total,
+                    food_total=box_in.food_total,
+                    bee_total=box_in.bee_total,
+                    drone_total=box_in.drone_total,
+                    drone_brood_total=box_in.drone_brood_total,
+                    pollen_total=box_in.pollen_total,
+                    brood_eighths=box_in.brood_eighths,
+                    food_eighths=box_in.food_eighths,
+                    bee_eighths=box_in.bee_eighths,
+                    drone_eighths=box_in.drone_eighths,
+                    drone_brood_eighths=box_in.drone_brood_eighths,
+                    pollen_eighths=box_in.pollen_eighths,
                 )
-                db.add(frame)
+                db.add(box)
             db.commit()
 
     # 2. Update Varroa counts
