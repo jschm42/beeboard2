@@ -163,9 +163,11 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
 import { useApiaryStore } from '../stores/apiary'
+import { useErrorStore } from '../stores/error'
 import axios from 'axios'
 
 const apiaryStore = useApiaryStore()
+const errorStore = useErrorStore()
 
 const activeMode = ref('chat') // 'chat' or 'draft'
 const chatStream = ref(null)
@@ -240,8 +242,7 @@ async function generateDraft() {
     const response = await axios.post('/api/ai/draft', { text: draftText.value.trim() })
     generatedDraft.value = response.data.draft
   } catch (err) {
-    console.error('AI drafting failed:', err)
-    alert('Entschuldigung, das Mitschriften-Parsing ist fehlgeschlagen.')
+    errorStore.showError('Entschuldigung, das Mitschriften-Parsing ist fehlgeschlagen.', err, 'KI-Parsing fehlgeschlagen')
   } finally {
     draftLoading.value = false
   }

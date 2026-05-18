@@ -291,10 +291,12 @@
 import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useApiaryStore } from '../stores/apiary'
+import { useErrorStore } from '../stores/error'
 import axios from 'axios'
 
 const authStore = useAuthStore()
 const apiaryStore = useApiaryStore()
+const errorStore = useErrorStore()
 
 const loading = ref(false)
 const locations = ref([])
@@ -326,8 +328,8 @@ async function fetchDashboardData() {
     
     // Fetch locations, hives, and entries in parallel
     const [locRes, hiveRes, logRes] = await Promise.all([
-      axios.get('/api/locations/', { params: { apiary_id: apiaryId } }),
-      axios.get('/api/hives/', { params: { apiary_id: apiaryId } }),
+      axios.get('/api/locations', { params: { apiary_id: apiaryId } }),
+      axios.get('/api/hives', { params: { apiary_id: apiaryId } }),
       axios.get('/api/logbook/entries', { params: { apiary_id: apiaryId } })
     ])
     
@@ -506,7 +508,7 @@ async function createApiary() {
     newApiaryNotes.value = ''
     window.location.reload()
   } catch (err) {
-    alert(err.response?.data?.detail || 'Fehler beim Erstellen der Imkerei.')
+    errorStore.showError('Fehler beim Erstellen der Imkerei.', err, 'Imkerei anlegen')
   }
 }
 

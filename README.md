@@ -29,11 +29,40 @@ BeeBoard is organized as a clean **monorepo**:
 
 ## 🛠️ Getting Started: Step-by-Step Guide
 
-Follow the steps below to set up and run the entire application on your local machine.
+Follow the quick automated setup below to get everything up and running in seconds, or scroll down for the manual setup steps.
 
 ---
 
-### 1. Backend Setup (FastAPI)
+### 🚀 Quick Automated Setup (Recommended)
+
+We provide interactive setup scripts for both **PowerShell (Windows)** and **Bash (macOS / Linux / Git Bash)**. These scripts will:
+1. Verify your Python installation (Python 3.12+).
+2. Create a Python Virtual Environment (`.venv`) inside the `backend/` directory.
+3. Upgrade `pip` and install all required dependencies from `backend/requirements.txt`.
+4. Copy the environment configuration template `backend/.env.example` to `backend/.env`.
+5. Automatically generate a secure, random `SECRET_KEY` for JWT authentication.
+6. Interactively prompt you for your `GEMINI_API_KEY` (optional) and save it directly to `.env`.
+
+#### 💻 On Windows (PowerShell)
+Open a PowerShell terminal in the repository root and run:
+```powershell
+.\scripts\setup.ps1
+```
+*Note: If script execution is blocked on your system, you can bypass it for this run with:*
+`PowerShell -ExecutionPolicy Bypass -File .\scripts\setup.ps1`
+
+#### 🐧 On macOS / Linux / Git Bash
+Open a terminal in the repository root and run:
+```bash
+./scripts/setup.sh
+```
+
+**Next Steps:**
+Once the setup script finishes, you are ready to seed the database and start the backend! Go to [🌱 Seed the Database](#-seed-the-database) below and then jump straight to the [2. Frontend Setup (Vue 3 + Vite)](#2-frontend-setup-vue-3--vite) guide!
+
+---
+
+### 1. Manual Backend Setup (Alternative)
 
 The backend is built with Python 3.12+ (Python 3.13 recommended) and FastAPI.
 

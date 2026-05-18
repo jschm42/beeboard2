@@ -500,10 +500,12 @@
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
 import { useApiaryStore } from '../stores/apiary'
+import { useErrorStore } from '../stores/error'
 import AIChatPane from '../components/AIChatPane.vue'
 import axios from 'axios'
 
 const apiaryStore = useApiaryStore()
+const errorStore = useErrorStore()
 
 const sessions = ref([])
 const hives = ref([])
@@ -756,8 +758,7 @@ async function submitEntryForm() {
     showEntryModal.value = false
     await fetchEntries()
   } catch (err) {
-    console.error('Submit log entry failed:', err)
-    alert(err.response?.data?.detail || 'Fehler beim Speichern des Eintrags.')
+    errorStore.showError('Fehler beim Speichern des Eintrags.', err, 'Eintrag speichern')
   }
 }
 
@@ -786,8 +787,7 @@ async function uploadEntryImage(event, entryId) {
     })
     await fetchEntries()
   } catch (err) {
-    console.error('Upload image failed:', err)
-    alert(err.response?.data?.detail || 'Bilderupload fehlgeschlagen.')
+    errorStore.showError('Bilderupload fehlgeschlagen.', err, 'Bilder-Upload')
   }
 }
 

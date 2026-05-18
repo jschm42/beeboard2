@@ -222,7 +222,7 @@ onMounted(async () => {
 async function fetchLocations() {
   loading.value = true
   try {
-    const response = await axios.get('/api/locations/', {
+    const response = await axios.get('/api/locations', {
       params: { apiary_id: apiaryStore.activeApiaryId }
     })
     locations.value = response.data
@@ -277,7 +277,7 @@ async function submitForm() {
       await axios.put(`/api/locations/${editingId.value}`, payload)
       showAlert('Standort erfolgreich aktualisiert!', 'success')
     } else {
-      await axios.post('/api/locations/', payload, {
+      await axios.post('/api/locations', payload, {
         params: { apiary_id: apiaryStore.activeApiaryId }
       })
       showAlert('Standort erfolgreich angelegt!', 'success')

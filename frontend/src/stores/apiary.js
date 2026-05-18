@@ -27,7 +27,7 @@ export const useApiaryStore = defineStore('apiary', {
       this.loading = true
       this.error = null
       try {
-        const response = await axios.get('/api/apiaries/')
+        const response = await axios.get('/api/apiaries')
         this.apiaries = response.data
         
         // If there's no active apiary selected, default to the first one available
@@ -57,7 +57,7 @@ export const useApiaryStore = defineStore('apiary', {
       this.loading = true
       this.error = null
       try {
-        const response = await axios.post('/api/apiaries/', { name, notes })
+        const response = await axios.post('/api/apiaries', { name, notes })
         await this.fetchApiaries()
         // Select the newly created apiary
         if (response.data?.id) {
@@ -77,7 +77,7 @@ export const useApiaryStore = defineStore('apiary', {
       this.loading = true
       this.error = null
       try {
-        const response = await axios.post(`/api/apiaries/${this.activeApiaryId}/members/`, {
+        const response = await axios.post(`/api/apiaries/${this.activeApiaryId}/members`, {
           username_or_email: usernameOrEmail,
           role: role
         })
