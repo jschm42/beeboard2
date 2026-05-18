@@ -1,0 +1,36 @@
+import os
+from pathlib import Path
+from typing import Optional
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+class Settings(BaseSettings):
+    PROJECT_NAME: str = "BeeBoard API"
+    SECRET_KEY: str = "supersecretkeychangeinproduction1234567890"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
+
+    # Database
+    DATABASE_URL: str = "sqlite:///./data/beeboard.db"
+
+    # LiteLLM Configuration
+    LITELLM_MODEL: str = "gemini/gemini-2.5-flash"
+    GEMINI_API_KEY: Optional[str] = None
+    OPENAI_API_KEY: Optional[str] = None
+    
+    # Uploads Configuration
+    UPLOAD_DIR: str = "./data/uploads"
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore"
+    )
+
+settings = Settings()
+
+# Ensure directories exist
+os.makedirs("./data", exist_ok=True)
+os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+os.makedirs(os.path.join(settings.UPLOAD_DIR, "hives/photos"), exist_ok=True)
+os.makedirs(os.path.join(settings.UPLOAD_DIR, "logbook/images"), exist_ok=True)
+os.makedirs(os.path.join(settings.UPLOAD_DIR, "logbook/thumbnails"), exist_ok=True)

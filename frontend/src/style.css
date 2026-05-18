@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #f59e0b; /* Amber 500 (Honey Gold) */
+  --color-primary-hover: #d97706; /* Amber 600 */
+  --color-primary-light: #fef3c7; /* Amber 100 */
+  
+  --color-dark-bg: #121214;
+  --color-dark-card: #1c1c1f;
+  --color-dark-border: #2d2d34;
+  
+  --font-sans: "Outfit", "Inter", system-ui, -apple-system, sans-serif;
+}
+
+/* Custom styles and smooth animations */
+@layer base {
+  html, body {
+    @apply bg-gray-50 text-gray-900 transition-colors duration-300 font-sans antialiased m-0 p-0 min-h-screen;
+  }
+  
+  html.dark body {
+    @apply bg-dark-bg text-gray-100;
+  }
+}
+
+/* Custom micro-animations */
+.hover-scale {
+  @apply transition-all duration-200 hover:scale-[1.02] active:scale-[0.98];
+}
+
+.glass {
+  @apply bg-white/70 backdrop-blur-md border border-white/20;
+}
+
+.dark .glass {
+  @apply bg-dark-card/70 backdrop-blur-md border border-dark-border/50;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full hover:bg-gray-400 transition-colors duration-150;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-dark-border rounded-full hover:bg-gray-600;
+}

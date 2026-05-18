@@ -1,0 +1,565 @@
+<template>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Welcome Header -->
+    <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+      <div>
+        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+          Hallo, {{ authStore.user?.first_name || authStore.user?.username }}!
+        </h1>
+        <p v-if="apiaryStore.activeApiary" class="text-gray-500 dark:text-gray-400 mt-1">
+          Willkommen zurück auf deinem Bienenstand. Hier ist der aktuelle Zustand der Imkerei <span class="font-bold text-primary">{{ apiaryStore.activeApiary?.name }}</span>.
+        </p>
+        <p v-else class="text-gray-500 dark:text-gray-400 mt-1">
+          Willkommen auf deinem Bienenstand. Richte bitte deine Imkerei ein, um mit BeeBoard zu starten.
+        </p>
+      </div>
+      <div v-if="apiaryStore.activeApiary" class="flex items-center space-x-2 bg-primary/10 border border-primary/20 text-primary px-4 py-2 rounded-2xl">
+        <svg class="w-5 h-5 fill-primary" viewBox="0 0 24 24"><path d="M12 2C11.5 2 11 2.2 10.6 2.6L7.4 5.8C6.9 6.3 6.9 7.1 7.4 7.6L8.4 8.6C7.6 9.8 7 11 7 12H5C3.3 12 2 13.3 2 15C2 16.7 3.3 18 5 18H7C7 19.1 7.9 20 9 20H15C16.1 20 17 19.1 17 18H19C20.7 18 22 16.7 22 15C22 13.3 20.7 12 19 12H17C17 11 16.4 9.8 15.6 8.6L16.6 7.6C17.1 7.1 17.1 6.3 16.6 5.8L13.4 2.6C13 2.2 12.5 2 12 2M12 4L14.4 6.4L13 7.8L12.5 7.3C12.1 6.9 11.3 6.9 10.9 7.3L10.4 7.8L9.6 7L12 4M9 10H15V12H9V10M5 14H19C19.6 14 20 14.4 20 15C20 15.6 19.6 16 19 16H5C4.4 16 4 15.6 4 15C4 14.4 4.4 14 5 14M9 18H15V19H9V18Z"/></svg>
+        <span class="text-sm font-bold uppercase tracking-wider">Aktiv</span>
+      </div>
+    </div>
+
+    <!-- Beautiful Inline creation form instead of modal or blank page -->
+    <div v-if="!apiaryStore.activeApiaryId" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl shadow-xl w-full max-w-md p-8 mx-auto space-y-6">
+      <div class="text-center">
+        <div class="inline-flex items-center justify-center p-3.5 bg-primary/10 rounded-full mb-3">
+          <!-- Bee SVG Icon -->
+          <svg class="w-10 h-10 fill-primary" viewBox="0 0 24 24">
+            <path d="M12 2C11.5 2 11 2.2 10.6 2.6L7.4 5.8C6.9 6.3 6.9 7.1 7.4 7.6L8.4 8.6C7.6 9.8 7 11 7 12H5C3.3 12 2 13.3 2 15C2 16.7 3.3 18 5 18H7C7 19.1 7.9 20 9 20H15C16.1 20 17 19.1 17 18H19C20.7 18 22 16.7 22 15C22 13.3 20.7 12 19 12H17C17 11 16.4 9.8 15.6 8.6L16.6 7.6C17.1 7.1 17.1 6.3 16.6 5.8L13.4 2.6C13 2.2 12.5 2 12 2M12 4L14.4 6.4L13 7.8L12.5 7.3C12.1 6.9 11.3 6.9 10.9 7.3L10.4 7.8L9.6 7L12 4M9 10H15V12H9V10M5 14H19C19.6 14 20 14.4 20 15C20 15.6 19.6 16 19 16H5C4.4 16 4 15.6 4 15C4 14.4 4.4 14 5 14M9 18H15V19H9V18Z"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-extrabold text-gray-900 dark:text-white">Neue Imkerei anlegen</h3>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+          Um BeeBoard nutzen zu können, lege bitte zuerst deine Imkerei an.
+        </p>
+      </div>
+
+      <form @submit.prevent="createApiary" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Name der Imkerei *</label>
+          <input 
+            v-model="newApiaryName" 
+            type="text" 
+            required
+            placeholder="z.B. Imkerei Sonnenschein"
+            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+          />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Anmerkungen (Optional)</label>
+          <textarea 
+            v-model="newApiaryNotes" 
+            placeholder="z.B. Standorte hauptsächlich im Odenwald"
+            rows="3"
+            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+          ></textarea>
+        </div>
+        <button 
+          type="submit" 
+          :disabled="apiaryStore.loading"
+          class="w-full py-3 text-sm font-bold text-white bg-primary hover:bg-primary-hover rounded-xl shadow-md hover-scale flex items-center justify-center space-x-2"
+        >
+          <span v-if="apiaryStore.loading">
+            <!-- Spinner -->
+            <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          </span>
+          <span>Imkerei erstellen 🚀</span>
+        </button>
+      </form>
+    </div>
+
+    <div v-else-if="loading" class="flex flex-col items-center justify-center py-20">
+      <svg class="animate-spin h-10 w-10 text-primary mb-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+      <p class="text-gray-500 dark:text-gray-400 font-bold">Lade Bienenstand-Daten...</p>
+    </div>
+
+    <div v-else class="space-y-8">
+      
+      <!-- Varroa Warning Banner -->
+      <div v-if="varroaWarnings.length > 0" class="space-y-3">
+        <div v-for="warning in varroaWarnings" :key="warning.hive_id" class="bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-400 p-5 rounded-2xl flex items-start space-x-4 shadow-sm animate-pulse">
+          <div class="p-2 bg-amber-500/10 rounded-xl shrink-0">
+            <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          </div>
+          <div>
+            <h4 class="font-bold text-base">Achtung: Erhöhter Milbenfall!</h4>
+            <p class="text-sm mt-1 text-gray-700 dark:text-gray-300">
+              Bei <strong>{{ warning.hive_name }}</strong> wurde am {{ formatDate(warning.date) }} ein geschätzter natürlicher Varroamilbenfall von <strong class="text-amber-600 dark:text-amber-400">{{ warning.estimated_total.toFixed(1) }} Milben/Tag</strong> festgestellt (Gemessener Wert: {{ warning.raw_count }} Milben in der Saison {{ warning.season }}). 
+            </p>
+            <p class="text-sm mt-1 font-bold text-primary">
+              Empfehlung: Leite umgehend eine Varroabehandlung ein oder kontrolliere die Beute.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border p-6 rounded-2xl shadow-sm hover-scale flex items-center space-x-4">
+          <div class="p-3.5 bg-blue-500/10 rounded-xl text-blue-500">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">Standorte</p>
+            <p class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{{ locations.length }}</p>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border p-6 rounded-2xl shadow-sm hover-scale flex items-center space-x-4">
+          <div class="p-3.5 bg-primary/10 rounded-xl text-primary">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">Aktive Völker</p>
+            <p class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{{ activeHivesCount }}</p>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border p-6 rounded-2xl shadow-sm hover-scale flex items-center space-x-4">
+          <div class="p-3.5 bg-green-500/10 rounded-xl text-green-500">
+            <!-- Insect / Bee Icon -->
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12a3 3 0 100-6 3 3 0 000 6zm5-1.5a3.5 3.5 0 11.04 0zM4 18c0-3 6-4 6-4s5.5 1 6 4m3-2c0-2.2-4-3-4-3s2.5.8 2.5 3"/></svg>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">Est. Bienenmasse</p>
+            <p class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{{ formatNumber(estimatedTotalBees) }}</p>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border p-6 rounded-2xl shadow-sm hover-scale flex items-center space-x-4">
+          <div class="p-3.5 bg-yellow-500/10 rounded-xl text-yellow-500">
+            <!-- Feed Jar / Honey Icon -->
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">Est. Futterwaben</p>
+            <p class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{{ estimatedTotalFood.toFixed(1) }} Waben</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Main Layout: Tasks left, Activity Stream right -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left 2 Cols: Smart Tasks & Insights -->
+        <div class="lg:col-span-2 space-y-6">
+          
+          <!-- Intelligent Tasks Card -->
+          <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
+            <div class="flex justify-between items-center mb-6">
+              <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center space-x-2">
+                <span>📋 Anstehende Aufgaben & Empfehlungen</span>
+              </h3>
+              <span class="px-2.5 py-1 bg-primary/10 text-primary text-xs font-extrabold rounded-full">
+                {{ tasks.length }} Aufgaben
+              </span>
+            </div>
+
+            <!-- Add quick manual task -->
+            <form @submit.prevent="addManualTask" class="mb-6 flex space-x-2">
+              <input 
+                v-model="newTaskTitle" 
+                type="text" 
+                placeholder="z.B. Honigraum aufsetzen bei Volk 3..."
+                required
+                class="flex-grow px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+              />
+              <button type="submit" class="px-4 py-2 bg-primary hover:bg-primary-hover text-white font-bold rounded-xl text-sm shadow-md hover-scale shrink-0">
+                + Hinzufügen
+              </button>
+            </form>
+
+            <div v-if="tasks.length === 0" class="text-center py-8 text-gray-400">
+              <p>Hervorragend! Keine fälligen Aufgaben oder Warnungen auf deinem Bienenstand.</p>
+            </div>
+
+            <div v-else class="space-y-3">
+              <div 
+                v-for="task in tasks" 
+                :key="task.id" 
+                class="p-4 rounded-2xl flex items-center justify-between transition-all duration-150 border"
+                :class="task.urgent 
+                  ? 'bg-red-500/5 dark:bg-red-500/10 border-red-500/20' 
+                  : 'bg-gray-50 dark:bg-dark-bg border-gray-200 dark:border-gray-800'"
+              >
+                <div class="flex items-center space-x-3">
+                  <button 
+                    @click="completeTask(task.id)"
+                    class="w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-600 hover:border-primary flex items-center justify-center transition-colors shrink-0"
+                  >
+                    <div class="w-2.5 h-2.5 bg-primary rounded-full opacity-0 hover:opacity-100 transition-opacity"></div>
+                  </button>
+                  <div>
+                    <p class="text-sm font-bold text-gray-800 dark:text-gray-200" :class="{'line-through text-gray-400': task.completed}">
+                      {{ task.title }}
+                    </p>
+                    <p class="text-xs text-gray-400 mt-0.5">
+                      {{ task.subtitle }}
+                    </p>
+                  </div>
+                </div>
+                <span 
+                  v-if="task.urgent" 
+                  class="px-2 py-0.5 bg-red-500/10 text-red-500 text-[10px] font-bold uppercase rounded-full shrink-0"
+                >
+                  Dringend
+                </span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Quick AI Assistant Banner -->
+          <div class="bg-gradient-to-r from-amber-500 to-amber-600 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden">
+            <!-- Bee vector background design -->
+            <div class="absolute right-0 bottom-0 opacity-10 transform translate-y-1/4 translate-x-1/4">
+              <svg class="w-72 h-72 fill-white" viewBox="0 0 24 24"><path d="M12 2C11.5 2 11 2.2 10.6 2.6L7.4 5.8C6.9 6.3 6.9 7.1 7.4 7.6L8.4 8.6C7.6 9.8 7 11 7 12H5C3.3 12 2 13.3 2 15C2 16.7 3.3 18 5 18H7C7 19.1 7.9 20 9 20H15C16.1 20 17 19.1 17 18H19C20.7 18 22 16.7 22 15C22 13.3 20.7 12 19 12H17C17 11 16.4 9.8 15.6 8.6L16.6 7.6C17.1 7.1 17.1 6.3 16.6 5.8L13.4 2.6C13 2.2 12.5 2 12 2Z"/></svg>
+            </div>
+
+            <h3 class="text-xl font-black mb-2">Fragen an deine Bienen?</h3>
+            <p class="text-sm opacity-90 max-w-lg mb-4">
+              Unser KI-Imkerassistent analysiert deine Standorte, die Volksstärken und Varroaverläufe, um dir kompetenten Rat zu geben oder gesprochene Notizen automatisch in Logbucheinträge umzuwandeln.
+            </p>
+            <router-link to="/logbook" class="inline-block px-5 py-2.5 bg-white text-amber-700 font-extrabold text-sm rounded-xl shadow-md hover:bg-gray-100 hover-scale">
+              KI-Assistenten öffnen 🐝
+            </router-link>
+          </div>
+
+        </div>
+
+        <!-- Right 1 Col: Recent Activities Log -->
+        <div class="space-y-6">
+          <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">🔔 Letzte Aktivitäten</h3>
+            
+            <div v-if="recentEntries.length === 0" class="text-center py-10 text-gray-400">
+              <p>Noch keine Logbucheinträge vorhanden.</p>
+              <router-link to="/logbook" class="text-primary hover:underline text-sm font-bold block mt-2">
+                Jetzt Eintrag erfassen ->
+              </router-link>
+            </div>
+
+            <div v-else class="space-y-6 relative before:absolute before:left-[17px] before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-100 dark:before:bg-dark-border">
+              <div 
+                v-for="entry in recentEntries" 
+                :key="entry.id" 
+                class="flex items-start space-x-4 relative"
+              >
+                <!-- Dot marker with conditional colors -->
+                <div 
+                  class="w-9 h-9 rounded-full flex items-center justify-center shadow-sm shrink-0 z-10 border border-white dark:border-dark-card"
+                  :class="getEntryColorClass(entry.entry_type)"
+                >
+                  <span class="text-xs">{{ getEntryIcon(entry.entry_type) }}</span>
+                </div>
+                
+                <div class="flex-grow">
+                  <div class="flex justify-between items-start">
+                    <h4 class="text-sm font-bold text-gray-800 dark:text-gray-200">
+                      {{ entry.hive?.name }}
+                    </h4>
+                    <span class="text-[10px] text-gray-400 uppercase font-bold">{{ formatDate(entry.date) }}</span>
+                  </div>
+                  <p class="text-xs text-gray-500 font-semibold uppercase mt-0.5 tracking-wider">
+                    {{ getEntryTypeName(entry.entry_type) }}
+                  </p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2 italic">
+                    "{{ entry.notes || 'Keine Anmerkungen erfasst.' }}"
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="border-t border-gray-100 dark:border-dark-border mt-6 pt-4 text-center">
+              <router-link to="/logbook" class="text-primary hover:text-primary-hover text-sm font-bold hover:underline">
+                Alle Aktivitäten ansehen
+              </router-link>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, computed } from 'vue'
+import { useAuthStore } from '../stores/auth'
+import { useApiaryStore } from '../stores/apiary'
+import axios from 'axios'
+
+const authStore = useAuthStore()
+const apiaryStore = useApiaryStore()
+
+const loading = ref(false)
+const locations = ref([])
+const hives = ref([])
+const recentEntries = ref([])
+const tasks = ref([])
+const newTaskTitle = ref('')
+
+const newApiaryName = ref('')
+const newApiaryNotes = ref('')
+
+const activeHivesCount = computed(() => hives.value.filter(h => h.is_active).length)
+
+// Calculations based on recent inspection entries
+const estimatedTotalBees = ref(0)
+const estimatedTotalFood = ref(0)
+const varroaWarnings = ref([])
+
+onMounted(async () => {
+  if (apiaryStore.activeApiaryId) {
+    await fetchDashboardData()
+  }
+})
+
+async function fetchDashboardData() {
+  loading.value = true
+  try {
+    const apiaryId = apiaryStore.activeApiaryId
+    
+    // Fetch locations, hives, and entries in parallel
+    const [locRes, hiveRes, logRes] = await Promise.all([
+      axios.get('/api/locations/', { params: { apiary_id: apiaryId } }),
+      axios.get('/api/hives/', { params: { apiary_id: apiaryId } }),
+      axios.get('/api/logbook/entries', { params: { apiary_id: apiaryId } })
+    ])
+    
+    locations.value = locRes.data
+    hives.value = hiveRes.data
+    recentEntries.value = logRes.data.slice(0, 5) // recent 5 entries
+
+    // Calculate biological aggregates from recent hive inspections
+    calculateBiologicalAggregates(logRes.data)
+    
+    // Generate intelligent system-driven tasks
+    generateIntelligentTasks(logRes.data)
+
+  } catch (err) {
+    console.error('Fetch dashboard data failed:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+function calculateBiologicalAggregates(entries) {
+  let totalBees = 0
+  let totalFood = 0
+  const processedHives = new Set()
+  varroaWarnings.value = []
+
+  // Entries are pre-sorted by date desc
+  for (const entry of entries) {
+    // 1. Process latest inspection per hive to calculate sum masses
+    if (entry.entry_type === 'INSPECTION' && !processedHives.has(entry.hive_id) && entry.inspection_detail) {
+      processedHives.add(entry.hive_id)
+      
+      // We look at frames
+      let bees = 0
+      let food = 0
+      const hiveObj = hives.value.find(h => h.id === entry.hive_id)
+      const factor = hiveObj?.frame_type?.multiplier || 1.0
+      
+      if (entry.inspection_detail.frames) {
+        for (const frame of entry.inspection_detail.frames) {
+          bees += frame.bee_eighths
+          food += frame.food_eighths
+        }
+      }
+      
+      // Bees mass in Dadant/Zander scales: frames sum * eighths * 1000 * frame type multiplier
+      totalBees += (bees / 8) * 1000 * factor
+      totalFood += (food / 8) * factor
+    }
+
+    // 2. Check Varroa warning threshold
+    if (entry.entry_type === 'VARROA_COUNT' && entry.varroa_count_detail) {
+      const detail = entry.varroa_count_detail
+      const threshold = detail.season === 'AUTUMN' ? 10.0 : 5.0
+      
+      // If daily estimated fall exceeds limit and we haven't warned for this hive yet
+      if (detail.estimated_total >= threshold && !varroaWarnings.value.some(w => w.hive_id === entry.hive_id)) {
+        varroaWarnings.value.push({
+          hive_id: entry.hive_id,
+          hive_name: entry.hive?.name || 'Unbekanntes Volk',
+          raw_count: detail.raw_count,
+          estimated_total: detail.estimated_total,
+          season: detail.season,
+          date: entry.date
+        })
+      }
+    }
+  }
+
+  estimatedTotalBees.value = totalBees
+  estimatedTotalFood.value = totalFood
+}
+
+function generateIntelligentTasks(entries) {
+  const generated = []
+  
+  // 1. General tasks
+  const manual = localStorage.getItem(`tasks_${apiaryStore.activeApiaryId}`)
+  if (manual) {
+    generated.push(...JSON.parse(manual))
+  }
+
+  // 2. Automated rule-based check: Hives needing inspection (> 10 days since last inspection)
+  const lastInspections = {}
+  hives.value.forEach(hive => {
+    if (hive.is_active) {
+      lastInspections[hive.id] = null
+    }
+  })
+
+  entries.forEach(entry => {
+    if (entry.entry_type === 'INSPECTION' && lastInspections[entry.hive_id] === null) {
+      lastInspections[entry.hive_id] = new Date(entry.date)
+    }
+  })
+
+  const today = new Date()
+  Object.keys(lastInspections).forEach(hiveId => {
+    const hive = hives.value.find(h => h.id === hiveId)
+    if (!hive) return
+
+    const lastDate = lastInspections[hiveId]
+    if (!lastDate) {
+      // Never inspected!
+      generated.push({
+        id: `auto-inspect-${hiveId}`,
+        title: `Erstinspektion fällig bei ${hive.name}`,
+        subtitle: `Für dieses Bienenvolk wurde noch keine Inspektion erfasst.`,
+        urgent: true,
+        completed: false
+      })
+    } else {
+      const diffTime = Math.abs(today - lastDate)
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      if (diffDays > 10) {
+        generated.push({
+          id: `auto-inspect-${hiveId}`,
+          title: `Inspektion fällig bei ${hive.name}`,
+          subtitle: `Zuletzt kontrolliert vor ${diffDays} Tagen (Grenzwert: 10 Tage).`,
+          urgent: diffDays > 15,
+          completed: false
+        })
+      }
+    }
+  })
+
+  // 3. Automated Varroa treatment needed tasks
+  varroaWarnings.value.forEach(warn => {
+    generated.push({
+      id: `auto-varroa-${warn.hive_id}`,
+      title: `Varroabehandlung einleiten bei ${warn.hive_name}`,
+      subtitle: `Schätzwert: ${warn.estimated_total.toFixed(1)} Milben/Tag überschreitet den kritischen Schwellenwert!`,
+      urgent: true,
+      completed: false
+    })
+  })
+
+  tasks.value = generated
+}
+
+function completeTask(id) {
+  // If it's a manual task, we delete/complete it, else we mock-complete it
+  tasks.value = tasks.value.filter(t => t.id !== id)
+  
+  // Persist if manual
+  if (id.startsWith('manual-')) {
+    const manuals = tasks.value.filter(t => t.id.startsWith('manual-'))
+    localStorage.setItem(`tasks_${apiaryStore.activeApiaryId}`, JSON.stringify(manuals))
+  }
+}
+
+function addManualTask() {
+  if (!newTaskTitle.value.trim()) return
+  
+  const newTask = {
+    id: `manual-${Date.now()}`,
+    title: newTaskTitle.value.trim(),
+    subtitle: 'Manuell hinzugefügte Aufgabe',
+    urgent: false,
+    completed: false
+  }
+
+  tasks.value.unshift(newTask)
+  
+  const manuals = tasks.value.filter(t => t.id.startsWith('manual-'))
+  localStorage.setItem(`tasks_${apiaryStore.activeApiaryId}`, JSON.stringify(manuals))
+  
+  newTaskTitle.value = ''
+}
+
+async function createApiary() {
+  if (!newApiaryName.value.trim()) return
+  try {
+    await apiaryStore.createApiary(newApiaryName.value.trim(), newApiaryNotes.value.trim())
+    newApiaryName.value = ''
+    newApiaryNotes.value = ''
+    window.location.reload()
+  } catch (err) {
+    alert(err.response?.data?.detail || 'Fehler beim Erstellen der Imkerei.')
+  }
+}
+
+// Helpers
+function formatDate(dateStr) {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
+function formatNumber(num) {
+  return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(num)
+}
+
+function getEntryTypeName(type) {
+  switch (type) {
+    case 'INSPECTION': return 'Beuteninspektion'
+    case 'VARROA_COUNT': return 'Varroazählung'
+    case 'VARROA_TREATMENT': return 'Varroabehandlung'
+    case 'GENERAL': return 'Allgemeine Notiz'
+    default: return type
+  }
+}
+
+function getEntryIcon(type) {
+  switch (type) {
+    case 'INSPECTION': return '🔎'
+    case 'VARROA_COUNT': return '🕷️'
+    case 'VARROA_TREATMENT': return '🧪'
+    case 'GENERAL': return '📝'
+    default: return '🐝'
+  }
+}
+
+function getEntryColorClass(type) {
+  switch (type) {
+    case 'INSPECTION': return 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+    case 'VARROA_COUNT': return 'bg-red-500/10 text-red-500 border-red-500/20'
+    case 'VARROA_TREATMENT': return 'bg-green-500/10 text-green-500 border-green-500/20'
+    case 'GENERAL': return 'bg-gray-500/10 text-gray-500 border-gray-500/20'
+    default: return 'bg-primary/10 text-primary border-primary/20'
+  }
+}
+</script>
+
+<style scoped>
+.animate-shake {
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+</style>
