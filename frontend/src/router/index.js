@@ -39,6 +39,12 @@ const routes = [
     component: () => import('../views/StatisticsView.vue')
   },
   {
+    path: '/admin',
+    name: 'admin',
+    component: () => import('../views/AdminView.vue'),
+    meta: { requiresAdmin: true }
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/dashboard'
   }
@@ -76,6 +82,9 @@ router.beforeEach(async (to, from, next) => {
   } else {
     if (!isLoggedIn) {
       next('/login')
+    } else if (to.meta.requiresAdmin && !authStore.isAdmin) {
+      // Prevent non-admin users from accessing admin routes
+      next('/dashboard')
     } else {
       next()
     }

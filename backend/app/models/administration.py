@@ -1,4 +1,4 @@
-from sqlalchemy import String, Boolean, Float
+from sqlalchemy import String, Boolean, Float, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import UUIDTimeStampedModel
@@ -17,3 +17,11 @@ class VarroaMultiplier(UUIDTimeStampedModel):
 
     season: Mapped[str] = mapped_column(String(20), unique=True, index=True)  # SPRING, SUMMER, AUTUMN, WINTER
     multiplier: Mapped[float] = mapped_column(Float)
+
+class LLMConfig(UUIDTimeStampedModel):
+    __tablename__ = "llm_configs"
+
+    chatbot_system_prompt: Mapped[str] = mapped_column(Text, nullable=False)
+    draft_system_prompt: Mapped[str] = mapped_column(Text, nullable=False)
+    enable_weather_api: Mapped[bool] = mapped_column(Boolean, default=False)
+

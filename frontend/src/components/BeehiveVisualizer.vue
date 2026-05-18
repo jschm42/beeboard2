@@ -1,9 +1,9 @@
 <template>
   <div class="flex flex-col items-center justify-center p-6 border border-gray-100 dark:border-dark-border rounded-3xl bg-gray-50/50 dark:bg-dark-card/30 backdrop-blur-sm relative overflow-hidden">
     
-    <!-- Decorative wooden cover banner -->
-    <div class="w-36 h-3.5 bg-amber-700/80 rounded-t-lg shadow-sm"></div>
-    <div class="w-32 h-1 bg-amber-800 rounded-b-sm mb-2"></div>
+    <!-- Decorative wooden cover banner (Roof) -->
+    <div class="w-[228px] h-4 bg-gradient-to-r from-amber-800 to-amber-700 dark:from-amber-900 dark:to-amber-800 rounded-t-lg shadow-md border-b border-amber-950"></div>
+    <div class="w-[222px] h-1.5 bg-amber-900 dark:bg-amber-950 rounded-b-sm mb-2 shadow-inner"></div>
 
     <!-- Empty stack helper -->
     <div v-if="boxes.length === 0" class="py-8 text-center text-gray-400 text-xs italic">
@@ -11,44 +11,55 @@
     </div>
 
     <!-- SVG Box Stack Container -->
-    <div v-else class="space-y-1 w-full max-w-[240px] flex flex-col-reverse">
+    <div v-else class="space-y-1.5 w-[220px] flex flex-col">
       <div 
         v-for="(box, idx) in sortedBoxes" 
         :key="box.id || idx"
-        class="relative transition-all duration-300 transform"
+        class="relative transition-all duration-300 transform cursor-grab active:cursor-grabbing"
         :class="[
-          selectedBoxId === box.id ? 'scale-[1.03] z-10' : 'hover:scale-[1.01]',
+          selectedBoxId === box.id ? 'scale-[1.03] z-10' : '',
+          draggedIdx === idx ? 'opacity-30 scale-[0.98]' : 'hover:scale-[1.02]',
+          dragOverIdx === idx && draggedIdx !== idx ? 'scale-[1.04] z-20' : ''
         ]"
+        draggable="true"
+        @dragstart="onDragStart($event, idx)"
+        @dragover.prevent
+        @dragenter.prevent="onDragEnter(idx)"
+        @dragleave="onDragLeave(idx)"
+        @dragend="onDragEnd"
+        @drop="onDrop(idx)"
       >
         <!-- Box Shape representation -->
         <div 
           @click="selectBox(box)"
-          class="w-full h-14 rounded-md border-2 cursor-pointer transition-all duration-200 flex flex-col justify-center items-center shadow-sm relative"
+          class="w-full h-14 rounded-lg border-2 cursor-pointer transition-all duration-200 flex flex-col justify-center items-center shadow-sm relative overflow-hidden"
           :class="[
             selectedBoxId === box.id 
               ? 'border-primary ring-2 ring-primary/20 shadow-md' 
-              : 'border-amber-900/40 dark:border-amber-950/70',
+              : (dragOverIdx === idx && draggedIdx !== idx
+                ? 'border-primary ring-4 ring-primary/40 shadow-lg'
+                : 'border-amber-950/40 dark:border-amber-950/70'),
             box.box_type === 'BROOD'
-              ? 'bg-gradient-to-r from-amber-600/90 to-amber-700/90 text-white'
-              : 'bg-gradient-to-r from-yellow-500/90 to-yellow-600/90 text-gray-900'
+              ? 'bg-gradient-to-r from-amber-600/90 to-amber-700/90 dark:from-amber-700/90 dark:to-amber-800/90 text-white'
+              : 'bg-gradient-to-r from-yellow-500/90 to-yellow-600/90 dark:from-yellow-600/90 dark:to-yellow-700/90 text-gray-900'
           ]"
         >
           <!-- Wooden handle indentation in the middle -->
           <div 
-            class="w-12 h-3.5 rounded-sm absolute left-1/2 -translate-x-1/2 opacity-70"
-            :class="box.box_type === 'BROOD' ? 'bg-amber-800' : 'bg-yellow-700/30'"
+            class="w-12 h-3.5 rounded-md absolute left-1/2 -translate-x-1/2 opacity-70 shadow-inner"
+            :class="box.box_type === 'BROOD' ? 'bg-amber-800' : 'bg-yellow-700/40'"
           ></div>
 
           <!-- Text content overlay -->
           <span class="text-xs font-black tracking-wide z-10 uppercase">
             {{ box.box_type === 'BROOD' ? 'Brutraum' : 'Honigraum' }}
           </span>
-          <span class="text-[10px] font-bold opacity-80 z-10">
+          <span class="text-[9px] font-extrabold opacity-90 z-10">
             {{ box.frame_count }} Waben ({{ box.frame_type_name || 'Standard' }})
           </span>
 
           <!-- Left Side: Order Indicator -->
-          <span class="absolute left-3 text-[10px] font-black opacity-40">
+          <span class="absolute left-3.5 text-[10px] font-black opacity-40">
             #{{ box.order }}
           </span>
         </div>
@@ -56,7 +67,7 @@
         <!-- Float Control Arrows displayed on hover / select -->
         <div 
           v-if="selectedBoxId === box.id" 
-          class="absolute -right-12 top-1/2 -translate-y-1/2 flex flex-col space-y-1 z-20 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border p-1 rounded-lg shadow-lg"
+          class="absolute -right-12 top-1/2 -translate-y-1/2 flex flex-col space-y-1 z-20 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border p-1 rounded-lg shadow-lg animate-scale"
         >
           <button 
             type="button"
@@ -89,11 +100,12 @@
       </div>
     </div>
 
-    <!-- Entrance flight board design at the bottom -->
-    <div class="w-40 h-2 bg-amber-800 rounded-sm mt-3 relative flex justify-center shadow-sm">
-      <!-- Flight hole gate -->
-      <div class="w-14 h-1.5 bg-black rounded-t-sm absolute -top-1.5"></div>
-      <div class="w-24 h-3 bg-amber-700/60 rounded-b-md skew-x-12 translate-y-1 shadow-md"></div>
+    <!-- Entrance flight board design at the bottom (Boden) -->
+    <div class="w-[230px] h-3 bg-gradient-to-r from-amber-800 to-amber-900 dark:from-amber-900 dark:to-amber-950 rounded-t-sm mt-3 relative flex justify-center shadow-md">
+      <!-- Flight hole gate (Einflugloch) -->
+      <div class="w-16 h-2 bg-black rounded-t-sm absolute -top-2"></div>
+      <!-- Flight board (Anflugbrett) -->
+      <div class="w-[160px] h-4 bg-amber-700/80 dark:bg-amber-800/80 rounded-b-lg skew-x-12 translate-y-0.5 shadow-lg border-t border-amber-600/50"></div>
     </div>
 
     <!-- Legend Indicator -->
@@ -112,7 +124,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
   boxes: {
@@ -128,13 +140,67 @@ const props = defineProps({
 
 const emit = defineEmits(['select-box', 'update-boxes'])
 
+// Drag & drop reactive states
+const draggedIdx = ref(null)
+const dragOverIdx = ref(null)
+
 const sortedBoxes = computed(() => {
-  // Sort boxes ascending by their order (so higher order boxes appear higher up in flex-reverse rendering)
-  return [...props.boxes].sort((a, b) => a.order - b.order)
+  // Sort boxes descending by their order so they render from top to bottom in normal flex-col
+  return [...props.boxes].sort((a, b) => b.order - a.order)
 })
 
 function selectBox(box) {
   emit('select-box', box.id)
+}
+
+function onDragStart(event, idx) {
+  draggedIdx.value = idx
+  event.dataTransfer.effectAllowed = 'move'
+  // Support Firefox and other standards-compliant drag engines
+  event.dataTransfer.setData('text/plain', idx)
+}
+
+function onDragEnter(idx) {
+  dragOverIdx.value = idx
+}
+
+function onDragLeave(idx) {
+  if (dragOverIdx.value === idx) {
+    dragOverIdx.value = null
+  }
+}
+
+function onDragEnd() {
+  draggedIdx.value = null
+  dragOverIdx.value = null
+}
+
+function onDrop(dropIdx) {
+  if (draggedIdx.value === null || draggedIdx.value === dropIdx) {
+    draggedIdx.value = null
+    dragOverIdx.value = null
+    return
+  }
+
+  // Clone sortedBoxes
+  const list = [...sortedBoxes.value]
+  
+  // Remove dragged box from its current position
+  const [draggedBox] = list.splice(draggedIdx.value, 1)
+  
+  // Insert at new drop position
+  list.splice(dropIdx, 0, draggedBox)
+  
+  // Re-map the 'order' property to match the new visual order (1..N descending)
+  const updatedBoxes = list.map((box, index) => ({
+    ...box,
+    order: list.length - index
+  }))
+  
+  emit('update-boxes', updatedBoxes)
+  
+  draggedIdx.value = null
+  dragOverIdx.value = null
 }
 
 function moveUp(box) {
@@ -196,5 +262,12 @@ function deleteBox(box) {
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: .7; }
+}
+
+.cursor-grab {
+  cursor: grab;
+}
+.cursor-grabbing {
+  cursor: grabbing;
 }
 </style>

@@ -18,6 +18,7 @@
 
 <script setup>
 import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { useAuthStore } from './stores/auth'
 import { useApiaryStore } from './stores/apiary'
@@ -25,6 +26,7 @@ import { useErrorStore } from './stores/error'
 import Navbar from './components/Navbar.vue'
 import ErrorModal from './components/ErrorModal.vue'
 
+const router = useRouter()
 const authStore = useAuthStore()
 const apiaryStore = useApiaryStore()
 const errorStore = useErrorStore()
@@ -50,6 +52,7 @@ axios.interceptors.response.use(
         if (authStore.isAuthenticated) {
           authStore.logout()
         }
+        router.push('/login')
       } else if (status === 403) {
         friendlyMessage = detail || 'Sie haben keine ausreichenden Berechtigungen, um diese Aktion auszuführen.'
       } else if (status === 404) {

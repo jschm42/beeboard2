@@ -366,7 +366,8 @@ function calculateBiologicalAggregates(entries) {
       let bees = 0
       let food = 0
       const hiveObj = hives.value.find(h => h.id === entry.hive_id)
-      const factor = hiveObj?.frame_type?.multiplier || 1.0
+      const beeFactor = hiveObj?.frame_type?.bee_multiplier || 1.0
+      const foodFactor = hiveObj?.frame_type?.food_multiplier || 1.0
       
       if (entry.inspection_detail.frames) {
         for (const frame of entry.inspection_detail.frames) {
@@ -376,8 +377,8 @@ function calculateBiologicalAggregates(entries) {
       }
       
       // Bees mass in Dadant/Zander scales: frames sum * eighths * 1000 * frame type multiplier
-      totalBees += (bees / 8) * 1000 * factor
-      totalFood += (food / 8) * factor
+      totalBees += (bees / 8) * 1000 * beeFactor
+      totalFood += (food / 8) * foodFactor
     }
 
     // 2. Check Varroa warning threshold

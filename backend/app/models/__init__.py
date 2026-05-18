@@ -2,7 +2,7 @@ from app.core.database import Base
 from app.models.user import User
 from app.models.apiary import Apiary, ApiaryMembership
 from app.models.location import Location
-from app.models.administration import FrameType, VarroaMultiplier
+from app.models.administration import FrameType, VarroaMultiplier, LLMConfig
 from app.models.hive import Hive, HiveBox
 from app.models.logbook import (
     LogSession, 
@@ -23,6 +23,7 @@ __all__ = [
     "Location",
     "FrameType",
     "VarroaMultiplier",
+    "LLMConfig",
     "Hive",
     "HiveBox",
     "LogSession",

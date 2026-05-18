@@ -1,6 +1,12 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans">
     
+    <!-- Back to Dashboard Link -->
+    <router-link to="/dashboard" class="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-hover mb-4 transition-colors duration-200">
+      <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+      Zurück zum Dashboard
+    </router-link>
+
     <!-- Header -->
     <div class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
       <div>
@@ -194,7 +200,7 @@
               
               <!-- Frame size -->
               <p class="text-[10px] text-gray-400 font-bold uppercase mt-1 tracking-wider">
-                {{ hive.frame_type?.name }} (Multiplier: {{ hive.frame_type?.multiplier.toFixed(1) }}x)
+                {{ hive.frame_type?.name }} (Faktor: {{ (hive.frame_type?.brood_multiplier || 1.0).toFixed(1) }}x)
               </p>
             </div>
           </div>
@@ -457,7 +463,7 @@ async function fetchHives() {
 
 async function fetchLocations() {
   try {
-    const response = await axios.get('/api/locations/', {
+    const response = await axios.get('/api/locations', {
       params: { apiary_id: apiaryStore.activeApiaryId }
     })
     locations.value = response.data
@@ -632,6 +638,9 @@ async function deleteHive(hive) {
 
 // Helpers
 function getQueenColor(year) {
+  if (!year) {
+    return '#F59E0B' // Default Gold
+  }
   // Biological Queen Paint Code:
   // Years ending in:
   // 1 or 6: White

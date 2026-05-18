@@ -10,7 +10,13 @@ from app.models.location import Location
 from app.models.logbook import LogEntry
 from app.schemas.ai import AIChatQuery, AIChatResponse, AIDraftQuery, AIDraftResponse
 from app.routers.apiaries import check_access
-from app.services.ai_assistant import chatbot_completion, draft_entry_from_text
+from app.services.ai_assistant import (
+    chatbot_completion, 
+    draft_entry_from_text,
+    get_llm_config,
+    fetch_weather,
+    translate_wmo_code
+)
 from app.services.calculations import calculate_inspection_totals
 
 router = APIRouter(prefix="/ai", tags=["ai"])
@@ -82,10 +88,30 @@ def ai_chat(
             f"Notiz: {entry.notes or ''} | Messung: {detail_desc}"
         )
 
+    # Fetch and integrate current weather if enabled
+    config = get_llm_config(db)
+    if config.enable_weather_api:
+        weather_info = []
+        for loc in locations:
+            if loc.latitude is not None and loc.longitude is not None:
+                w = fetch_weather(loc.latitude, loc.longitude)
+                if w:
+                    weather_desc = translate_wmo_code(w.get("weather_code", 0))
+                    temp = w.get("temperature_2m", 0.0)
+                    wind = w.get("wind_speed_10m", 0.0)
+                    humidity = w.get("relative_humidity_2m", 0)
+                    weather_info.append(
+                        f"Standort '{loc.name}': {temp}°C, {weather_desc}, "
+                        f"Feuchtigkeit: {humidity}%, Windgeschwindigkeit: {wind} km/h"
+                    )
+        if weather_info:
+            context_lines.append("\nAKTUELLES WETTER AN DEN STANDORTEN:")
+            context_lines.extend(f"- {info}" for info in weather_info)
+
     context_str = "\n".join(context_lines)
     
-    # Query LiteLLM
-    response_content = chatbot_completion(query_in.query, context_str)
+    # Query LiteLLM with database session support for dynamic prompt templates
+    response_content = chatbot_completion(query_in.query, context_str, db=db)
     return {"response": response_content}
 
 @router.post("/draft", response_model=AIDraftResponse)
@@ -98,5 +124,5 @@ def ai_draft_entry(
     Parses natural language notes into structured draft data
     so that the beekeeper can quickly auto-fill inspections or counts.
     """
-    draft = draft_entry_from_text(query_in.text)
+    draft = draft_entry_from_text(query_in.text, db=db)
     return {"draft": draft}

@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 
 class FrameTypeBase(BaseModel):
     name: str
@@ -28,3 +29,23 @@ class VarroaMultiplierOut(VarroaMultiplierBase):
 
     class Config:
         from_attributes = True
+
+class LLMConfigBase(BaseModel):
+    chatbot_system_prompt: str
+    draft_system_prompt: str
+    enable_weather_api: bool
+
+class LLMConfigUpdate(BaseModel):
+    chatbot_system_prompt: Optional[str] = None
+    draft_system_prompt: Optional[str] = None
+    enable_weather_api: Optional[bool] = None
+
+class LLMConfigOut(LLMConfigBase):
+    id: str
+
+    class Config:
+        from_attributes = True
+
+class UserAdminUpdate(BaseModel):
+    role: Optional[str] = None
+    is_active: Optional[bool] = None

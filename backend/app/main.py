@@ -6,7 +6,7 @@ import os
 from app.core.config import settings
 from app.core.database import engine
 from app.models import Base
-from app.routers import auth, apiaries, locations, hives, logbook, stats, ai
+from app.routers import auth, apiaries, locations, hives, logbook, stats, ai, admin
 
 # Initialize SQLite tables on startup
 Base.metadata.create_all(bind=engine)
@@ -40,6 +40,7 @@ app.include_router(hives.router, prefix="/api")
 app.include_router(logbook.router, prefix="/api")
 app.include_router(stats.router, prefix="/api")
 app.include_router(ai.router, prefix="/api")
+app.include_router(admin.router, prefix="/api")
 
 @app.get("/api/health")
 def health_check():

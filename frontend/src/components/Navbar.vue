@@ -16,7 +16,7 @@
           <!-- Desktop Nav Links -->
           <div class="hidden md:flex space-x-1">
             <router-link 
-              v-for="item in navItems" 
+              v-for="item in filteredNavItems" 
               :key="item.path" 
               :to="item.path"
               class="px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-200"
@@ -86,7 +86,7 @@
     <!-- Mobile Nav Menu -->
     <div v-if="mobileMenuOpen" class="md:hidden border-t border-gray-200 dark:border-dark-border px-4 py-2 space-y-1 bg-white dark:bg-dark-card shadow-lg">
       <router-link 
-        v-for="item in navItems" 
+        v-for="item in filteredNavItems" 
         :key="item.path" 
         :to="item.path"
         @click="mobileMenuOpen = false"
@@ -108,7 +108,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useApiaryStore } from '../stores/apiary'
@@ -129,6 +129,16 @@ const navItems = [
   { name: 'Logbuch', path: '/logbook' },
   { name: 'Statistiken', path: '/stats' }
 ]
+
+const filteredNavItems = computed(() => {
+  if (authStore.isAdmin) {
+    return [
+      ...navItems,
+      { name: 'Admin', path: '/admin' }
+    ]
+  }
+  return navItems
+})
 
 onMounted(() => {
   // Check persisted dark mode setting
