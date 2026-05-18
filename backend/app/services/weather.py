@@ -27,3 +27,13 @@ async def fetch_current_weather(lat: float, lon: float) -> Optional[Dict[str, An
         except Exception as e:
             print(f"Exception fetching weather: {e}")
             return None
+
+def fetch_current_weather_sync(lat: float, lon: float) -> Optional[Dict[str, Any]]:
+    """Synchronous version of fetch_current_weather."""
+    import asyncio
+    try:
+        loop = asyncio.get_running_loop()
+        return loop.run_until_complete(fetch_current_weather(lat, lon))
+    except RuntimeError:
+        return asyncio.run(fetch_current_weather(lat, lon))
+

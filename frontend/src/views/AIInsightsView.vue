@@ -127,6 +127,7 @@ function renderMarkdown(text) {
 </script>
 
 <style>
+@reference "../style.css";
 .markdown-content h3 {
   @apply text-lg font-bold mt-6 mb-3 text-gray-900 dark:text-white;
 }

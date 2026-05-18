@@ -579,6 +579,21 @@ function getEntryColorClass(type) {
 </script>
 
 <style scoped>
+@reference "../style.css";
+
+.markdown-content :deep(h3) {
+  @apply text-lg font-bold mt-4 mb-2 text-gray-900 dark:text-white;
+}
+.markdown-content :deep(p) {
+  @apply mb-2 leading-relaxed;
+}
+.markdown-content :deep(ul) {
+  @apply list-disc list-inside mb-2 space-y-1;
+}
+.markdown-content :deep(strong) {
+  @apply font-extrabold text-gray-900 dark:text-white;
+}
+
 .animate-shake {
   animation: shake 0.3s ease-in-out;
 }

@@ -66,52 +66,153 @@ def get_llm_config(db: Session) -> LLMConfig:
         db.refresh(config)
     return config
 
-def fetch_weather(lat: float, lon: float) -> Optional[Dict[str, Any]]:
-    """Fetches real-time weather details for the stand's coordinates using Open-Meteo."""
-    try:
-        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m"
-        r = httpx.get(url, timeout=5.0)
-        if r.status_code == 200:
-            data = r.json()
-            if "current" in data:
-                return data["current"]
-    except Exception as e:
-        logger.error(f"Error fetching weather data from Open-Meteo: {str(e)}")
-    return None
+async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apiary_id: str, effective_model: str, api_key: str) -> str:
+    from app.models.location import Location
+    from app.models.hive import Hive
+    from app.models.logbook import LogEntry
+    from app.services.calculations import calculate_inspection_totals
+    from app.services.weather import fetch_current_weather
+    from datetime import datetime, timedelta
+    import json
+    
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt}
+    ]
+    
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "get_locations",
+                "description": "Lädt alle Standorte der aktuellen Imkerei herunter.",
+                "parameters": {"type": "object", "properties": {}, "required": []}
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "get_hives",
+                "description": "Lädt alle Bienenvölker (Name, Status, Königin, Zargen) der Imkerei herunter.",
+                "parameters": {"type": "object", "properties": {}, "required": []}
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "get_recent_log_entries",
+                "description": "Lädt die Logbucheinträge und Schätzungen (Inspektion, Varroafall, Behandlung) der letzten N Tage herunter.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "days": {"type": "integer", "description": "Anzahl der Tage in der Vergangenheit (Standard: 7)"}
+                    },
+                    "required": []
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "get_current_weather",
+                "description": "Lädt das aktuelle Wetter für alle Standorte der Imkerei herunter (via OpenWeatherMap).",
+                "parameters": {"type": "object", "properties": {}, "required": []}
+            }
+        }
+    ]
+    
+    for _ in range(5):
+        try:
+            response = await litellm.acompletion(
+                model=effective_model,
+                messages=messages,
+                tools=tools,
+                api_key=api_key
+            )
+        except Exception as e:
+            logger.error(f"LiteLLM completion error: {str(e)}")
+            return f"Fehler bei der KI-Anfrage: {str(e)}"
+            
+        response_message = response.choices[0].message
+        
+        if not response_message.tool_calls:
+            return response_message.content or ""
+            
+        messages.append(response_message.model_dump())
+        
+        for tool_call in response_message.tool_calls:
+            function_name = tool_call.function.name
+            arguments = {}
+            if tool_call.function.arguments:
+                try:
+                    arguments = json.loads(tool_call.function.arguments)
+                except Exception:
+                    pass
+            
+            result = ""
+            try:
+                if function_name == "get_locations":
+                    locations = db.query(Location).filter(Location.apiary_id == apiary_id).all()
+                    res = [f"Standort '{loc.name}' in {loc.address}. Notizen: {loc.notes or 'Keine'}" for loc in locations]
+                    result = "\n".join(res) if res else "Keine Standorte gefunden."
+                    
+                elif function_name == "get_hives":
+                    hives = db.query(Hive).filter(Hive.apiary_id == apiary_id).all()
+                    res = []
+                    for hive in hives:
+                        status_str = "Aktiv" if hive.is_active else "Inaktiv"
+                        queen_str = f"Königin aus {hive.queen_year}" if hive.queen_year else "Königin-Jahr unbekannt"
+                        boxes_str = f"{len(hive.boxes)} Zargen"
+                        res.append(f"- Volk '{hive.name}' ({status_str}): Standort='{hive.location.name if hive.location else 'Unbekannt'}', {queen_str}, Struktur={boxes_str}.")
+                    result = "\n".join(res) if res else "Keine Bienenvölker gefunden."
+                    
+                elif function_name == "get_recent_log_entries":
+                    days = arguments.get("days", 7)
+                    threshold = datetime.utcnow().date() - timedelta(days=days)
+                    recent_entries = db.query(LogEntry).filter(
+                        LogEntry.apiary_id == apiary_id,
+                        LogEntry.date >= threshold
+                    ).order_by(LogEntry.date.desc()).all()
+                    res = []
+                    for entry in recent_entries:
+                        detail_desc = ""
+                        if entry.entry_type == "INSPECTION" and entry.inspection_detail:
+                            totals = calculate_inspection_totals(entry.inspection_detail.frames, db)
+                            detail_desc = f"Brut={totals.get('brood',0)} Waben, Futter={totals.get('food',0)} Waben, Bienen={totals.get('bees',0)} Waben"
+                        elif entry.entry_type == "VARROA_COUNT" and entry.varroa_count_detail:
+                            detail_desc = f"Milbenfall={entry.varroa_count_detail.raw_count}, Geschätzt={entry.varroa_count_detail.estimated_total}"
+                        elif entry.entry_type == "VARROA_TREATMENT" and entry.varroa_treatment_detail:
+                            detail_desc = f"Behandlung {entry.varroa_treatment_detail.product} ({entry.varroa_treatment_detail.dosage})"
+                        res.append(f"- [{entry.date}] Volk: '{entry.hive.name if entry.hive else 'Unbekannt'}' | Typ: {entry.entry_type} | Details: {detail_desc}")
+                    result = "\n".join(res) if res else f"Keine Logbucheinträge in den letzten {days} Tagen gefunden."
+                    
+                elif function_name == "get_current_weather":
+                    locations = db.query(Location).filter(Location.apiary_id == apiary_id).all()
+                    res = []
+                    for loc in locations:
+                        if loc.latitude and loc.longitude:
+                            w = await fetch_current_weather(loc.latitude, loc.longitude)
+                            if w:
+                                temp = w.get("temp", 0.0)
+                                humidity = w.get("humidity", 0)
+                                wind = w.get("wind_speed", 0.0)
+                                weather_desc = w.get("weather", [{}])[0].get("description", "Unbekannt")
+                                res.append(f"Standort '{loc.name}': {temp}°C, {weather_desc}, Feuchte: {humidity}%, Wind: {wind} m/s")
+                    result = "\n".join(res) if res else "Konnte keine Wetterdaten abrufen (oder keine Geodaten)."
+                else:
+                    result = f"Unbekannte Funktion: {function_name}"
+            except Exception as e:
+                result = f"Fehler bei Funktionsausführung: {str(e)}"
+                
+            messages.append({
+                "role": "tool",
+                "name": function_name,
+                "tool_call_id": tool_call.id,
+                "content": str(result)
+            })
+            
+    return "Der Assistent konnte die Anfrage nicht innerhalb der maximalen Anzahl von Schritten beantworten."
 
-def translate_wmo_code(code: int) -> str:
-    """Translates WMO weather interpretation codes into friendly German descriptive text."""
-    wmo_codes = {
-        0: "Klarer Himmel",
-        1: "Hauptsächlich klar",
-        2: "Teilweise bewölkt",
-        3: "Bedeckt",
-        45: "Nebel",
-        48: "Ablagernder Reifnebel",
-        51: "Leichter Nieselregen",
-        53: "Mäßiger Nieselregen",
-        55: "Dichter Nieselregen",
-        56: "Leichter gefrierender Nieselregen",
-        57: "Dichter gefrierender Nieselregen",
-        61: "Leichter Regen",
-        63: "Mäßiger Regen",
-        65: "Starker Regen",
-        66: "Leichter gefrierender Regen",
-        67: "Starker gefrierender Regen",
-        71: "Leichter Schneefall",
-        73: "Mäßiger Schneefall",
-        75: "Starker Schneefall",
-        77: "Schneegriesel",
-        80: "Leichte Regenschauer",
-        81: "Mäßige Regenschauer",
-        82: "Starke Regenschauer",
-        85: "Leichte Schneeschauer",
-        86: "Starke Schneeschauer",
-        95: "Leichtes oder mäßiges Gewitter",
-        96: "Gewitter mit leichtem Hagel",
-        99: "Gewitter mit starkem Hagel",
-    }
-    return wmo_codes.get(code, "Unbekannte Wetterbedingungen")
 
 def get_effective_model_and_key(model: str) -> tuple[str, Optional[str]]:
     """
@@ -162,9 +263,9 @@ def get_api_key_for_model(model: str) -> Optional[str]:
     _, key = get_effective_model_and_key(model)
     return key
 
-def chatbot_completion(query: str, context_str: str, db: Optional[Session] = None) -> str:
+async def chatbot_completion(query: str, apiary_id: str, db: Session) -> str:
     """
-    Sends the user query along with apiary status context to the LLM
+    Sends the user query along with tool access to the LLM
     to generate helpful, context-aware advice for the beekeeper.
     """
     effective_model, api_key = get_effective_model_and_key(settings.LITELLM_MODEL)
@@ -177,25 +278,11 @@ def chatbot_completion(query: str, context_str: str, db: Optional[Session] = Non
             "passenden API-Schlüssel (z.B. GEMINI_API_KEY, OPENROUTER_API_KEY, ANTHROPIC_API_KEY) in den Umgebungsvariablen."
         )
 
-    # Load system prompt from DB if db session is provided, otherwise fallback to default
-    if db:
-        config = get_llm_config(db)
-        prompt_tmpl = config.chatbot_system_prompt
-    else:
-        prompt_tmpl = DEFAULT_CHATBOT_PROMPT
-
-    system_prompt = prompt_tmpl.replace("{context_str}", context_str)
+    config = get_llm_config(db)
+    system_prompt = config.chatbot_system_prompt.replace("{context_str}", "Du hast Zugriff auf Tools, um dir alle benötigten Daten (Wetter, Logbuch, Völker, Standorte) selbst abzurufen. Nutze sie!")
 
     try:
-        response = litellm.completion(
-            model=effective_model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": query}
-            ],
-            api_key=api_key
-        )
-        return response.choices[0].message.content
+        return await run_agent_loop(system_prompt, query, db, apiary_id, effective_model, api_key)
     except Exception as e:
         logger.error(f"LiteLLM error: {str(e)}")
         return f"Entschuldigung, es gab einen Fehler bei der Bearbeitung deiner Anfrage: {str(e)}"

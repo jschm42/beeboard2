@@ -12,7 +12,9 @@
     "@lucide/vue": "^1.16.0",
     "axios": "^1.16.1",
     "chart.js": "^4.5.1",
+    "dompurify": "^3.4.5",
     "lucide-vue-next": "^1.0.0",
+    "marked": "^18.0.3",
     "pinia": "^3.0.4",
     "vue": "^3.5.34",
     "vue-router": "^5.0.7"

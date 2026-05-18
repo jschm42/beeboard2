@@ -32,35 +32,6 @@ async def generate_ai_insights_job():
     logger.info("Finished AI Insights job.")
 
 async def generate_insight_for_apiary(db: Session, apiary: Apiary):
-    # Gather Context
-    locations = db.query(Location).filter(Location.apiary_id == apiary.id).all()
-    hives = db.query(Hive).filter(Hive.apiary_id == apiary.id).all()
-    
-    context_lines = []
-    context_lines.append(f"Imkerei: {apiary.name}")
-    
-    # Weather
-    weather_info = []
-    for loc in locations:
-        if loc.latitude and loc.longitude:
-            w = await fetch_current_weather(loc.latitude, loc.longitude)
-            if w:
-                temp = w.get("temp", 0.0)
-                humidity = w.get("humidity", 0)
-                wind = w.get("wind_speed", 0.0)
-                weather_desc = w.get("weather", [{}])[0].get("description", "Unbekannt")
-                weather_info.append(f"Standort '{loc.name}': {temp}°C, {weather_desc}, Feuchtigkeit: {humidity}%, Wind: {wind} m/s")
-    
-    if weather_info:
-        context_lines.append("\nAKTUELLES WETTER:")
-        context_lines.extend(weather_info)
-        
-    # Hives summary
-    active_hives = [h for h in hives if h.is_active]
-    context_lines.append(f"\nBIENENVÖLKER: {len(active_hives)} aktive Völker von insgesamt {len(hives)}.")
-    
-    context_str = "\n".join(context_lines)
-    
     # Prompt LLM
     effective_model, api_key = get_effective_model_and_key(settings.LITELLM_MODEL)
     if not api_key and not effective_model.startswith("ollama"):
@@ -68,23 +39,25 @@ async def generate_insight_for_apiary(db: Session, apiary: Apiary):
         return
         
     system_prompt = (
-        "Du bist ein intelligenter Imker-Assistent. Analysiere die folgenden Daten "
-        "der Imkerei und schreibe einen kurzen, motivierenden Blog-Eintrag (in Markdown) "
-        "mit Hinweisen, was bei dem aktuellen Wetter und der Jahreszeit zu beachten ist. "
+        "Du bist ein intelligenter Imker-Assistent. Analysiere die Daten der Imkerei "
+        "und schreibe einen kurzen, motivierenden Blog-Eintrag (in Markdown) "
+        "mit einem Imker-Wetterbericht und Hinweisen, was bei dem aktuellen Wetter und der Jahreszeit "
+        "sowie den aktuellen Diagnosen zu beachten ist. "
+        "Nutze deine Tools, um dir alle benötigten Daten (Wetter, Standorte, Völker, Logbuch) selbst zu beschaffen! "
         "Verwende Emojis und halte es informativ aber kurz."
     )
+    user_prompt = "Bitte lade dir alle aktuellen Daten der Imkerei herunter und erstelle den Bericht."
     
     try:
-        # LLM Call (sync wrapped in asyncio if needed, litellm.acompletion is better)
-        response = await litellm.acompletion(
-            model=effective_model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Hier sind die Daten:\n{context_str}"}
-            ],
+        from app.services.ai_assistant import run_agent_loop
+        content = await run_agent_loop(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            db=db,
+            apiary_id=apiary.id,
+            effective_model=effective_model,
             api_key=api_key
         )
-        content = response.choices[0].message.content.strip()
         
         # Save to DB
         insight = AIInsight(
