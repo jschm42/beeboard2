@@ -515,7 +515,7 @@
                     <span class="text-[10px] font-black uppercase text-gray-400">🔎 Brut- & Raumbelegung (Zargen- & Volkssummen):</span>
                     
                     <div v-if="getBoxTotalsForEntry(entry)" class="space-y-3">
-                      <!-- Box Grid -->
+                      <!-- Box Grid (Waben-Äquivalente) -->
                       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                         <div 
                           v-for="box in getBoxTotalsForEntry(entry).boxes" 
@@ -526,7 +526,7 @@
                             <span class="text-[10px] font-black text-gray-500">Zarge {{ box.order }}: {{ box.box_type === 'BROOD' ? 'Brutraum' : 'Honigraum' }}</span>
                             <span class="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{{ box.frame_count }} Waben ({{ box.frame_type_name }})</span>
                           </div>
-                          <!-- Box values -->
+                          <!-- Box values (Summen, ohne Nachkommastellen) -->
                           <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono font-bold">
                             <div class="flex justify-between items-center text-amber-500">
                               <span>Brut:</span>
@@ -556,7 +556,7 @@
                         </div>
                       </div>
 
-                      <!-- Hive Total Summary -->
+                      <!-- Hive Total Summary (Summen, ohne Nachkommastellen) -->
                       <div class="p-4 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0 shadow-sm">
                         <div>
                           <span class="text-[9px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider">🐝 Volk Gesamt (Beute):</span>
@@ -1698,7 +1698,6 @@ function onHiveSelected() {
 async function submitEntryForm() {
   try {
     const isExact = entryForm.inspectionDetail.boxMode === 'exact'
-    const EIGHTH_FACTOR = 1
 
     const payload = {
       hive_id: entryForm.hiveId,
@@ -1715,14 +1714,30 @@ async function submitEntryForm() {
           const droneBroodVal = Number(box.drone_brood || 0)
           const pollenVal = Number(box.pollen || 0)
 
-          // Eingabe = Achtel, Übersicht = Summe (in Achteln)
-          // -> Totals = Achtel-Summen, Overview summiert diese
-          const broodTotal = isExact ? broodVal : broodVal * EIGHTH_FACTOR
-          const beeTotal = isExact ? beeVal : beeVal * EIGHTH_FACTOR
-          const foodTotal = isExact ? foodVal : foodVal * EIGHTH_FACTOR
-          const droneTotal = isExact ? droneVal : droneVal * EIGHTH_FACTOR
-          const droneBroodTotal = isExact ? droneBroodVal : droneBroodVal * EIGHTH_FACTOR
-          const pollenTotal = isExact ? pollenVal : pollenVal * EIGHTH_FACTOR
+          const C = box.frame_count || 0
+          const M = box.multiplier || 1.0
+
+          // Eingabe = Achtel, Summen = Achtel * 400 * Multiplikator
+          // Beispiel: 5 Achtel Brut in Zander-Brutzarge -> 5 * 400 = 2000
+          const BASE = 400
+
+          let broodTotal, beeTotal, foodTotal, droneTotal, droneBroodTotal, pollenTotal
+
+          if (isExact) {
+            broodTotal = broodVal
+            beeTotal = beeVal
+            foodTotal = foodVal
+            droneTotal = droneVal
+            droneBroodTotal = droneBroodVal
+            pollenTotal = pollenVal
+          } else {
+            broodTotal = broodVal * BASE * M
+            beeTotal = beeVal * BASE * M
+            foodTotal = foodVal * BASE * M
+            droneTotal = droneVal * BASE * M
+            droneBroodTotal = droneBroodVal * BASE * M
+            pollenTotal = pollenVal * BASE * M
+          }
 
           return {
             box_index: idx,
@@ -1888,7 +1903,6 @@ function sortedFrames(frames) {
 
 function getBoxTotalsForEntry(entry) {
   if (!entry.inspection_detail || !entry.inspection_detail.boxes) return null
-
   const boxes = [...entry.inspection_detail.boxes]
     .sort((a, b) => (a.box_index ?? 0) - (b.box_index ?? 0))
     .map((b, idx) => ({
