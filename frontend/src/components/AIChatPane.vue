@@ -114,10 +114,24 @@
       <!-- Generated Draft Display -->
       <div v-if="generatedDraft" class="bg-amber-500/5 dark:bg-amber-500/10 border-2 border-dashed border-amber-500/20 p-4 rounded-2xl space-y-3 relative overflow-hidden animate-scale">
         <h4 class="text-xs font-black text-amber-700 dark:text-amber-400 uppercase tracking-wider flex items-center space-x-1">
-          <span>📝 KI Protokoll-Entwurf</span>
+          <span>📝 {{ isHoneyDraft ? '🍯 KI Honig-Entwurf' : '📝 KI Protokoll-Entwurf' }}</span>
         </h4>
         
-        <div class="space-y-1.5 text-xs text-gray-700 dark:text-gray-300">
+        <div v-if="isHoneyDraft" class="space-y-1.5 text-xs text-gray-700 dark:text-gray-300">
+          <p><span class="font-bold text-gray-400">Sorte:</span> {{ generatedDraft.honey_type || 'Blütenhonig' }}</p>
+          <p v-if="generatedDraft.quantity_kg"><span class="font-bold text-gray-400">Menge:</span> {{ generatedDraft.quantity_kg }} kg</p>
+          <p v-if="generatedDraft.water_content_percent"><span class="font-bold text-gray-400">Wassergehalt:</span> {{ generatedDraft.water_content_percent }} %</p>
+          <p v-if="generatedDraft.harvest_date"><span class="font-bold text-gray-400">Ernte:</span> {{ formatDate(generatedDraft.harvest_date) }}</p>
+          <p v-if="generatedDraft.dib_label_start || generatedDraft.dib_label_end">
+            <span class="font-bold text-gray-400">D.I.B. Nummern:</span> {{ generatedDraft.dib_label_start || '?' }} bis {{ generatedDraft.dib_label_end || '?' }}
+          </p>
+          <p v-if="generatedDraft.reserve_sample_taken">
+            <span class="font-bold text-gray-400">Rückstellprobe:</span> Ja ({{ generatedDraft.reserve_sample_id || 'ID ausstehend' }})
+          </p>
+          <p v-if="generatedDraft.notes"><span class="font-bold text-gray-400">Notiz:</span> "{{ generatedDraft.notes }}"</p>
+        </div>
+
+        <div v-else class="space-y-1.5 text-xs text-gray-700 dark:text-gray-300">
           <p><span class="font-bold text-gray-400">Typ:</span> {{ getEntryTypeName(generatedDraft.entry_type) }}</p>
           <p v-if="generatedDraft.hive_name"><span class="font-bold text-gray-400">Gefundenes Volk:</span> {{ generatedDraft.hive_name }}</p>
           <p v-if="generatedDraft.date"><span class="font-bold text-gray-400">Datum:</span> {{ formatDate(generatedDraft.date) }}</p>
@@ -151,7 +165,7 @@
           @click="applyDraft"
           class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-sm hover-scale mt-3 flex items-center justify-center space-x-1"
         >
-          <span>📥 In Protokollformular laden</span>
+          <span>{{ isHoneyDraft ? '📥 In Honig-Chargen laden' : '📥 In Protokollformular laden' }}</span>
         </button>
       </div>
 
@@ -162,12 +176,14 @@
 
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { useApiaryStore } from '../stores/apiary'
 import { useErrorStore } from '../stores/error'
 import axios from 'axios'
 
 const apiaryStore = useApiaryStore()
 const errorStore = useErrorStore()
+const router = useRouter()
 
 const activeMode = ref('chat') // 'chat' or 'draft'
 const chatStream = ref(null)
@@ -179,6 +195,7 @@ const aiLoading = ref(false)
 const draftText = ref('')
 const generatedDraft = ref(null)
 const draftLoading = ref(false)
+const isHoneyDraft = ref(false)
 
 const emit = defineEmits(['apply-draft'])
 
@@ -237,10 +254,21 @@ async function generateDraft() {
   
   draftLoading.value = true
   generatedDraft.value = null
+  isHoneyDraft.value = false
+  
+  const text = draftText.value.toLowerCase()
+  const isHoney = text.includes('honig') || text.includes('ernte') || text.includes('geerntet') || text.includes('wasser') || text.includes('banderole') || text.includes('schleudern') || text.includes('abgefüllt') || text.includes('charge')
   
   try {
-    const response = await axios.post('/api/ai/draft', { text: draftText.value.trim() })
-    generatedDraft.value = response.data.draft
+    if (isHoney) {
+      const response = await axios.post('/api/ai/draft-honey', { text: draftText.value.trim() })
+      generatedDraft.value = response.data.draft
+      isHoneyDraft.value = true
+    } else {
+      const response = await axios.post('/api/ai/draft', { text: draftText.value.trim() })
+      generatedDraft.value = response.data.draft
+      isHoneyDraft.value = false
+    }
   } catch (err) {
     errorStore.showError('Entschuldigung, das Mitschriften-Parsing ist fehlgeschlagen.', err, 'KI-Parsing fehlgeschlagen')
   } finally {
@@ -250,10 +278,16 @@ async function generateDraft() {
 
 function applyDraft() {
   if (!generatedDraft.value) return
-  emit('apply-draft', generatedDraft.value)
+  if (isHoneyDraft.value) {
+    sessionStorage.setItem('pending_honey_draft', JSON.stringify(generatedDraft.value))
+    router.push('/honey-batches')
+  } else {
+    emit('apply-draft', generatedDraft.value)
+  }
   // Switch to chat or clear
   draftText.value = ''
   generatedDraft.value = null
+  isHoneyDraft.value = false
 }
 
 function clearHistory() {

@@ -13,6 +13,7 @@ from app.routers.apiaries import check_access
 from app.services.ai_assistant import (
     chatbot_completion, 
     draft_entry_from_text,
+    draft_honey_batch_from_text,
     get_llm_config
 )
 from app.services.calculations import calculate_inspection_totals
@@ -47,4 +48,17 @@ def ai_draft_entry(
     so that the beekeeper can quickly auto-fill inspections or counts.
     """
     draft = draft_entry_from_text(query_in.text, db=db)
+    return {"draft": draft}
+
+@router.post("/draft-honey", response_model=AIDraftResponse)
+def ai_draft_honey_batch(
+    query_in: AIDraftQuery,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Parses natural language notes into structured honey batch draft data
+    so that the beekeeper can quickly auto-fill honey harvests/bottlings.
+    """
+    draft = draft_honey_batch_from_text(query_in.text, db=db)
     return {"draft": draft}

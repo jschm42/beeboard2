@@ -6,12 +6,27 @@ import os
 from app.core.config import settings
 from app.core.database import engine
 from app.models import Base
-from app.routers import auth, apiaries, locations, hives, logbook, stats, ai, admin, ai_insights
+from app.routers import auth, apiaries, locations, hives, logbook, stats, ai, admin, ai_insights, honey
 from contextlib import asynccontextmanager
 from app.services.cron import start_scheduler
 
 # Initialize SQLite tables on startup
 Base.metadata.create_all(bind=engine)
+
+# Database migrations for new columns
+from sqlalchemy import text
+with engine.connect() as conn:
+    try:
+        result = conn.execute(text("PRAGMA table_info(llm_configs)"))
+        columns = [row[1] for row in result.fetchall()]
+        if "openweathermap_api_key" not in columns:
+            conn.execute(text("ALTER TABLE llm_configs ADD COLUMN openweathermap_api_key VARCHAR"))
+            conn.commit()
+        if "insights_cron" not in columns:
+            conn.execute(text("ALTER TABLE llm_configs ADD COLUMN insights_cron VARCHAR DEFAULT '0 */12 * * *'"))
+            conn.commit()
+    except Exception as e:
+        print(f"Error running database migration: {e}")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -50,6 +65,7 @@ app.include_router(stats.router, prefix="/api")
 app.include_router(ai.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
 app.include_router(ai_insights.router, prefix="/api")
+app.include_router(honey.router, prefix="/api")
 
 @app.get("/api/health")
 def health_check():

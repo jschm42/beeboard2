@@ -1,15 +1,31 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-gray-50 dark:bg-dark-bg text-gray-900 dark:text-gray-100 transition-colors duration-300">
-    <!-- Render Navbar only if user is authenticated -->
-    <Navbar v-if="authStore.isAuthenticated" />
+  <div class="min-h-screen bg-gray-50 dark:bg-dark-bg text-gray-900 dark:text-gray-100 transition-colors duration-300">
+    <!-- Authenticated Layout with Sidebar -->
+    <div v-if="authStore.isAuthenticated" class="flex flex-col md:flex-row min-h-screen">
+      <Sidebar />
+      
+      <!-- Main Content Area -->
+      <div class="flex-grow flex flex-col min-w-0 md:pl-64 pt-16 md:pt-0">
+        <main class="flex-grow">
+          <router-view v-slot="{ Component }">
+            <transition name="fade" mode="out-in">
+              <component :is="Component" />
+            </transition>
+          </router-view>
+        </main>
+      </div>
+    </div>
     
-    <main class="flex-grow">
-      <router-view v-slot="{ Component }">
-        <transition name="fade" mode="out-in">
-          <component :is="Component" />
-        </transition>
-      </router-view>
-    </main>
+    <!-- Guest/Unauthenticated Layout (e.g. Login, Register) -->
+    <div v-else class="min-h-screen flex flex-col">
+      <main class="flex-grow">
+        <router-view v-slot="{ Component }">
+          <transition name="fade" mode="out-in">
+            <component :is="Component" />
+          </transition>
+        </router-view>
+      </main>
+    </div>
 
     <!-- Global Premium Error Modal -->
     <ErrorModal />
@@ -23,7 +39,7 @@ import axios from 'axios'
 import { useAuthStore } from './stores/auth'
 import { useApiaryStore } from './stores/apiary'
 import { useErrorStore } from './stores/error'
-import Navbar from './components/Navbar.vue'
+import Sidebar from './components/Sidebar.vue'
 import ErrorModal from './components/ErrorModal.vue'
 
 const router = useRouter()

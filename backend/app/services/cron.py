@@ -72,8 +72,53 @@ async def generate_insight_for_apiary(db: Session, apiary: Apiary):
     except Exception as e:
         logger.error(f"LiteLLM error in cron job: {e}")
 
+def reschedule_insights_job(cron_expression: str) -> bool:
+    """Dynamically reschedules the AI Insights job with the given unix cron expression."""
+    # Remove existing job if it exists
+    try:
+        scheduler.remove_job('ai_insights_job')
+    except Exception:
+        pass
+    
+    parts = cron_expression.strip().split()
+    if len(parts) == 5:
+        minute, hour, day, month, day_of_week = parts
+        try:
+            scheduler.add_job(
+                generate_ai_insights_job,
+                'cron',
+                id='ai_insights_job',
+                minute=minute,
+                hour=hour,
+                day=day,
+                month=month,
+                day_of_week=day_of_week
+            )
+            logger.info(f"AI Insights job scheduled with cron: {cron_expression}")
+            return True
+        except Exception as e:
+            logger.warning(f"Failed to schedule cron job with expression '{cron_expression}': {e}")
+            
+    # Fallback to interval if invalid
+    try:
+        scheduler.add_job(generate_ai_insights_job, 'interval', hours=12, id='ai_insights_job')
+    except Exception:
+        pass
+    logger.warning(f"Fallback to 12h interval applied due to invalid cron '{cron_expression}'.")
+    return False
+
 def start_scheduler():
-    # Run every 12 hours
-    scheduler.add_job(generate_ai_insights_job, 'interval', hours=12)
+    # Load cron expression from DB config
+    db = SessionLocal()
+    try:
+        config = get_llm_config(db)
+        cron_expression = config.insights_cron
+    except Exception as e:
+        logger.error(f"Error loading cron config on startup: {e}")
+        cron_expression = "0 */12 * * *"
+    finally:
+        db.close()
+        
+    reschedule_insights_job(cron_expression)
     scheduler.start()
     logger.info("APScheduler started.")

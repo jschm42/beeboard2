@@ -191,16 +191,16 @@
       <div v-else class="grid grid-cols-1 gap-8">
         
         <!-- Live Weather API Switch -->
-        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
+        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm space-y-4">
           <div class="flex items-start justify-between">
             <div class="space-y-1">
               <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center">
                 <span>🌦️ Echtzeit-Wetter abrufen</span>
-                <span class="ml-2 text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded uppercase font-black">Open-Meteo API</span>
+                <span class="ml-2 text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded uppercase font-black">OpenWeatherMap API</span>
               </h3>
               <p class="text-xs text-gray-500 dark:text-gray-400 max-w-2xl">
-                Wenn aktiviert, fragt der KI-Assistent bei Standortabfragen die aktuellen Wetterbedingungen an den Koordinaten der Stände ab. 
-                Die ermittelten Temperatur- und Windwerte fließen direkt in den Chatverlauf ein.
+                Wenn aktiviert, fragt der KI-Assistent bei Standortabfragen die aktuellen Wetterbedingungen an den Koordinaten der Stände ab.
+                Der API-Schlüssel wird sicher über die Server-Umgebungsvariablen (<code>.env</code>) konfiguriert.
               </p>
             </div>
             
@@ -215,6 +215,39 @@
                 :class="llmConfig.enable_weather_api ? 'translate-x-5' : 'translate-x-0'"
               />
             </button>
+          </div>
+        </div>
+
+        <!-- AI Insights Cron Configuration -->
+        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm space-y-4">
+          <div>
+            <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center">
+              <span>🕒 KI-Analyse Intervall (Cron-Job)</span>
+            </h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Bestimme, wie oft die automatischen KI-Berichte für deine Imkereien generiert werden. Die Eingabe erfolgt im standardmäßigen UNIX Cron-Format.
+            </p>
+          </div>
+
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
+                Cron-Ausdruck *
+              </label>
+              <div class="relative rounded-xl shadow-sm max-w-md flex gap-3">
+                <input 
+                  v-model="llmConfig.insights_cron" 
+                  type="text" 
+                  required
+                  placeholder="z.B. 0 */12 * * *" 
+                  class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+                />
+              </div>
+              <p class="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
+                Format: <code>Minute Stunde Tag Monat Wochentag</code>. 
+                Beispiele: <code>0 */12 * * *</code> (alle 12 Stunden), <code>0 8 * * *</code> (täglich um 08:00 Uhr), <code>*/30 * * * *</code> (alle 30 Minuten).
+              </p>
+            </div>
           </div>
         </div>
 
@@ -532,7 +565,8 @@ const togglingUser = ref(null)
 const llmConfig = ref({
   chatbot_system_prompt: '',
   draft_system_prompt: '',
-  enable_weather_api: false
+  enable_weather_api: false,
+  insights_cron: ''
 })
 const loadingLLM = ref(false)
 const savingLLM = ref(false)
@@ -625,13 +659,15 @@ async function saveLLMConfig() {
     const res = await axios.put('/api/admin/llm-config', {
       chatbot_system_prompt: llmConfig.value.chatbot_system_prompt,
       draft_system_prompt: llmConfig.value.draft_system_prompt,
-      enable_weather_api: llmConfig.value.enable_weather_api
+      enable_weather_api: llmConfig.value.enable_weather_api,
+      insights_cron: llmConfig.value.insights_cron
     })
     llmConfig.value = res.data
     showToast('KI- und Wettereinstellungen erfolgreich aktualisiert.')
   } catch (err) {
     console.error('Save config error:', err)
-    showToast('Fehler beim Aktualisieren der Einstellungen.', 'error')
+    const msg = err.response?.data?.detail || 'Fehler beim Aktualisieren der Einstellungen.'
+    showToast(msg, 'error')
   } finally {
     savingLLM.value = false
   }

@@ -44,6 +44,11 @@ const routes = [
     component: () => import('../views/AIInsightsView.vue')
   },
   {
+    path: '/honey-batches',
+    name: 'honey-batches',
+    component: () => import('../views/HoneyBatchesView.vue')
+  },
+  {
     path: '/admin',
     name: 'admin',
     component: () => import('../views/AdminView.vue'),

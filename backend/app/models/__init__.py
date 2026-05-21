@@ -14,6 +14,7 @@ from app.models.logbook import (
     LogEntryImage
 )
 from app.models.ai_insight import AIInsight
+from app.models.honey_batch import HoneyBatch
 
 # Export all models for easier importing
 __all__ = [
@@ -34,5 +35,6 @@ __all__ = [
     "VarroaCountDetail",
     "VarroaTreatmentDetail",
     "LogEntryImage",
-    "AIInsight"
+    "AIInsight",
+    "HoneyBatch"
 ]
