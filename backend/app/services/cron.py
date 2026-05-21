@@ -50,12 +50,19 @@ async def generate_insight_for_apiary(db: Session, apiary: Apiary):
     user_prompt = "Bitte lade dir alle aktuellen Daten der Imkerei herunter und erstelle den Bericht."
     
     try:
+        from app.models.apiary import ApiaryMembership
+        membership = db.query(ApiaryMembership).filter(
+            ApiaryMembership.apiary_id == apiary.id
+        ).order_by(ApiaryMembership.role == 'ADMIN').first()
+        current_user = membership.user if membership else None
+
         from app.services.ai_assistant import run_agent_loop
         content = await run_agent_loop(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             db=db,
             apiary_id=apiary.id,
+            current_user=current_user,
             effective_model=effective_model,
             api_key=api_key
         )

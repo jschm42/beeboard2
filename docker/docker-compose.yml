@@ -1,29 +1,18 @@
-version: '3.9'
-
 services:
-  backend:
-    container_name: beeboard-backend
+  beeboard:
+    container_name: beeboard-app
     build:
       context: ..
-      dockerfile: docker/Dockerfile.backend
+      dockerfile: docker/Dockerfile.unified
     env_file:
       - ../backend/.env
     volumes:
       - ${BEEBOARD_DOCKER_DATA:-./data}:/app/data
-    ports:
-      - "${BEEBOARD_BACKEND_PORT:-8000}:8000"
-
-  nginx:
-    image: nginx:1.27-alpine
-    container_name: beeboard
-    depends_on:
-      - backend
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ../frontend/dist:/usr/share/nginx/html:ro
-      - ${BEEBOARD_DOCKER_DATA:-./data}:/var/www/data
+      - ./certs:/etc/nginx/certs
     ports:
       - "${BEEBOARD_HTTP_PORT:-8080}:80"
+      - "${BEEBOARD_HTTPS_PORT:-8443}:443"
+    restart: unless-stopped
 
 networks:
   default:

@@ -223,60 +223,77 @@ This hosts the compiled files on a local static web server (typically port `4173
 
 ---
 
-### 3. Docker Setup (Backend + Frontend + Nginx)
+### 3. Docker Setup (Backend + Frontend + Nginx with HTTPS/SSL)
 
-You can also run BeeBoard 2 via Docker with an Nginx reverse proxy in front of the backend and the built frontend.
+You can run BeeBoard 2 via Docker with an Nginx reverse proxy serving the frontend, proxying API requests to the backend, and securing all traffic with HTTPS (SSL).
 
 All Docker-related files live in the `docker/` directory:
 
-* `docker/Dockerfile.backend` – builds the Python FastAPI backend image.
-* `docker/Dockerfile.frontend` – builds the Vue frontend and serves it via Nginx.
-* `docker/nginx.conf` – Nginx configuration (serves SPA and proxies `/api/` to the backend).
-* `docker/docker-compose.yml` – defines the `backend`, `frontend` (build stage) and `nginx` services.
-* `docker/setup.ps1` – convenience script to start the stack.
-* `docker/update.ps1` – convenience script to rebuild/update the stack.
+* `docker/Dockerfile.backend` – builds the Python FastAPI backend image and runs migrations automatically at startup.
+* `docker/Dockerfile.frontend` – builds the Vue frontend and copies static assets to Nginx.
+* `docker/nginx.conf` – Nginx configuration (handles SSL, redirects HTTP to HTTPS, supports WebSockets, and proxies `/api/` to the backend).
+* `docker/docker-compose.yml` – defines the backend, frontend (build stage), and Nginx reverse proxy services.
+* `docker/setup.ps1` / `docker/setup.sh` – convenience scripts (PowerShell & Bash) to generate SSL certificates and start the stack.
+* `docker/update.ps1` / `docker/update.sh` – convenience scripts to pull, rebuild, and restart the stack.
 
 #### 🔧 Configurable Ports & Data Directory
 
-The Docker setup is controlled via the following environment variables (with defaults):
+The Docker setup is controlled via the following environment variables (defined in `backend/.env` or passed to scripts):
 
-* `BEEBOARD_HTTP_PORT` – external HTTP port for Nginx (default: `8080`).
-* `BEEBOARD_BACKEND_PORT` – external port mapped to the backend container (default: `8000`).
-* `BEEBOARD_DOCKER_DATA` – host directory for persistent data (default: `./data` inside `docker/`).
+* `BEEBOARD_HTTP_PORT` – external HTTP port (default: `8080`, redirects to HTTPS).
+* `BEEBOARD_HTTPS_PORT` – external HTTPS port for Nginx (default: `8443` or `443` for standard HTTPS).
+* `BEEBOARD_BACKEND_PORT` – external port mapped directly to the backend container (default: `8000`).
+* `BEEBOARD_DOCKER_DATA` – host directory for persistent database and upload data (default: `./docker/data`).
 
-These are set automatically by the PowerShell helper scripts.
+#### 🔑 SSL Certificates
 
-#### ▶️ Start the Docker Stack (Windows / PowerShell)
+The setup scripts will automatically check if SSL certificates exist in `docker/certs/`. If they do not, they will start an ephemeral Docker container to generate a secure, self-signed SSL certificate (`nginx.crt` / `nginx.key`) automatically. No local OpenSSL installation is required.
 
-From the repository root, open PowerShell and run:
+#### ▶️ Start the Docker Stack
 
+##### 💻 On Windows (PowerShell)
+From the repository root, run:
 ```powershell
 cd docker
-./setup.ps1
+.\setup.ps1
 ```
-
-This will:
-
-1. Build the backend and frontend images.
-2. Start the backend, build the frontend, and run Nginx as reverse proxy.
-3. Expose the app at `http://localhost:8080` (or your configured `BEEBOARD_HTTP_PORT`).
-
-You can override ports and data directory via parameters, e.g.:
-
+You can override configuration using parameters:
 ```powershell
-./setup.ps1 -HttpPort 80 -BackendPort 9000 -DataDir "D:\\beeboard-data"
+.\setup.ps1 -HttpPort 80 -HttpsPort 443 -BackendPort 9000 -DataDir "C:\beeboard-data"
 ```
+
+##### 🐧 On macOS / Linux / Git Bash
+From the repository root, run:
+```bash
+cd docker
+chmod +x *.sh
+./setup.sh
+```
+
+##### 🌐 Accessing the Application
+Once the stack is up, you can access the application securely:
+* **HTTPS**: **`https://localhost:8443`** (or your configured `BEEBOARD_HTTPS_PORT`)
+* **HTTP**: `http://localhost:8080` (automatically redirects to the HTTPS address)
+
+> [!NOTE]
+> Since the SSL certificate is self-signed for local development, your browser will show a security warning. You can safely bypass this warning (click "Advanced" and "Proceed to localhost") to access the app.
 
 #### 🔁 Update / Rebuild the Docker Stack
 
-To rebuild images and restart the stack after code changes:
+To pull new base images, rebuild after code changes, and restart the stack:
 
+##### 💻 On Windows (PowerShell)
 ```powershell
 cd docker
-./update.ps1 -HttpPort 8080 -BackendPort 8000 -DataDir "data"
+.\update.ps1
 ```
 
-This will run `docker compose up -d --build` with the given configuration.
+##### 🐧 On macOS / Linux / Git Bash
+```bash
+cd docker
+./update.sh
+```
+
 
 ---
 

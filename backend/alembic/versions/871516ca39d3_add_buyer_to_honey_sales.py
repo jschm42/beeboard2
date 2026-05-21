@@ -18,11 +18,16 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Add buyer column (nullable) to honey_sales
-    with op.batch_alter_table('honey_sales', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('buyer', sa.String(length=200), nullable=True))
+    # Check if column already exists (useful if DB was created via create_all)
+    conn = op.get_bind()
+    columns = [c['name'] for c in sa.inspect(conn).get_columns('honey_sales')]
+    if 'buyer' not in columns:
+        op.add_column('honey_sales', sa.Column('buyer', sa.String(length=200), nullable=True))
 
 
 def downgrade() -> None:
-    with op.batch_alter_table('honey_sales', schema=None) as batch_op:
-        batch_op.drop_column('buyer')
+    conn = op.get_bind()
+    columns = [c['name'] for c in sa.inspect(conn).get_columns('honey_sales')]
+    if 'buyer' in columns:
+        with op.batch_alter_table('honey_sales', schema=None) as batch_op:
+            batch_op.drop_column('buyer')

@@ -105,7 +105,7 @@ def get_llm_config(db: Session) -> LLMConfig:
             db.refresh(config)
     return config
 
-async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apiary_id: str, current_user: User, effective_model: str, api_key: str) -> str:
+async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apiary_id: str, current_user: Optional[User] = None, effective_model: str = "", api_key: str = "") -> str:
     from app.models.location import Location
     from app.models.hive import Hive
     from app.models.logbook import LogEntry
@@ -262,86 +262,89 @@ async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apia
                                 res.append(f"Standort '{loc.name}': {temp}°C, {weather_desc}, Feuchte: {humidity}%, Wind: {wind} m/s")
                     result = "\n".join(res) if res else "Konnte keine Wetterdaten abrufen (oder keine Geodaten)."
                 elif function_name == "log_honey_sale":
-                    product_name = arguments.get("product_name")
-                    quantity = float(arguments.get("quantity", 0))
-                    total_price = float(arguments.get("total_price", 0))
-                    sales_channel = arguments.get("sales_channel", "direktverkauf")
-                    batch_number = arguments.get("batch_number")
-                    notes = arguments.get("notes")
+                    if not current_user:
+                        result = "Fehler: Kein aktiver Benutzerkontext vorhanden, um Verkäufe zu buchen."
+                    else:
+                        product_name = arguments.get("product_name")
+                        quantity = float(arguments.get("quantity", 0))
+                        total_price = float(arguments.get("total_price", 0))
+                        sales_channel = arguments.get("sales_channel", "direktverkauf")
+                        batch_number = arguments.get("batch_number")
+                        notes = arguments.get("notes")
 
-                    # Map channel
-                    channel_map = {
-                        "direktverkauf": "direktverkauf",
-                        "direkt": "direktverkauf",
-                        "online": "online",
-                        "email": "email",
-                        "e-mail": "email",
-                        "verkaufsstand": "verkaufsstand",
-                        "stand": "verkaufsstand"
-                    }
-                    sales_channel = channel_map.get(str(sales_channel).lower(), "direktverkauf")
+                        # Map channel
+                        channel_map = {
+                            "direktverkauf": "direktverkauf",
+                            "direkt": "direktverkauf",
+                            "online": "online",
+                            "email": "email",
+                            "e-mail": "email",
+                            "verkaufsstand": "verkaufsstand",
+                            "stand": "verkaufsstand"
+                        }
+                        sales_channel = channel_map.get(str(sales_channel).lower(), "direktverkauf")
 
-                    from app.models.sales import ProductConfig, HoneySale
-                    from app.models.honey_batch import HoneyBatch
+                        from app.models.sales import ProductConfig, HoneySale
+                        from app.models.honey_batch import HoneyBatch
 
-                    # Look up product config
-                    products = db.query(ProductConfig).filter(ProductConfig.created_by_id == current_user.id).all()
-                    matched_product = None
-                    for p in products:
-                        if product_name.lower() in p.name.lower() or p.name.lower() in product_name.lower() or product_name.lower() in p.honey_type.lower():
-                            matched_product = p
-                            break
+                        # Look up product config
+                        products = db.query(ProductConfig).filter(ProductConfig.created_by_id == current_user.id).all()
+                        matched_product = None
+                        for p in products:
+                            if product_name.lower() in p.name.lower() or p.name.lower() in product_name.lower() or product_name.lower() in p.honey_type.lower():
+                                matched_product = p
+                                break
 
-                    # Proactive creation if no product matches
-                    if not matched_product:
-                        tax = 7.0
-                        if "met" in product_name.lower() or "honigwein" in product_name.lower():
-                            tax = 19.0
-                        unit_price = total_price / quantity if quantity > 0 else 6.0
-                        matched_product = ProductConfig(
-                            name=product_name,
-                            honey_type=product_name,
-                            price=unit_price,
-                            tax_rate=tax,
-                            is_active=True,
+                        # Proactive creation if no product matches
+                        if not matched_product:
+                            tax = 7.0
+                            if "met" in product_name.lower() or "honigwein" in product_name.lower():
+                                tax = 19.0
+                            unit_price = total_price / quantity if quantity > 0 else 6.0
+                            matched_product = ProductConfig(
+                                name=product_name,
+                                honey_type=product_name,
+                                price=unit_price,
+                                tax_rate=tax,
+                                is_active=True,
+                                created_by_id=current_user.id
+                            )
+                            db.add(matched_product)
+                            db.commit()
+                            db.refresh(matched_product)
+                            notes_extra = f" (Produkt '{product_name}' wurde automatisch angelegt)"
+                        else:
+                            notes_extra = ""
+
+                        # Look up batch
+                        batch = None
+                        if batch_number:
+                            batch = db.query(HoneyBatch).filter(
+                                HoneyBatch.batch_number == batch_number
+                            ).first()
+                            if not batch:
+                                batch = db.query(HoneyBatch).filter(
+                                    HoneyBatch.batch_number.contains(batch_number)
+                                ).first()
+
+                        # Save sale
+                        new_sale = HoneySale(
+                            sale_date=datetime.now(),
+                            product_id=matched_product.id,
+                            batch_id=batch.id if batch else None,
+                            quantity=quantity,
+                            total_price=total_price,
+                            sales_channel=sales_channel,
+                            notes=(notes or "") + notes_extra,
                             created_by_id=current_user.id
                         )
-                        db.add(matched_product)
+                        db.add(new_sale)
                         db.commit()
-                        db.refresh(matched_product)
-                        notes_extra = f" (Produkt '{product_name}' wurde automatisch angelegt)"
-                    else:
-                        notes_extra = ""
+                        db.refresh(new_sale)
 
-                    # Look up batch
-                    batch = None
-                    if batch_number:
-                        batch = db.query(HoneyBatch).filter(
-                            HoneyBatch.batch_number == batch_number
-                        ).first()
-                        if not batch:
-                            batch = db.query(HoneyBatch).filter(
-                                HoneyBatch.batch_number.contains(batch_number)
-                            ).first()
-
-                    # Save sale
-                    new_sale = HoneySale(
-                        sale_date=datetime.now(),
-                        product_id=matched_product.id,
-                        batch_id=batch.id if batch else None,
-                        quantity=quantity,
-                        total_price=total_price,
-                        sales_channel=sales_channel,
-                        notes=(notes or "") + notes_extra,
-                        created_by_id=current_user.id
-                    )
-                    db.add(new_sale)
-                    db.commit()
-                    db.refresh(new_sale)
-
-                    result = f"Erfolgreich verbucht: {quantity}x '{matched_product.name}' für {total_price}€ über Kanal '{sales_channel}'."
-                    if batch:
-                        result += f" Verknüpft mit Charge '{batch.batch_number}'."
+                        result = f"Erfolgreich verbucht: {quantity}x '{matched_product.name}' für {total_price}€ über Kanal '{sales_channel}'."
+                        if batch:
+                            result += f" Verknüpft mit Charge '{batch.batch_number}'."
                 else:
                     result = f"Unbekannte Funktion: {function_name}"
             except Exception as e:

@@ -18,9 +18,11 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Add requires_batch_selection column with default False (NOT NULL)
-    with op.batch_alter_table('product_configs', schema=None) as batch_op:
-        batch_op.add_column(sa.Column(
+    # Check if column already exists (useful if DB was created via create_all)
+    conn = op.get_bind()
+    columns = [c['name'] for c in sa.inspect(conn).get_columns('product_configs')]
+    if 'requires_batch_selection' not in columns:
+        op.add_column('product_configs', sa.Column(
             'requires_batch_selection',
             sa.Boolean(),
             nullable=False,
@@ -29,5 +31,8 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    with op.batch_alter_table('product_configs', schema=None) as batch_op:
-        batch_op.drop_column('requires_batch_selection')
+    conn = op.get_bind()
+    columns = [c['name'] for c in sa.inspect(conn).get_columns('product_configs')]
+    if 'requires_batch_selection' in columns:
+        with op.batch_alter_table('product_configs', schema=None) as batch_op:
+            batch_op.drop_column('requires_batch_selection')
