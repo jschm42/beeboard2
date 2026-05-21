@@ -134,6 +134,7 @@
                 <th class="px-6 py-4 text-center">USt. / MwSt.</th>
                 <th class="px-6 py-4">Kanal</th>
                 <th class="px-6 py-4">Charge</th>
+                <th class="px-6 py-4">Verkauft an</th>
                 <th class="px-6 py-4">Notizen</th>
                 <th class="px-6 py-4 text-right">Aktionen</th>
               </tr>
@@ -184,6 +185,11 @@
                 <!-- Honey Batch -->
                 <td class="px-6 py-4 font-mono text-xs text-amber-600 dark:text-amber-400">
                   {{ s.batch?.batch_number || '-' }}
+                </td>
+
+                <!-- Buyer -->
+                <td class="px-6 py-4 text-xs text-gray-600 dark:text-gray-300 max-w-[150px] truncate" :title="s.buyer">
+                  {{ s.buyer || '-' }}
                 </td>
 
                 <!-- Notes -->
@@ -238,6 +244,7 @@
                 <th class="px-6 py-4">Honigsorte</th>
                 <th class="px-6 py-4 text-right">Standardpreis</th>
                 <th class="px-6 py-4 text-center">Steuersatz</th>
+                <th class="px-6 py-4 text-center">Lospflicht</th>
                 <th class="px-6 py-4 text-center">Status</th>
                 <th class="px-6 py-4 text-right">Aktionen</th>
               </tr>
@@ -270,6 +277,16 @@
                   </span>
                   <span v-else class="text-xs text-gray-600 dark:text-gray-300">
                     {{ p.tax_rate }}%
+                  </span>
+                </td>
+
+                <!-- Requires Batch -->
+                <td class="px-6 py-4 text-center">
+                  <span
+                    class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                    :class="p.requires_batch_selection ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-gray-100 text-gray-400 dark:bg-gray-800'"
+                  >
+                    {{ p.requires_batch_selection ? '🔗 Pflicht' : 'Optional' }}
                   </span>
                 </td>
 
@@ -383,18 +400,29 @@
               </select>
             </div>
 
-            <!-- Honey Batch (optional) -->
+            <!-- Honey Batch (optional / required) -->
             <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Honig-Charge (Optional)</label>
-              <select 
-                v-model="saleForm.batch_id" 
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
+                Honig-Charge
+                <span v-if="selectedProductRequiresBatch" class="text-red-500">*</span>
+                <span v-else class="text-gray-400 font-normal">(Optional)</span>
+              </label>
+              <select
+                v-model="saleForm.batch_id"
+                :required="selectedProductRequiresBatch"
+                class="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono transition-colors"
+                :class="selectedProductRequiresBatch && !saleForm.batch_id
+                  ? 'border-amber-400 dark:border-amber-500 dark:bg-dark-bg dark:text-white'
+                  : 'border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white'"
               >
                 <option :value="null">Keine Verknüpfung</option>
                 <option v-for="b in batches" :key="b.id" :value="b.id">
                   {{ b.batch_number || `MHD: ${formatDate(b.best_before_date)}` }} - {{ b.honey_type }} ({{ b.quantity_kg }} kg)
                 </option>
               </select>
+              <p v-if="selectedProductRequiresBatch && !saleForm.batch_id" class="text-[11px] text-amber-600 dark:text-amber-400 font-bold mt-1">
+                ⚠️ Für dieses Produkt ist die Angabe einer Losnummer zur Rückverfolgbarkeit zwingend erforderlich.
+              </p>
             </div>
 
             <!-- Sale Date -->
@@ -408,11 +436,22 @@
               />
             </div>
 
+            <!-- Buyer (optional) -->
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Verkauft an <span class="text-gray-400 font-normal">(Optional)</span></label>
+              <input
+                v-model="saleForm.buyer"
+                type="text"
+                placeholder="Name des Käufers oder Unternehmens..."
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+              />
+            </div>
+
             <!-- Notes -->
             <div>
               <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Notizen</label>
-              <textarea 
-                v-model="saleForm.notes" 
+              <textarea
+                v-model="saleForm.notes"
                 rows="2"
                 placeholder="Optionale Notizen zum Verkauf..."
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
@@ -507,12 +546,24 @@
               <span class="text-xs text-gray-600 dark:text-gray-300">0.0 % (Kleinunternehmer-Regelung § 19 UStG)</span>
             </div>
 
-            <!-- Is Active -->
-            <div class="flex items-center pt-2">
+            <!-- Requires Batch Selection -->
+            <div class="flex items-center pt-1">
               <label class="flex items-center space-x-2 cursor-pointer">
-                <input 
-                  v-model="productForm.is_active" 
-                  type="checkbox" 
+                <input
+                  v-model="productForm.requires_batch_selection"
+                  type="checkbox"
+                  class="rounded text-primary focus:ring-primary h-4 w-4"
+                />
+                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Losnummer bei Verkauf verpflichtend</span>
+              </label>
+            </div>
+
+            <!-- Is Active -->
+            <div class="flex items-center pt-1">
+              <label class="flex items-center space-x-2 cursor-pointer">
+                <input
+                  v-model="productForm.is_active"
+                  type="checkbox"
                   class="rounded text-primary focus:ring-primary h-4 w-4"
                 />
                 <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Produkt aktiv</span>
@@ -578,7 +629,8 @@ const saleForm = reactive({
   sales_channel: 'direktverkauf',
   batch_id: null,
   sale_date: '',
-  notes: ''
+  notes: '',
+  buyer: ''
 })
 
 const productForm = reactive({
@@ -586,7 +638,8 @@ const productForm = reactive({
   honey_type: '',
   price: 0,
   tax_rate: 7.0,
-  is_active: true
+  is_active: true,
+  requires_batch_selection: false
 })
 
 function showAlert(message, type = 'success') {
@@ -601,6 +654,12 @@ function showAlert(message, type = 'success') {
 
 const activeProducts = computed(() => {
   return products.value.filter(p => p.is_active)
+})
+
+const selectedProductRequiresBatch = computed(() => {
+  if (!saleForm.product_id) return false
+  const prod = products.value.find(p => p.id === saleForm.product_id)
+  return prod?.requires_batch_selection ?? false
 })
 
 function formatDateTime(val) {
@@ -728,6 +787,7 @@ function openCreateSaleModal() {
   const localISOTime = new Date(now.getTime() - offset).toISOString().slice(0, 16)
   saleForm.sale_date = localISOTime
   saleForm.notes = ''
+  saleForm.buyer = ''
   
   recalculateTotalPrice()
   showSaleModal.value = true
@@ -752,6 +812,7 @@ function openEditSaleModal(s) {
     saleForm.sale_date = ''
   }
   saleForm.notes = s.notes || ''
+  saleForm.buyer = s.buyer || ''
   
   showSaleModal.value = true
 }
@@ -775,6 +836,13 @@ function recalculateTotalPrice() {
 
 async function submitSaleForm() {
   if (!saleForm.product_id) return
+
+  // Client-side: enforce batch if required by product
+  if (selectedProductRequiresBatch.value && !saleForm.batch_id) {
+    showAlert('Bitte eine Losnummer (Charge) für dieses Produkt auswählen.', 'error')
+    return
+  }
+
   try {
     const payload = {
       product_id: saleForm.product_id,
@@ -783,7 +851,8 @@ async function submitSaleForm() {
       sales_channel: saleForm.sales_channel,
       batch_id: saleForm.batch_id || null,
       sale_date: saleForm.sale_date ? new Date(saleForm.sale_date).toISOString() : null,
-      notes: saleForm.notes.trim() || null
+      notes: saleForm.notes.trim() || null,
+      buyer: saleForm.buyer?.trim() || null
     }
 
     if (isEditMode.value) {
@@ -818,13 +887,14 @@ async function deleteSale(s) {
 function openCreateProductModal() {
   isEditMode.value = false
   editingId.value = null
-  
+
   productForm.name = ''
   productForm.honey_type = ''
   productForm.price = 0
   productForm.tax_rate = 7.0
   productForm.is_active = true
-  
+  productForm.requires_batch_selection = false
+
   showProductModal.value = true
 }
 
@@ -837,6 +907,7 @@ function openEditProductModal(p) {
   productForm.price = p.price
   productForm.tax_rate = p.tax_rate
   productForm.is_active = p.is_active
+  productForm.requires_batch_selection = p.requires_batch_selection ?? false
   
   showProductModal.value = true
 }
@@ -853,7 +924,8 @@ async function submitProductForm() {
       honey_type: productForm.honey_type.trim() || null,
       price: Number(productForm.price),
       tax_rate: taxSettings.value.kleinunternehmer_regelung ? 0.0 : Number(productForm.tax_rate),
-      is_active: productForm.is_active
+      is_active: productForm.is_active,
+      requires_batch_selection: productForm.requires_batch_selection
     }
 
     if (isEditMode.value) {

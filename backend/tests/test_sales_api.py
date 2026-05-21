@@ -206,3 +206,50 @@ def test_sales_kleinunternehmer_regelung(client: TestClient, db: Session):
     data_row = csv_lines[1].strip().split(";")
     assert data_row[steuersatz_idx] == "0,0"
 
+
+
+def test_requires_batch_selection_enforcement(client, db):
+    """requires_batch_selection flag is stored and enforced at sale creation."""
+    client.post('/api/auth/register', json={
+        'username': 'batchtester', 'email': 'batchtester@example.com',
+        'password': 'strongpassword123', 'first_name': 'Batch', 'last_name': 'Tester'
+    })
+    login_resp = client.post('/api/auth/login', data={
+        'username': 'batchtester', 'password': 'strongpassword123'
+    })
+    headers = {'Authorization': 'Bearer ' + login_resp.json()['access_token']}
+
+    # Product with required batch
+    prod = client.post('/api/sales/products', json={
+        'name': 'Traced Honey 250g', 'honey_type': 'Frühlingshonig',
+        'price': 5.00, 'tax_rate': 7.0, 'is_active': True,
+        'requires_batch_selection': True
+    }, headers=headers).json()
+    assert prod['requires_batch_selection'] is True
+
+    # Sale without batch must be rejected
+    resp = client.post('/api/sales', json={
+        'product_id': prod['id'], 'quantity': 1, 'sales_channel': 'direktverkauf'
+    }, headers=headers)
+    assert resp.status_code == 422
+    assert 'Losnummer' in resp.json()['detail']
+
+    # Create apiary + batch
+    apiary_id = client.post('/api/apiaries', json={
+        'name': 'Batch Enforcement Apiary', 'address': 'Test 1'
+    }, headers=headers).json()['id']
+    batch_id = client.post(
+        '/api/honey-batches?apiary_id=' + apiary_id, json={
+            'batch_number': 'L-BATCH-ENF-01', 'honey_type': 'Fruehling',
+            'harvest_date': '2026-05-01', 'quantity_kg': 20.0,
+            'best_before_date': '2028-05-01', 'is_exact_date': False
+        }, headers=headers
+    ).json()['id']
+
+    # Sale WITH batch must succeed
+    resp2 = client.post('/api/sales', json={
+        'product_id': prod['id'], 'quantity': 2,
+        'sales_channel': 'direktverkauf', 'batch_id': batch_id
+    }, headers=headers)
+    assert resp2.status_code == 201
+    assert resp2.json()['batch']['batch_number'] == 'L-BATCH-ENF-01'

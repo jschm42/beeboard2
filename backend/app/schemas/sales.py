@@ -10,6 +10,7 @@ class ProductConfigBase(BaseModel):
     price: float
     tax_rate: float
     is_active: bool = True
+    requires_batch_selection: bool = False
 
 class ProductConfigCreate(ProductConfigBase):
     pass
@@ -20,6 +21,7 @@ class ProductConfigUpdate(BaseModel):
     price: Optional[float] = None
     tax_rate: Optional[float] = None
     is_active: Optional[bool] = None
+    requires_batch_selection: Optional[bool] = None
 
 class ProductConfigOut(ProductConfigBase):
     id: str
@@ -39,6 +41,7 @@ class HoneySaleBase(BaseModel):
     total_price: float
     sales_channel: str
     notes: Optional[str] = None
+    buyer: Optional[str] = None
 
 class HoneySaleCreate(BaseModel):
     sale_date: Optional[datetime] = None
@@ -48,6 +51,7 @@ class HoneySaleCreate(BaseModel):
     total_price: Optional[float] = None  # If not provided, computed on creation
     sales_channel: str
     notes: Optional[str] = None
+    buyer: Optional[str] = None
 
 class HoneySaleUpdate(BaseModel):
     sale_date: Optional[datetime] = None
@@ -57,6 +61,7 @@ class HoneySaleUpdate(BaseModel):
     total_price: Optional[float] = None
     sales_channel: Optional[str] = None
     notes: Optional[str] = None
+    buyer: Optional[str] = None
 
 class HoneySaleOut(HoneySaleBase):
     id: str

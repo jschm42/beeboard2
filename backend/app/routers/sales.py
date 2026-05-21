@@ -46,6 +46,7 @@ def create_product(
         price=product_in.price,
         tax_rate=product_in.tax_rate,
         is_active=product_in.is_active,
+        requires_batch_selection=product_in.requires_batch_selection,
         created_by_id=current_user.id
     )
     db.add(new_product)
@@ -141,6 +142,13 @@ def create_sale(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Honig-Charge nicht gefunden")
         check_access(batch.apiary_id, current_user, db)
 
+    # Enforce batch selection if required by product
+    if product.requires_batch_selection and not sale_in.batch_id:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Für das Produkt '{product.name}' ist die Angabe einer Losnummer (Charge) zwingend erforderlich."
+        )
+
     # Compute total price if not provided
     total_price = sale_in.total_price
     if total_price is None:
@@ -154,6 +162,7 @@ def create_sale(
         total_price=total_price,
         sales_channel=sale_in.sales_channel,
         notes=sale_in.notes,
+        buyer=sale_in.buyer,
         created_by_id=current_user.id
     )
     db.add(new_sale)
@@ -191,6 +200,16 @@ def update_sale(
         if not batch:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Honig-Charge nicht gefunden")
         check_access(batch.apiary_id, current_user, db)
+
+    # Re-validate batch requirement after potential product/batch changes
+    effective_product_id = sale_in.product_id or sale.product_id
+    effective_batch_id = sale_in.batch_id if 'batch_id' in sale_in.model_fields_set else sale.batch_id
+    effective_product = db.query(ProductConfig).filter(ProductConfig.id == effective_product_id).first()
+    if effective_product and effective_product.requires_batch_selection and not effective_batch_id:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Für das Produkt '{effective_product.name}' ist die Angabe einer Losnummer (Charge) zwingend erforderlich."
+        )
 
     for field, value in sale_in.model_dump(exclude_unset=True).items():
         setattr(sale, field, value)
@@ -265,6 +284,7 @@ def export_sales_csv(
         "Steuersatz",
         "Kanal",
         "Chargennummer",
+        "Verkauft an",
         "Notizen"
     ])
 
@@ -288,6 +308,7 @@ def export_sales_csv(
         }
         channel_str = channel_map.get(channel_str, channel_str)
         batch_num = s.batch.batch_number if s.batch else ""
+        buyer_str = s.buyer or ""
         notizen_str = s.notes or ""
 
         writer.writerow([
@@ -298,6 +319,7 @@ def export_sales_csv(
             tax_str,
             channel_str,
             batch_num,
+            buyer_str,
             notizen_str
         ])
 

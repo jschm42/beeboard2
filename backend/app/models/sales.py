@@ -14,6 +14,7 @@ class ProductConfig(UUIDTimeStampedModel, CreatedByModel):
     price: Mapped[float] = mapped_column(Float)
     tax_rate: Mapped[float] = mapped_column(Float, default=7.0)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    requires_batch_selection: Mapped[bool] = mapped_column(Boolean, default=False)
 
 class HoneySale(UUIDTimeStampedModel, CreatedByModel):
     __tablename__ = "honey_sales"
@@ -25,6 +26,7 @@ class HoneySale(UUIDTimeStampedModel, CreatedByModel):
     total_price: Mapped[float] = mapped_column(Float)
     sales_channel: Mapped[str] = mapped_column(String(50))  # direktverkauf, online, email, verkaufsstand
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    buyer: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)  # "Verkauft an"
 
     # Relationships
     product: Mapped[ProductConfig] = relationship("ProductConfig", foreign_keys=[product_id])
