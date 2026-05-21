@@ -6,7 +6,7 @@ import os
 from app.core.config import settings
 from app.core.database import engine
 from app.models import Base
-from app.routers import auth, apiaries, locations, hives, logbook, stats, ai, admin, ai_insights, honey
+from app.routers import auth, apiaries, locations, hives, logbook, stats, ai, admin, ai_insights, honey, sales
 from contextlib import asynccontextmanager
 from app.services.cron import start_scheduler
 
@@ -21,6 +21,9 @@ with engine.connect() as conn:
         columns = [row[1] for row in result.fetchall()]
         if "ai_insights_cron" not in columns:
             conn.execute(text("ALTER TABLE llm_configs ADD COLUMN ai_insights_cron VARCHAR DEFAULT '0 */12 * * *'"))
+            conn.commit()
+        if "kleinunternehmer_regelung" not in columns:
+            conn.execute(text("ALTER TABLE llm_configs ADD COLUMN kleinunternehmer_regelung BOOLEAN DEFAULT 0"))
             conn.commit()
     except Exception as e:
         print(f"Error running database migration: {e}")
@@ -63,6 +66,7 @@ app.include_router(ai.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
 app.include_router(ai_insights.router, prefix="/api")
 app.include_router(honey.router, prefix="/api")
+app.include_router(sales.router, prefix="/api")
 
 @app.get("/api/health")
 def health_check():

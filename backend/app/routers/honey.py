@@ -12,8 +12,31 @@ from app.models.user import User
 from app.models.honey_batch import HoneyBatch
 from app.schemas.honey import HoneyBatchCreate, HoneyBatchUpdate, HoneyBatchOut
 from app.routers.apiaries import check_access
+from app.models.administration import NumberRange
+
+def check_and_increment_range(db: Session, key: str, value: str):
+    range_obj = db.query(NumberRange).filter(NumberRange.key == key, NumberRange.is_active == True).first()
+    if range_obj:
+        expected_value = f"{range_obj.prefix or ''}{range_obj.current_value:0{range_obj.digits}d}"
+        if value == expected_value:
+            range_obj.current_value += 1
+            db.add(range_obj)
 
 router = APIRouter(prefix="/honey-batches", tags=["honey-batches"])
+
+@router.get("/suggest-number")
+def suggest_number(
+    key: str = Query(..., description="Key of the number range: batch_number or reserve_sample_id"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Suggests the next number for the given number range key."""
+    range_obj = db.query(NumberRange).filter(NumberRange.key == key, NumberRange.is_active == True).first()
+    if not range_obj:
+        return {"suggested_value": ""}
+    
+    formatted_value = f"{range_obj.prefix or ''}{range_obj.current_value:0{range_obj.digits}d}"
+    return {"suggested_value": formatted_value}
 
 @router.get("", response_model=List[HoneyBatchOut])
 def list_honey_batches(
@@ -34,6 +57,24 @@ def create_honey_batch(
 ):
     """Creates a new honey batch."""
     check_access(apiary_id, current_user, db)
+
+    # Validate duplicates
+    if batch_in.batch_number:
+        existing = db.query(HoneyBatch).filter(HoneyBatch.batch_number == batch_in.batch_number).first()
+        if existing:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Diese Los-/Chargennummer wird bereits verwendet.")
+
+    if batch_in.reserve_sample_taken and batch_in.reserve_sample_id:
+        existing_sample = db.query(HoneyBatch).filter(HoneyBatch.reserve_sample_id == batch_in.reserve_sample_id).first()
+        if existing_sample:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Diese Rückstellproben-ID wird bereits verwendet.")
+
+    # Increment ranges if the values match expected suggestions
+    if batch_in.batch_number:
+        check_and_increment_range(db, "batch_number", batch_in.batch_number)
+    
+    if batch_in.reserve_sample_taken and batch_in.reserve_sample_id:
+        check_and_increment_range(db, "reserve_sample_id", batch_in.reserve_sample_id)
 
     new_batch = HoneyBatch(
         batch_number=batch_in.batch_number,
@@ -58,6 +99,7 @@ def create_honey_batch(
     db.commit()
     db.refresh(new_batch)
     return new_batch
+
 
 @router.get("/{batch_id}", response_model=HoneyBatchOut)
 def get_honey_batch(
@@ -95,6 +137,32 @@ def update_honey_batch(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, 
             detail="Die Los-Nr. (batch_number) ist zwingend erforderlich, wenn das MHD nicht taggenau angegeben ist."
         )
+
+    # Validate duplicates on update
+    if batch_in.batch_number:
+        existing = db.query(HoneyBatch).filter(
+            HoneyBatch.batch_number == batch_in.batch_number,
+            HoneyBatch.id != batch_id
+        ).first()
+        if existing:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Diese Los-/Chargennummer wird bereits verwendet.")
+
+    sample_taken = batch_in.reserve_sample_taken if batch_in.reserve_sample_taken is not None else batch.reserve_sample_taken
+    sample_id = batch_in.reserve_sample_id if batch_in.reserve_sample_id is not None else batch.reserve_sample_id
+    if sample_taken and sample_id:
+        existing_sample = db.query(HoneyBatch).filter(
+            HoneyBatch.reserve_sample_id == sample_id,
+            HoneyBatch.id != batch_id
+        ).first()
+        if existing_sample:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Diese Rückstellproben-ID wird bereits verwendet.")
+
+    # Increment ranges if the values match expected suggestions
+    if batch_in.batch_number:
+        check_and_increment_range(db, "batch_number", batch_in.batch_number)
+    
+    if sample_taken and batch_in.reserve_sample_id:
+        check_and_increment_range(db, "reserve_sample_id", batch_in.reserve_sample_id)
 
     for field, value in batch_in.model_dump(exclude_unset=True).items():
         setattr(batch, field, value)

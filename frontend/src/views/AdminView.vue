@@ -69,6 +69,17 @@
       >
         📏 Wabenmaße
       </button>
+      <button 
+        @click="activeTab = 'number-ranges'"
+        class="pb-4 text-sm font-bold tracking-wide border-b-2 transition-all duration-200"
+        :class="[
+          activeTab === 'number-ranges' 
+            ? 'border-primary text-primary' 
+            : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+        ]"
+      >
+        🔢 Nummernkreise
+      </button>
     </div>
 
     <!-- Tab Content: User Management -->
@@ -213,6 +224,32 @@
               <span 
                 class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
                 :class="llmConfig.enable_weather_api ? 'translate-x-5' : 'translate-x-0'"
+              />
+            </button>
+          </div>
+        </div>
+
+        <!-- Kleinunternehmer-Regelung Switch -->
+        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm space-y-4">
+          <div class="flex items-start justify-between">
+            <div class="space-y-1">
+              <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center">
+                <span>💼 Kleinunternehmer-Regelung (§ 19 UStG)</span>
+              </h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400 max-w-2xl">
+                Wenn aktiviert, wird bei Verkäufen und Steuerexporten keine Umsatzsteuer berechnet oder ausgewiesen.
+              </p>
+            </div>
+            
+            <button 
+              @click="llmConfig.kleinunternehmer_regelung = !llmConfig.kleinunternehmer_regelung" 
+              class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+              :class="llmConfig.kleinunternehmer_regelung ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-700'"
+            >
+              <span class="sr-only">Kleinunternehmer aktivieren</span>
+              <span 
+                class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                :class="llmConfig.kleinunternehmer_regelung ? 'translate-x-5' : 'translate-x-0'"
               />
             </button>
           </div>
@@ -548,6 +585,159 @@
       </div>
     </div>
 
+    <!-- Tab Content: Number Ranges Management -->
+    <div v-if="activeTab === 'number-ranges'" class="space-y-6">
+      <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm animate-scale flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+        <div>
+          <h2 class="text-lg font-bold text-gray-900 dark:text-white">🔢 Nummernkreise</h2>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Definiere hier Prefix, Stellenanzahl und Zählerstände für deine Chargen- und Rückstellproben-IDs.
+          </p>
+        </div>
+      </div>
+
+      <!-- Edit Number Range Form (embedded/inline) -->
+      <div v-if="showNumberRangeForm" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm animate-scale">
+        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">
+          ✏️ Nummernkreis bearbeiten: {{ formNumberRange.name }}
+        </h3>
+        <form @submit.prevent="submitNumberRangeForm" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Prefix</label>
+              <input 
+                v-model="formNumberRange.prefix" 
+                type="text" 
+                placeholder="z.B. LOT-" 
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Aktueller Zählerstand *</label>
+              <input 
+                v-model.number="formNumberRange.current_value" 
+                type="number" 
+                min="1" 
+                required 
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Stellenanzahl (Digits) *</label>
+              <input 
+                v-model.number="formNumberRange.digits" 
+                type="number" 
+                min="1" 
+                max="10" 
+                required 
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+              />
+            </div>
+            <div class="flex items-center pt-5">
+              <label class="flex items-center space-x-2 cursor-pointer">
+                <input 
+                  v-model="formNumberRange.is_active" 
+                  type="checkbox" 
+                  class="rounded text-primary focus:ring-primary h-4 w-4"
+                />
+                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Nummernkreis aktivieren</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div class="p-3 bg-gray-50 dark:bg-dark-bg border border-gray-100 dark:border-dark-border rounded-xl">
+            <span class="text-xs text-gray-500 dark:text-gray-400 font-bold block mb-1">Vorschau nächste Nummer:</span>
+            <span class="font-mono text-sm font-bold text-amber-500">{{ previewNextNumber }}</span>
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-2">
+            <button 
+              type="button" 
+              @click="showNumberRangeForm = false" 
+              class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-100 dark:hover:bg-dark-border text-gray-700 dark:text-gray-300"
+            >
+              Abbrechen
+            </button>
+            <button 
+              type="submit" 
+              class="px-5 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl shadow-md hover-scale"
+              :disabled="savingNumberRange"
+            >
+              Speichern
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Number Ranges Table -->
+      <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl overflow-hidden shadow-sm">
+        <div v-if="loadingNumberRanges" class="flex flex-col items-center justify-center py-20">
+          <svg class="animate-spin h-8 w-8 text-primary mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span class="text-xs text-gray-400 font-bold">Lade Nummernkreise...</span>
+        </div>
+
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
+                <th class="px-6 py-4">Bezeichnung</th>
+                <th class="px-6 py-4">Prefix</th>
+                <th class="px-6 py-4 text-center">Aktueller Wert</th>
+                <th class="px-6 py-4 text-center">Stellen (Digits)</th>
+                <th class="px-6 py-4 text-center">Nächste Nummer</th>
+                <th class="px-6 py-4 text-center">Status</th>
+                <th class="px-6 py-4 text-right">Aktionen</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-dark-border text-sm">
+              <tr 
+                v-for="nr in numberRanges" 
+                :key="nr.id" 
+                class="hover:bg-gray-50/50 dark:hover:bg-dark-bg/30 transition-colors duration-150"
+              >
+                <td class="px-6 py-4 font-bold text-gray-800 dark:text-gray-200">
+                  {{ nr.name }}
+                </td>
+                <td class="px-6 py-4 font-mono text-gray-600 dark:text-gray-300">
+                  {{ nr.prefix || '-' }}
+                </td>
+                <td class="px-6 py-4 text-center font-mono text-gray-600 dark:text-gray-300">
+                  {{ nr.current_value }}
+                </td>
+                <td class="px-6 py-4 text-center font-mono text-gray-600 dark:text-gray-300">
+                  {{ nr.digits }}
+                </td>
+                <td class="px-6 py-4 text-center font-mono font-bold text-amber-500">
+                  {{ nr.prefix || '' }}{{ String(nr.current_value).padStart(nr.digits, '0') }}
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <span 
+                    class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                    :class="nr.is_active ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'"
+                  >
+                    {{ nr.is_active ? 'Aktiv' : 'Inaktiv' }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <button 
+                    @click="openEditNumberRange(nr)" 
+                    class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border rounded-lg transition-all duration-150 inline-flex hover-scale"
+                    title="Bearbeiten"
+                  >
+                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -570,7 +760,8 @@ const llmConfig = ref({
   chatbot_system_prompt: '',
   draft_system_prompt: '',
   enable_weather_api: false,
-  ai_insights_cron: ''
+  ai_insights_cron: '',
+  kleinunternehmer_regelung: false
 })
 const loadingLLM = ref(false)
 const savingLLM = ref(false)
@@ -664,7 +855,8 @@ async function saveLLMConfig() {
       chatbot_system_prompt: llmConfig.value.chatbot_system_prompt,
       draft_system_prompt: llmConfig.value.draft_system_prompt,
       enable_weather_api: llmConfig.value.enable_weather_api,
-      ai_insights_cron: llmConfig.value.ai_insights_cron || null
+      ai_insights_cron: llmConfig.value.ai_insights_cron || null,
+      kleinunternehmer_regelung: llmConfig.value.kleinunternehmer_regelung
     })
     llmConfig.value = res.data
     showToast('KI- und Wettereinstellungen erfolgreich aktualisiert.')
@@ -835,10 +1027,78 @@ async function deleteFrameType(ft) {
   }
 }
 
+// Number Ranges States
+const numberRanges = ref([])
+const loadingNumberRanges = ref(false)
+const savingNumberRange = ref(false)
+const showNumberRangeForm = ref(false)
+const formNumberRange = reactive({
+  id: '',
+  name: '',
+  prefix: '',
+  current_value: 1,
+  digits: 4,
+  is_active: true
+})
+
+const previewNextNumber = computed(() => {
+  const prefix = formNumberRange.prefix || ''
+  const current = String(formNumberRange.current_value || 0)
+  const digits = formNumberRange.digits || 4
+  return prefix + current.padStart(digits, '0')
+})
+
+async function fetchNumberRanges() {
+  loadingNumberRanges.value = true
+  try {
+    const res = await axios.get('/api/admin/number-ranges')
+    numberRanges.value = res.data
+  } catch (err) {
+    console.error('Fetch number ranges error:', err)
+    showToast('Fehler beim Laden der Nummernkreise', 'error')
+  } finally {
+    loadingNumberRanges.value = false
+  }
+}
+
+function openEditNumberRange(nr) {
+  formNumberRange.id = nr.id
+  formNumberRange.name = nr.name
+  formNumberRange.prefix = nr.prefix || ''
+  formNumberRange.current_value = nr.current_value
+  formNumberRange.digits = nr.digits
+  formNumberRange.is_active = nr.is_active
+  showNumberRangeForm.value = true
+}
+
+async function submitNumberRangeForm() {
+  savingNumberRange.value = true
+  try {
+    const payload = {
+      name: formNumberRange.name,
+      prefix: formNumberRange.prefix || null,
+      current_value: Number(formNumberRange.current_value),
+      digits: Number(formNumberRange.digits),
+      is_active: formNumberRange.is_active
+    }
+    await axios.put(`/api/admin/number-ranges/${formNumberRange.id}`, payload)
+    showToast(`Nummernkreis '${payload.name}' erfolgreich aktualisiert.`)
+    showNumberRangeForm.value = false
+    await fetchNumberRanges()
+  } catch (err) {
+    console.error('Save number range error:', err)
+    const errDetail = err.response?.data?.detail || 'Fehler beim Speichern des Nummernkreises.'
+    showToast(errDetail, 'error')
+  } finally {
+    savingNumberRange.value = false
+  }
+}
+
 onMounted(() => {
   fetchUsers()
   fetchLLMConfig()
   fetchFrameTypes()
+  fetchNumberRanges()
 })
 </script>
 

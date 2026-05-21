@@ -89,6 +89,8 @@ def update_llm_config(
         config.draft_system_prompt = payload.draft_system_prompt
     if payload.enable_weather_api is not None:
         config.enable_weather_api = payload.enable_weather_api
+    if payload.kleinunternehmer_regelung is not None:
+        config.kleinunternehmer_regelung = payload.kleinunternehmer_regelung
     if payload.ai_insights_cron is not None:
         from app.services.cron import reschedule_insights_job
         success = reschedule_insights_job(payload.ai_insights_cron)
@@ -215,3 +217,48 @@ def admin_delete_frame_type(
     db.delete(ft)
     db.commit()
     return
+
+# ----------------------
+# NUMBER RANGE ENDPOINTS
+# ----------------------
+from app.models.administration import NumberRange
+from app.schemas.admin import NumberRangeOut, NumberRangeUpdate
+
+@router.get("/number-ranges", response_model=List[NumberRangeOut])
+def admin_list_number_ranges(
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin)
+):
+    """Lists all number ranges."""
+    return db.query(NumberRange).order_by(NumberRange.name).all()
+
+@router.put("/number-ranges/{range_id}", response_model=NumberRangeOut)
+def admin_update_number_range(
+    range_id: str,
+    payload: NumberRangeUpdate,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin)
+):
+    """Updates a number range configuration."""
+    nr = db.query(NumberRange).filter(NumberRange.id == range_id).first()
+    if not nr:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Nummernkreis nicht gefunden."
+        )
+
+    if payload.name is not None:
+        nr.name = payload.name
+    if payload.prefix is not None:
+        nr.prefix = payload.prefix
+    if payload.current_value is not None:
+        nr.current_value = payload.current_value
+    if payload.digits is not None:
+        nr.digits = payload.digits
+    if payload.is_active is not None:
+        nr.is_active = payload.is_active
+
+    db.commit()
+    db.refresh(nr)
+    return nr
+

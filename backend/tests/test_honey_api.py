@@ -110,3 +110,61 @@ def test_honey_batch_lifecycle_and_validation(client: TestClient, db: Session):
     # Check fallback / parser mapping
     assert draft["honey_type"] in ["Lindenhonig", "Blütenhonig"]
     assert draft["quantity_kg"] > 0
+
+    # 10. Number range suggestion tests
+    suggest_resp = client.get("/api/honey-batches/suggest-number?key=batch_number", headers=headers)
+    assert suggest_resp.status_code == 200
+    assert suggest_resp.json()["suggested_value"] == "LOT-0001"
+
+    suggest_sample_resp = client.get("/api/honey-batches/suggest-number?key=reserve_sample_id", headers=headers)
+    assert suggest_sample_resp.status_code == 200
+    assert suggest_sample_resp.json()["suggested_value"] == "PRB-0001"
+
+    # 11. Create a batch using the suggested batch number (LOT-0001) and sample ID (PRB-0001)
+    suggested_batch_resp = client.post(f"/api/honey-batches?apiary_id={apiary_id}", json={
+        "batch_number": "LOT-0001",
+        "honey_type": "Waldhonig",
+        "harvest_date": "2026-05-22",
+        "quantity_kg": 50.0,
+        "best_before_date": "2028-05-22",
+        "is_exact_date": False,
+        "reserve_sample_taken": True,
+        "reserve_sample_date": "2026-05-22",
+        "reserve_sample_id": "PRB-0001"
+    }, headers=headers)
+    assert suggested_batch_resp.status_code == 201
+
+    # Suggestion should now be incremented to LOT-0002 and PRB-0002
+    suggest_next_resp = client.get("/api/honey-batches/suggest-number?key=batch_number", headers=headers)
+    assert suggest_next_resp.json()["suggested_value"] == "LOT-0002"
+
+    suggest_next_sample = client.get("/api/honey-batches/suggest-number?key=reserve_sample_id", headers=headers)
+    assert suggest_next_sample.json()["suggested_value"] == "PRB-0002"
+
+    # 12. Try to create duplicate batch_number (LOT-0001) -> should fail
+    duplicate_batch_resp = client.post(f"/api/honey-batches?apiary_id={apiary_id}", json={
+        "batch_number": "LOT-0001",
+        "honey_type": "Waldhonig",
+        "harvest_date": "2026-05-23",
+        "quantity_kg": 30.0,
+        "best_before_date": "2028-05-23",
+        "is_exact_date": False
+    }, headers=headers)
+    assert duplicate_batch_resp.status_code == 400
+    assert "Los-/Chargennummer wird bereits verwendet" in duplicate_batch_resp.json()["detail"]
+
+    # 13. Try to create duplicate reserve_sample_id (PRB-0001) -> should fail
+    duplicate_sample_resp = client.post(f"/api/honey-batches?apiary_id={apiary_id}", json={
+        "batch_number": "LOT-0002",
+        "honey_type": "Waldhonig",
+        "harvest_date": "2026-05-23",
+        "quantity_kg": 30.0,
+        "best_before_date": "2028-05-23",
+        "is_exact_date": False,
+        "reserve_sample_taken": True,
+        "reserve_sample_date": "2026-05-23",
+        "reserve_sample_id": "PRB-0001"
+    }, headers=headers)
+    assert duplicate_sample_resp.status_code == 400
+    assert "Rückstellproben-ID wird bereits verwendet" in duplicate_sample_resp.json()["detail"]
+

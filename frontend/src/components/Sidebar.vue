@@ -272,7 +272,8 @@ import {
   Sun,
   Moon,
   Menu,
-  X
+  X,
+  ShoppingBag
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -288,6 +289,7 @@ const navItems = [
   { name: 'Bienenvölker', path: '/hives', icon: Hexagon },
   { name: 'Logbuch', path: '/logbook', icon: BookOpen },
   { name: 'Honig-Chargen', path: '/honey-batches', icon: Droplets },
+  { name: 'Verkäufe', path: '/sales', icon: ShoppingBag },
   { name: 'Statistiken', path: '/stats', icon: BarChart3 },
   { name: 'AI Insights', path: '/ai-insights', icon: Sparkles }
 ]

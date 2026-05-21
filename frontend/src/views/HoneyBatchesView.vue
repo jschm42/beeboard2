@@ -218,13 +218,23 @@
                   <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                     Los- / Chargennummer {{ form.is_exact_date ? '(Optional)' : '*' }}
                   </label>
-                  <input 
-                    v-model="form.batch_number" 
-                    type="text" 
-                    :required="!form.is_exact_date"
-                    placeholder="z.B. L14-2026"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
-                  />
+                  <div class="flex space-x-2">
+                    <input 
+                      v-model="form.batch_number" 
+                      type="text" 
+                      :required="!form.is_exact_date"
+                      placeholder="z.B. L14-2026"
+                      class="flex-1 min-w-0 px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
+                    />
+                    <button
+                      type="button"
+                      @click="fetchSuggestion('batch_number')"
+                      class="px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl transition duration-150 border border-gray-200 dark:border-gray-700 shrink-0"
+                      title="Nummer vorschlagen"
+                    >
+                      💡 Vorschlag
+                    </button>
+                  </div>
                 </div>
 
                 <div>
@@ -299,13 +309,23 @@
 
                 <div>
                   <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Proben-ID / Beschriftung *</label>
-                  <input 
-                    v-model="form.reserve_sample_id" 
-                    type="text" 
-                    required
-                    placeholder="z.B. RP-L14-2026"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
-                  />
+                  <div class="flex space-x-2">
+                    <input 
+                      v-model="form.reserve_sample_id" 
+                      type="text" 
+                      required
+                      placeholder="z.B. RP-L14-2026"
+                      class="flex-1 min-w-0 px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
+                    />
+                    <button
+                      type="button"
+                      @click="fetchSuggestion('reserve_sample_id')"
+                      class="px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl transition duration-150 border border-gray-200 dark:border-gray-700 shrink-0"
+                      title="ID vorschlagen"
+                    >
+                      💡 Vorschlag
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -612,10 +632,15 @@ watch(() => form.harvest_date, (newDate) => {
   }
 })
 
-// Auto-fill reserve sample date
-watch(() => form.reserve_sample_taken, (val) => {
-  if (val && !form.reserve_sample_date) {
-    form.reserve_sample_date = form.harvest_date || new Date().toISOString().substring(0, 10)
+// Auto-fill reserve sample date and suggest ID
+watch(() => form.reserve_sample_taken, async (val) => {
+  if (val) {
+    if (!form.reserve_sample_date) {
+      form.reserve_sample_date = form.harvest_date || new Date().toISOString().substring(0, 10)
+    }
+    if (!form.reserve_sample_id) {
+      await fetchSuggestion('reserve_sample_id')
+    }
   }
 })
 
@@ -674,6 +699,21 @@ async function fetchBatches() {
   }
 }
 
+async function fetchSuggestion(key) {
+  try {
+    const res = await axios.get('/api/honey-batches/suggest-number', { params: { key } })
+    if (res.data.suggested_value) {
+      if (key === 'batch_number') {
+        form.batch_number = res.data.suggested_value
+      } else if (key === 'reserve_sample_id') {
+        form.reserve_sample_id = res.data.suggested_value
+      }
+    }
+  } catch (err) {
+    console.error(`Error fetching suggestion for ${key}:`, err)
+  }
+}
+
 function openCreateModal() {
   isEditMode.value = false
   editingId.value = null
@@ -695,6 +735,9 @@ function openCreateModal() {
   form.notes = ''
   
   syncPresetFromHoneyType()
+  
+  // Suggest next batch number
+  fetchSuggestion('batch_number')
   
   // initial watch will trigger BB date
   showModal.value = true

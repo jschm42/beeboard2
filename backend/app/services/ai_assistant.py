@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.models.administration import LLMConfig
+from app.models.user import User
 
 logger = logging.getLogger("beeboard.ai")
 
@@ -104,7 +105,7 @@ def get_llm_config(db: Session) -> LLMConfig:
             db.refresh(config)
     return config
 
-async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apiary_id: str, effective_model: str, api_key: str) -> str:
+async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apiary_id: str, current_user: User, effective_model: str, api_key: str) -> str:
     from app.models.location import Location
     from app.models.hive import Hive
     from app.models.logbook import LogEntry
@@ -148,6 +149,25 @@ async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apia
                         "days": {"type": "integer", "description": "Anzahl der Tage in der Vergangenheit (Standard: 7)"}
                     },
                     "required": []
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "log_honey_sale",
+                "description": "Erfasst einen neuen Honigverkauf für den aktuellen Benutzer in der Datenbank.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "product_name": {"type": "string", "description": "Name oder Sorte des Produkts (z. B. 'Rapshonig', 'Lindenhonig 500g')"},
+                        "quantity": {"type": "number", "description": "Verkaufte Menge (Anzahl Gläser oder kg)"},
+                        "total_price": {"type": "number", "description": "Gesamtpreis in Euro für die angegebene Menge (z. B. 18.0)"},
+                        "sales_channel": {"type": "string", "enum": ["direktverkauf", "online", "email", "verkaufsstand"], "description": "Verkaufskanal"},
+                        "batch_number": {"type": "string", "description": "Die Losnummer/Chargennummer (z. B. 'L-02' oder 'LOT-0001'), falls vorhanden"},
+                        "notes": {"type": "string", "description": "Zusätzliche Notizen zum Verkauf, optional"}
+                    },
+                    "required": ["product_name", "quantity", "total_price", "sales_channel"]
                 }
             }
         }
@@ -241,6 +261,87 @@ async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apia
                                 weather_desc = w.get("weather", [{}])[0].get("description", "Unbekannt")
                                 res.append(f"Standort '{loc.name}': {temp}°C, {weather_desc}, Feuchte: {humidity}%, Wind: {wind} m/s")
                     result = "\n".join(res) if res else "Konnte keine Wetterdaten abrufen (oder keine Geodaten)."
+                elif function_name == "log_honey_sale":
+                    product_name = arguments.get("product_name")
+                    quantity = float(arguments.get("quantity", 0))
+                    total_price = float(arguments.get("total_price", 0))
+                    sales_channel = arguments.get("sales_channel", "direktverkauf")
+                    batch_number = arguments.get("batch_number")
+                    notes = arguments.get("notes")
+
+                    # Map channel
+                    channel_map = {
+                        "direktverkauf": "direktverkauf",
+                        "direkt": "direktverkauf",
+                        "online": "online",
+                        "email": "email",
+                        "e-mail": "email",
+                        "verkaufsstand": "verkaufsstand",
+                        "stand": "verkaufsstand"
+                    }
+                    sales_channel = channel_map.get(str(sales_channel).lower(), "direktverkauf")
+
+                    from app.models.sales import ProductConfig, HoneySale
+                    from app.models.honey_batch import HoneyBatch
+
+                    # Look up product config
+                    products = db.query(ProductConfig).filter(ProductConfig.created_by_id == current_user.id).all()
+                    matched_product = None
+                    for p in products:
+                        if product_name.lower() in p.name.lower() or p.name.lower() in product_name.lower() or product_name.lower() in p.honey_type.lower():
+                            matched_product = p
+                            break
+
+                    # Proactive creation if no product matches
+                    if not matched_product:
+                        tax = 7.0
+                        if "met" in product_name.lower() or "honigwein" in product_name.lower():
+                            tax = 19.0
+                        unit_price = total_price / quantity if quantity > 0 else 6.0
+                        matched_product = ProductConfig(
+                            name=product_name,
+                            honey_type=product_name,
+                            price=unit_price,
+                            tax_rate=tax,
+                            is_active=True,
+                            created_by_id=current_user.id
+                        )
+                        db.add(matched_product)
+                        db.commit()
+                        db.refresh(matched_product)
+                        notes_extra = f" (Produkt '{product_name}' wurde automatisch angelegt)"
+                    else:
+                        notes_extra = ""
+
+                    # Look up batch
+                    batch = None
+                    if batch_number:
+                        batch = db.query(HoneyBatch).filter(
+                            HoneyBatch.batch_number == batch_number
+                        ).first()
+                        if not batch:
+                            batch = db.query(HoneyBatch).filter(
+                                HoneyBatch.batch_number.contains(batch_number)
+                            ).first()
+
+                    # Save sale
+                    new_sale = HoneySale(
+                        sale_date=datetime.now(),
+                        product_id=matched_product.id,
+                        batch_id=batch.id if batch else None,
+                        quantity=quantity,
+                        total_price=total_price,
+                        sales_channel=sales_channel,
+                        notes=(notes or "") + notes_extra,
+                        created_by_id=current_user.id
+                    )
+                    db.add(new_sale)
+                    db.commit()
+                    db.refresh(new_sale)
+
+                    result = f"Erfolgreich verbucht: {quantity}x '{matched_product.name}' für {total_price}€ über Kanal '{sales_channel}'."
+                    if batch:
+                        result += f" Verknüpft mit Charge '{batch.batch_number}'."
                 else:
                     result = f"Unbekannte Funktion: {function_name}"
             except Exception as e:
@@ -305,7 +406,7 @@ def get_api_key_for_model(model: str) -> Optional[str]:
     _, key = get_effective_model_and_key(model)
     return key
 
-async def chatbot_completion(query: str, apiary_id: str, db: Session) -> str:
+async def chatbot_completion(query: str, apiary_id: str, current_user: User, db: Session) -> str:
     """
     Sends the user query along with tool access to the LLM
     to generate helpful, context-aware advice for the beekeeper.
@@ -321,10 +422,13 @@ async def chatbot_completion(query: str, apiary_id: str, db: Session) -> str:
         )
 
     config = get_llm_config(db)
-    system_prompt = config.chatbot_system_prompt.replace("{context_str}", "Du hast Zugriff auf Tools, um dir alle benötigten Daten (Wetter, Logbuch, Völker, Standorte) selbst abzurufen. Nutze sie!")
+    system_prompt = config.chatbot_system_prompt.replace(
+        "{context_str}", 
+        "Du hast Zugriff auf Tools, um dir alle benötigten Daten (Wetter, Logbuch, Völker, Standorte) selbst abzurufen und Verkäufe direkt zu buchen. Nutze sie!"
+    )
 
     try:
-        return await run_agent_loop(system_prompt, query, db, apiary_id, effective_model, api_key)
+        return await run_agent_loop(system_prompt, query, db, apiary_id, current_user, effective_model, api_key)
     except Exception as e:
         logger.error(f"LiteLLM error: {str(e)}")
         return f"Entschuldigung, es gab einen Fehler bei der Bearbeitung deiner Anfrage: {str(e)}"

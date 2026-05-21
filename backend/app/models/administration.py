@@ -29,4 +29,17 @@ class LLMConfig(UUIDTimeStampedModel):
     draft_system_prompt: Mapped[str] = mapped_column(Text, nullable=False)
     enable_weather_api: Mapped[bool] = mapped_column(Boolean, default=False)
     ai_insights_cron: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    kleinunternehmer_regelung: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+class NumberRange(UUIDTimeStampedModel):
+    __tablename__ = "number_ranges"
+
+    key: Mapped[str] = mapped_column(String(50), unique=True, index=True)  # e.g., "batch_number", "reserve_sample_id"
+    name: Mapped[str] = mapped_column(String(100))
+    prefix: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    current_value: Mapped[int] = mapped_column(default=1)
+    digits: Mapped[int] = mapped_column(default=4)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
 

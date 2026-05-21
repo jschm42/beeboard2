@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.core.database import SessionLocal, Base
-from app.models.administration import FrameType, VarroaMultiplier
+from app.models.administration import FrameType, VarroaMultiplier, NumberRange
 
 def seed_database(db: Session):
     print("Starte Datenbank-Seeding...")
@@ -83,6 +83,37 @@ def seed_database(db: Session):
         else:
             existing.multiplier = mult_data["multiplier"]
             print(f"VarroaMultiplier für Saison bereits vorhanden, aktualisiert: {mult_data['season']}")
+
+    # 3. Seed Number Ranges
+    ranges = [
+        {
+            "key": "batch_number",
+            "name": "Los-/Chargennummer",
+            "prefix": "LOT-",
+            "current_value": 1,
+            "digits": 4,
+            "is_active": True
+        },
+        {
+            "key": "reserve_sample_id",
+            "name": "Rückstellproben-ID",
+            "prefix": "PRB-",
+            "current_value": 1,
+            "digits": 4,
+            "is_active": True
+        }
+    ]
+
+    for range_data in ranges:
+        existing = db.query(NumberRange).filter(NumberRange.key == range_data["key"]).first()
+        if not existing:
+            new_range = NumberRange(**range_data)
+            db.add(new_range)
+            print(f"Erstellt NumberRange: {range_data['name']} (Key: {range_data['key']})")
+        else:
+            # Do not overwrite current_value, but we can update prefix/digits/name if needed
+            existing.name = range_data["name"]
+            print(f"NumberRange {range_data['key']} bereits vorhanden.")
 
     db.commit()
     print("Datenbank-Seeding erfolgreich abgeschlossen!")

@@ -2,7 +2,7 @@ from app.core.database import Base
 from app.models.user import User
 from app.models.apiary import Apiary, ApiaryMembership
 from app.models.location import Location
-from app.models.administration import FrameType, VarroaMultiplier, LLMConfig
+from app.models.administration import FrameType, VarroaMultiplier, LLMConfig, NumberRange
 from app.models.hive import Hive, HiveBox
 from app.models.logbook import (
     LogSession, 
@@ -15,6 +15,7 @@ from app.models.logbook import (
 )
 from app.models.ai_insight import AIInsight
 from app.models.honey_batch import HoneyBatch
+from app.models.sales import ProductConfig, HoneySale
 
 # Export all models for easier importing
 __all__ = [
@@ -26,6 +27,7 @@ __all__ = [
     "FrameType",
     "VarroaMultiplier",
     "LLMConfig",
+    "NumberRange",
     "Hive",
     "HiveBox",
     "LogSession",
@@ -36,5 +38,7 @@ __all__ = [
     "VarroaTreatmentDetail",
     "LogEntryImage",
     "AIInsight",
-    "HoneyBatch"
+    "HoneyBatch",
+    "ProductConfig",
+    "HoneySale"
 ]

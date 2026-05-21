@@ -34,7 +34,7 @@ async def ai_chat(
     check_access(apiary_id, current_user, db)
 
     # Query LiteLLM with database session support for dynamic prompt templates
-    response_content = await chatbot_completion(query_in.query, apiary_id, db=db)
+    response_content = await chatbot_completion(query_in.query, apiary_id, current_user, db=db)
     return {"response": response_content}
 
 @router.post("/draft", response_model=AIDraftResponse)

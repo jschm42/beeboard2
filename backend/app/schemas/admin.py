@@ -38,12 +38,14 @@ class LLMConfigBase(BaseModel):
     draft_system_prompt: str
     enable_weather_api: bool
     ai_insights_cron: Optional[str] = None
+    kleinunternehmer_regelung: bool = False
 
 class LLMConfigUpdate(BaseModel):
     chatbot_system_prompt: Optional[str] = None
     draft_system_prompt: Optional[str] = None
     enable_weather_api: Optional[bool] = None
     ai_insights_cron: Optional[str] = None
+    kleinunternehmer_regelung: Optional[bool] = None
 
 class LLMConfigOut(LLMConfigBase):
     id: str
@@ -54,3 +56,26 @@ class LLMConfigOut(LLMConfigBase):
 class UserAdminUpdate(BaseModel):
     role: Optional[str] = None
     is_active: Optional[bool] = None
+
+class NumberRangeBase(BaseModel):
+    name: str
+    prefix: Optional[str] = None
+    current_value: int
+    digits: int
+    is_active: bool = True
+
+class NumberRangeUpdate(BaseModel):
+    name: Optional[str] = None
+    prefix: Optional[str] = None
+    current_value: Optional[int] = None
+    digits: Optional[int] = None
+    is_active: Optional[bool] = None
+
+class NumberRangeOut(NumberRangeBase):
+    id: str
+    key: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
