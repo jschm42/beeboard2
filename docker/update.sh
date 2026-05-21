@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
-# Verzeichnis dieses Skripts ermitteln
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PARENT_DIR="$( dirname "$SCRIPT_DIR" )"
+# Verzeichnis dieses Skripts ermitteln (POSIX-kompatibel, kein BASH_SOURCE)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PARENT_DIR="$(dirname "$SCRIPT_DIR")"
 
 # Fallback auf Werte aus backend/.env
 HTTP_PORT=""
@@ -15,32 +15,35 @@ ENV_PATH="$PARENT_DIR/backend/.env"
 if [ -f "$ENV_PATH" ]; then
     # Werte einlesen (Kommentare und Leerzeilen ignorieren)
     while IFS='=' read -r key value || [ -n "$key" ]; do
-        key=$(echo "$key" | xargs)
-        if [[ -n "$key" && ! "$key" =~ ^# ]]; then
-            # Anfuehrungszeichen entfernen
-            value=$(echo "$value" | tr -d '"' | tr -d "'" | xargs)
-            case "$key" in
-                BEEBOARD_HTTP_PORT) HTTP_PORT="$value" ;;
-                BEEBOARD_HTTPS_PORT) HTTPS_PORT="$value" ;;
-                BEEBOARD_BACKEND_PORT) BACKEND_PORT="$value" ;;
-                BEEBOARD_DOCKER_DATA) DATA_DIR="$value" ;;
-            esac
-        fi
+        # Fuehrende/nachfolgende Leerzeichen entfernen
+        key=$(echo "$key" | tr -d ' ')
+        # Kommentare und Leerzeilen ueberspringen
+        case "$key" in
+            "#"*|"") continue ;;
+        esac
+        # Anfuehrungszeichen entfernen
+        value=$(echo "$value" | tr -d '"' | tr -d "'")
+        case "$key" in
+            BEEBOARD_HTTP_PORT)    HTTP_PORT="$value" ;;
+            BEEBOARD_HTTPS_PORT)   HTTPS_PORT="$value" ;;
+            BEEBOARD_BACKEND_PORT) BACKEND_PORT="$value" ;;
+            BEEBOARD_DOCKER_DATA)  DATA_DIR="$value" ;;
+        esac
     done < "$ENV_PATH"
 fi
 
 # Standardwerte setzen falls nicht in .env definiert
-: ${HTTP_PORT:=8080}
-: ${HTTPS_PORT:=8443}
-: ${BACKEND_PORT:=8000}
-: ${DATA_DIR:=~/.beeboard2}
+: "${HTTP_PORT:=8080}"
+: "${HTTPS_PORT:=8443}"
+: "${BACKEND_PORT:=8000}"
+: "${DATA_DIR:=$HOME/.beeboard2}"
 
-# Expand ~ to $HOME
-if [[ "$DATA_DIR" =~ ^~ ]]; then
-    DATA_DIR="${DATA_DIR/#\~/$HOME}"
-fi
+# Expand ~ to $HOME (POSIX-kompatibel)
+case "$DATA_DIR" in
+    "~"*) DATA_DIR="$HOME${DATA_DIR#~}" ;;
+esac
 
-# Ensure the directory exists on the host with correct permissions
+# Ensure the directory exists on the host
 mkdir -p "$DATA_DIR"
 
 # Resolve to absolute path
