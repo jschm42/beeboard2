@@ -55,11 +55,14 @@ async def geocode_address(address: str) -> Optional[Dict[str, Any]]:
     """
     api_key = settings.OPENWEATHERMAP_API_KEY
     if api_key:
-        url = f"https://api.openweathermap.org/geo/1.0/direct?q={address}&limit=1&appid={api_key}"
-        print(f"Requesting OpenWeatherMap Geocoding URL: {url}")
+        params = {"q": address, "limit": 1, "appid": api_key}
         async with httpx.AsyncClient() as client:
             try:
-                response = await client.get(url, timeout=10.0)
+                response = await client.get(
+                    "https://api.openweathermap.org/geo/1.0/direct",
+                    params=params, timeout=10.0
+                )
+                print(f"Requesting OpenWeatherMap Geocoding URL: {response.url}")
                 if response.status_code == 200:
                     data = response.json()
                     if data and isinstance(data, list) and len(data) > 0:
@@ -82,10 +85,15 @@ async def geocode_address(address: str) -> Optional[Dict[str, Any]]:
 
     # Fallback to OpenStreetMap Nominatim
     print("Falling back to OpenStreetMap Nominatim for geocoding...")
-    url = f"https://nominatim.openstreetmap.org/search?q={address}&format=json&limit=1"
+    nominatim_params = {"q": address, "format": "json", "limit": 1}
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.get(url, headers={"User-Agent": "BeeBoard/1.0"}, timeout=10.0)
+            response = await client.get(
+                "https://nominatim.openstreetmap.org/search",
+                params=nominatim_params,
+                headers={"User-Agent": "BeeBoard/1.0"},
+                timeout=10.0
+            )
             if response.status_code == 200:
                 data = response.json()
                 if data and isinstance(data, list) and len(data) > 0:
