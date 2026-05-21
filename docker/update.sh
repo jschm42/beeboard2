@@ -55,7 +55,7 @@ export BEEBOARD_DOCKER_DATA="$DATA_DIR"
 mkdir -p "$SCRIPT_DIR/certs"
 
 echo ""
-echo -e "\033[1;36mAktualisiere BeeBoard2 Unified Docker Stack (Rebuild + Restart)...\033[0m"
+printf "\033[1;36mAktualisiere BeeBoard2 Unified Docker Stack (Rebuild + Restart)...\033[0m\n"
 echo ""
 
 cd "$SCRIPT_DIR"
