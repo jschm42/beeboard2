@@ -217,23 +217,44 @@ function formatDate(dateStr) {
 
 function renderMarkdown(text) {
   if (!text) return ''
-  const html = marked(text, { breaks: true })
+  let cleaned = text.trim()
+  if (cleaned.startsWith('```markdown')) {
+    cleaned = cleaned.substring(11).trim()
+  } else if (cleaned.startsWith('```')) {
+    cleaned = cleaned.substring(3).trim()
+  }
+  if (cleaned.endsWith('```')) {
+    cleaned = cleaned.substring(0, cleaned.length - 3).trim()
+  }
+  const html = marked.parse(cleaned, { breaks: true })
   return DOMPurify.sanitize(html)
 }
 </script>
 
 <style>
 @reference "../style.css";
+.markdown-content h1 {
+  @apply text-xl md:text-2xl font-black mt-6 mb-4 text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-800 pb-2;
+}
+.markdown-content h2 {
+  @apply text-lg md:text-xl font-extrabold mt-6 mb-3 text-gray-900 dark:text-white;
+}
 .markdown-content h3 {
-  @apply text-lg font-bold mt-6 mb-3 text-gray-900 dark:text-white;
+  @apply text-base md:text-lg font-bold mt-5 mb-2 text-gray-900 dark:text-white;
 }
 .markdown-content p {
-  @apply mb-4 leading-relaxed;
+  @apply mb-4 leading-relaxed text-sm md:text-base;
 }
 .markdown-content ul {
-  @apply list-disc list-inside mb-4 space-y-1;
+  @apply list-disc pl-5 mb-4 space-y-2 text-sm md:text-base;
+}
+.markdown-content ol {
+  @apply list-decimal pl-5 mb-4 space-y-2 text-sm md:text-base;
+}
+.markdown-content li {
+  @apply pl-1;
 }
 .markdown-content strong {
-  @apply font-extrabold text-gray-900 dark:text-white;
+  @apply font-black text-gray-900 dark:text-white;
 }
 </style>

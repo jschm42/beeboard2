@@ -8,6 +8,7 @@ from app.models.user import User
 from app.models.location import Location
 from app.schemas.location import LocationCreate, LocationOut
 from app.routers.apiaries import check_access
+from app.services.weather import geocode_address
 
 router = APIRouter(prefix="/locations", tags=["locations"])
 
@@ -46,6 +47,20 @@ def create_location(
     db.commit()
     db.refresh(new_location)
     return new_location
+
+@router.get("/geocode")
+async def geocode(
+    address: str = Query(..., description="The address/city to geocode"),
+    current_user: User = Depends(get_current_user)
+):
+    """Geocodes an address to latitude and longitude."""
+    res = await geocode_address(address)
+    if not res:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Keine Koordinaten für diese Adresse gefunden oder API-Schlüssel nicht konfiguriert."
+        )
+    return res
 
 @router.get("/{location_id}", response_model=LocationOut)
 def get_location(

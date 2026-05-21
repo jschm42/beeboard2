@@ -54,12 +54,25 @@
 
           <div>
             <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Adresse</label>
-            <input 
-              v-model="form.address" 
-              type="text" 
-              placeholder="z.B. Beutenweg 12, 70190 Stuttgart"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-            />
+            <div class="flex gap-2">
+              <input 
+                v-model="form.address" 
+                type="text" 
+                placeholder="z.B. Beutenweg 12, 70190 Stuttgart"
+                class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+              />
+              <button 
+                type="button"
+                @click="lookupCoordinates"
+                :disabled="geocoding"
+                class="px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-dark-bg dark:hover:bg-dark-border border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-xs font-bold rounded-xl shadow-sm hover-scale transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50"
+              >
+                <span v-if="geocoding">
+                  <svg class="animate-spin h-3.5 w-3.5 text-gray-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                </span>
+                <span v-else>🔍 Suchen</span>
+              </button>
+            </div>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
@@ -68,7 +81,7 @@
               <input 
                 v-model="form.latitude" 
                 type="number" 
-                step="0.000001"
+                step="any"
                 placeholder="z.B. 48.7758"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
               />
@@ -78,7 +91,7 @@
               <input 
                 v-model="form.longitude" 
                 type="number" 
-                step="0.000001"
+                step="any"
                 placeholder="z.B. 9.1829"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
               />
@@ -210,6 +223,7 @@ const editingId = ref(null)
 
 const alertMessage = ref('')
 const alertClass = ref('')
+const geocoding = ref(false)
 
 const form = reactive({
   name: '',
@@ -266,6 +280,28 @@ function openEditModal(loc) {
 
 function closeModal() {
   showModal.value = false
+}
+
+async function lookupCoordinates() {
+  const query = form.address.trim()
+  if (!query) {
+    showAlert('Bitte gib zuerst eine Adresse ein.', 'error')
+    return
+  }
+  geocoding.value = true
+  try {
+    const res = await axios.get('/api/locations/geocode', {
+      params: { address: query }
+    })
+    form.latitude = Number(res.data.lat.toFixed(6))
+    form.longitude = Number(res.data.lon.toFixed(6))
+    showAlert(`Koordinaten gefunden: ${res.data.name || query} (${res.data.country || ''})`, 'success')
+  } catch (err) {
+    console.error('Geocoding error:', err)
+    showAlert(err.response?.data?.detail || 'Adresse konnte nicht aufgelöst werden.', 'error')
+  } finally {
+    geocoding.value = false
+  }
 }
 
 async function submitForm() {

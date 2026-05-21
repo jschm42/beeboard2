@@ -45,7 +45,8 @@ async def generate_insight_for_apiary(db: Session, apiary: Apiary):
         "mit einem Imker-Wetterbericht und Hinweisen, was bei dem aktuellen Wetter und der Jahreszeit "
         "sowie den aktuellen Diagnosen zu beachten ist. "
         "Nutze deine Tools, um dir alle benötigten Daten (Wetter, Standorte, Völker, Logbuch) selbst zu beschaffen! "
-        "Verwende Emojis und halte es informativ aber kurz."
+        "Verwende Emojis und halte es informativ aber kurz. "
+        "WICHTIG: Gib NUR den reinen Markdown-Text zurück. Verwende KEINE Markdown-Code-Blöcke wie ```markdown, um die Antwort zu umschließen!"
     )
     user_prompt = "Bitte lade dir alle aktuellen Daten der Imkerei herunter und erstelle den Bericht."
     
