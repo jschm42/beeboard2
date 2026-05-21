@@ -306,6 +306,10 @@ async function lookupCoordinates() {
 
 async function submitForm() {
   if (!form.name.trim()) return
+  if (!apiaryStore.activeApiaryId) {
+    showAlert('Kein Bienenstand ausgewählt. Bitte wähle zuerst eine Imkerei aus.', 'error')
+    return
+  }
   try {
     const payload = {
       name: form.name.trim(),
