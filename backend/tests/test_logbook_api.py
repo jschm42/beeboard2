@@ -60,7 +60,7 @@ def test_logbook_session_renaming_and_validation(client: TestClient, db: Session
     assert rename_fail_resp.status_code == 422
     assert "value_error.any_str.max_length" in str(rename_fail_resp.json()["detail"]) or "string_too_long" in str(rename_fail_resp.json()["detail"])
 
-def test_logbook_multiplier_snapshotting(client: TestClient, db: Session):
+def test_logbook_box_creation_and_stats(client: TestClient, db: Session):
     # 1. Register and login
     reg_response = client.post("/api/auth/register", json={
         "username": "snapshotter",
@@ -95,7 +95,6 @@ def test_logbook_multiplier_snapshotting(client: TestClient, db: Session):
     ft_resp = client.get("/api/hives/frame-types", headers=headers)
     frame_types = ft_resp.json()
     zander_ft = next(f for f in frame_types if f["name"] == "Zander")
-    langstroth_ft = next(f for f in frame_types if f["name"] == "Langstroth")
     
     # 4. Create a hive with Zander default frame type
     hive_resp = client.post(f"/api/hives?apiary_id={apiary_id}", json={
@@ -108,10 +107,10 @@ def test_logbook_multiplier_snapshotting(client: TestClient, db: Session):
     }, headers=headers)
     hive_id = hive_resp.json()["id"]
     
-    # 5. Configure 1 box with Langstroth frame type
+    # 5. Configure 1 box with Zander frame type
     boxes_resp = client.post(f"/api/hives/{hive_id}/boxes", json=[{
         "order": 1,
-        "frame_type_id": langstroth_ft["id"],
+        "frame_type_id": zander_ft["id"],
         "frame_count": 10,
         "box_type": "BROOD"
     }], headers=headers)
@@ -125,10 +124,9 @@ def test_logbook_multiplier_snapshotting(client: TestClient, db: Session):
         "entry_type": "INSPECTION",
         "notes": "Testing multipliers",
         "inspection_detail": {
-            "frames": [
+            "boxes": [
                 {
-                    "frame_number": 1,
-                    "side": 1,
+                    "box_index": 0,
                     "brood_eighths": 4,
                     "food_eighths": 2,
                     "bee_eighths": 6,
@@ -141,32 +139,19 @@ def test_logbook_multiplier_snapshotting(client: TestClient, db: Session):
     }, headers=headers)
     assert entry_resp.status_code == 201
     entry_data = entry_resp.json()
+    assert len(entry_data["inspection_detail"]["boxes"]) == 1
     
-    # Assert snapshotted multipliers on the frame match Langstroth multipliers, not Zander!
-    frame = entry_data["inspection_detail"]["frames"][0]
-    assert frame["brood_multiplier"] == float(langstroth_ft["brood_multiplier"])
-    assert frame["food_multiplier"] == float(langstroth_ft["food_multiplier"])
-    assert frame["bee_multiplier"] == float(langstroth_ft["bee_multiplier"])
-    assert frame["drone_multiplier"] == float(langstroth_ft["drone_multiplier"])
-    assert frame["drone_brood_multiplier"] == float(langstroth_ft["drone_brood_multiplier"])
-    assert frame["pollen_multiplier"] == float(langstroth_ft["pollen_multiplier"])
+    # 7. Check stats aggregation returns correct calculations
+    stats_resp = client.get(f"/api/stats/aggregation?apiary_id={apiary_id}", headers=headers)
+    assert stats_resp.status_code == 200
+    stats_data = stats_resp.json()
+    assert len(stats_data["labels"]) == 1
     
-    # 7. Reconfigure the box to Zander frame type
-    boxes_resp2 = client.post(f"/api/hives/{hive_id}/boxes", json=[{
-        "order": 1,
-        "frame_type_id": zander_ft["id"],
-        "frame_count": 10,
-        "box_type": "BROOD"
-    }], headers=headers)
-    assert boxes_resp2.status_code == 200
-    
-    # 8. Retrieve the historical log entry and assert multipliers remain snapshotted as Langstroth!
-    entries_resp = client.get(f"/api/logbook/entries?apiary_id={apiary_id}", headers=headers)
-    historical_entry = entries_resp.json()[0]
-    hist_frame = historical_entry["inspection_detail"]["frames"][0]
-    
-    # Verify they did NOT change to Zander multipliers!
-    assert hist_frame["brood_multiplier"] == float(langstroth_ft["brood_multiplier"])
-    assert hist_frame["food_multiplier"] == float(langstroth_ft["food_multiplier"])
-    assert hist_frame["bee_multiplier"] == float(langstroth_ft["bee_multiplier"])
+    # Zander factors are: brood=400, food=125, bees=125
+    # 4 eighths brood * 400 = 1600.0
+    # 2 eighths food * 125 = 250.0
+    # 6 eighths bees * 125 = 750.0
+    assert stats_data["brood"][0] == 1600.0
+    assert stats_data["food"][0] == 250.0
+    assert stats_data["bees"][0] == 750.0
 

@@ -12,11 +12,10 @@ def detect_season(target_date: date) -> str:
         return "AUTUMN"
     return "WINTER"
 
-def calculate_inspection_totals(frames, db: Session = None):
+def calculate_inspection_totals(boxes, db: Session = None):
     """
-    Calculates total brood, food, bees, drones, drone brood, and pollen from list of InspectionFrame models.
-    Each frame side has values from 0-8 eighths. We sum these up multiplied by their
-    respective FrameType factor.
+    Calculates total brood, food, bees, drones, drone brood, and pollen from list of InspectionBox models.
+    Each box can have direct totals OR eighth-based inputs.
     """
     brood = 0.0
     food = 0.0
@@ -25,34 +24,64 @@ def calculate_inspection_totals(frames, db: Session = None):
     drone_brood = 0.0
     pollen = 0.0
 
-    for frame in frames:
-        # Check if multipliers are snapshotted on the frame
-        if getattr(frame, "brood_multiplier", None) is not None:
-            b_mult = float(frame.brood_multiplier)
-            f_mult = float(frame.food_multiplier)
-            bee_mult = float(frame.bee_multiplier)
-            dr_mult = float(frame.drone_multiplier or 1.0)
-            dr_b_mult = float(frame.drone_brood_multiplier or 1.0)
-            p_mult = float(frame.pollen_multiplier or 1.0)
+    for box in boxes:
+        # Retrieve the hive and the specific HiveBox frame type
+        inspection = getattr(box, "inspection", None)
+        if inspection:
+            log_entry = getattr(inspection, "log_entry", None)
+            hive = getattr(log_entry, "hive", None) if log_entry else None
         else:
-            # Backwards compatibility / Unit test fallback
-            inspection = frame.inspection
-            log_entry = inspection.log_entry
-            hive = log_entry.hive
-            frame_type = hive.frame_type
-            b_mult = float(frame_type.brood_multiplier)
-            f_mult = float(frame_type.food_multiplier)
-            bee_mult = float(frame_type.bee_multiplier)
-            dr_mult = float(frame_type.drone_multiplier or 1.0)
-            dr_b_mult = float(frame_type.drone_brood_multiplier or 1.0)
-            p_mult = float(frame_type.pollen_multiplier or 1.0)
+            hive = None
+
+        frame_type = None
+        if hive:
+            # Match box_index to determine the correct HiveBox (sorted by order)
+            if hasattr(hive, "boxes"):
+                sorted_hive_boxes = sorted(hive.boxes, key=lambda b: b.order)
+                box_idx = getattr(box, "box_index", 0)
+                if 0 <= box_idx < len(sorted_hive_boxes):
+                    frame_type = sorted_hive_boxes[box_idx].frame_type
+                else:
+                    frame_type = hive.frame_type
+            else:
+                frame_type = getattr(hive, "frame_type", None)
         
-        brood += float(frame.brood_eighths or 0) * b_mult
-        food += float(frame.food_eighths or 0) * f_mult
-        bees += float(frame.bee_eighths or 0) * bee_mult
-        drones += float(frame.drone_eighths or 0) * dr_mult
-        drone_brood += float(frame.drone_brood_eighths or 0) * dr_b_mult
-        pollen += float(frame.pollen_eighths or 0) * p_mult
+        b_mult = float(frame_type.brood_multiplier) if frame_type else 1.0
+        f_mult = float(frame_type.food_multiplier) if frame_type else 1.0
+        bee_mult = float(frame_type.bee_multiplier) if frame_type else 1.0
+        dr_mult = float(frame_type.drone_multiplier or 1.0) if frame_type else 1.0
+        dr_b_mult = float(frame_type.drone_brood_multiplier or 1.0) if frame_type else 1.0
+        p_mult = float(frame_type.pollen_multiplier or 1.0) if frame_type else 1.0
+
+        if box.brood_eighths is not None:
+            brood += float(box.brood_eighths) * b_mult
+        else:
+            brood += float(box.brood_total or 0)
+
+        if box.food_eighths is not None:
+            food += float(box.food_eighths) * f_mult
+        else:
+            food += float(box.food_total or 0)
+
+        if box.bee_eighths is not None:
+            bees += float(box.bee_eighths) * bee_mult
+        else:
+            bees += float(box.bee_total or 0)
+
+        if box.drone_eighths is not None:
+            drones += float(box.drone_eighths) * dr_mult
+        else:
+            drones += float(box.drone_total or 0)
+
+        if box.drone_brood_eighths is not None:
+            drone_brood += float(box.drone_brood_eighths) * dr_b_mult
+        else:
+            drone_brood += float(box.drone_brood_total or 0)
+
+        if box.pollen_eighths is not None:
+            pollen += float(box.pollen_eighths) * p_mult
+        else:
+            pollen += float(box.pollen_total or 0)
 
     return {
         "brood": brood,

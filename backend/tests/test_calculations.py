@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 
 from app.services.calculations import detect_season, calculate_inspection_totals, estimate_varroa
 from app.models.administration import FrameType
-from app.models.logbook import InspectionFrame
 
 def test_detect_season():
     assert detect_season(date(2026, 4, 15)) == "SPRING"

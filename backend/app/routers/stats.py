@@ -47,9 +47,9 @@ def get_aggregated_stats(
         from sqlalchemy import extract
         query = query.filter(extract('year', LogEntry.date) == year)
 
-    # To optimize queries, load inspection details, frames, hive, and frame type
+    # To optimize queries, load inspection details, boxes, hive, and frame type
     query = query.options(
-        joinedload(LogEntry.inspection_detail).joinedload(InspectionDetail.frames),
+        joinedload(LogEntry.inspection_detail).joinedload(InspectionDetail.boxes),
         joinedload(LogEntry.hive).joinedload(Hive.frame_type)
     ).order_by(LogEntry.date.asc())
 
@@ -64,7 +64,7 @@ def get_aggregated_stats(
     pollen_values = []
 
     for entry in entries:
-        if not entry.inspection_detail or not entry.inspection_detail.frames:
+        if not entry.inspection_detail or not entry.inspection_detail.boxes:
             continue
             
         # Optional seasonal filter
@@ -72,7 +72,7 @@ def get_aggregated_stats(
         if season and ent_season != season:
             continue
 
-        totals = calculate_inspection_totals(entry.inspection_detail.frames, db)
+        totals = calculate_inspection_totals(entry.inspection_detail.boxes, db)
         
         labels.append(entry.date.isoformat())
         brood_values.append(float(totals["brood"]))
