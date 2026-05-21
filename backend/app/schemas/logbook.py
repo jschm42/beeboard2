@@ -18,39 +18,46 @@ class LogSessionOut(LogSessionBase):
     class Config:
         from_attributes = True
 
-class InspectionFrameBase(BaseModel):
-    frame_number: int
-    side: int  # 1 or 2
-    brood_eighths: int
-    food_eighths: int
-    bee_eighths: int
-    drone_eighths: int = 0
-    drone_brood_eighths: int = 0
-    pollen_eighths: int = 0
-    brood_multiplier: Optional[float] = 1.0
-    food_multiplier: Optional[float] = 1.0
-    bee_multiplier: Optional[float] = 1.0
-    drone_multiplier: Optional[float] = 1.0
-    drone_brood_multiplier: Optional[float] = 1.0
-    pollen_multiplier: Optional[float] = 1.0
+class InspectionBoxBase(BaseModel):
+    box_index: int
 
-class InspectionFrameCreate(InspectionFrameBase):
+    # Direct totals per box (Zarge)
+    brood_total: int = 0
+    food_total: int = 0
+    bee_total: int = 0
+    drone_total: int = 0
+    drone_brood_total: int = 0
+    pollen_total: int = 0
+
+    # Optional eighth-based inputs when Achtel-Modus is used
+    brood_eighths: Optional[int] = None
+    food_eighths: Optional[int] = None
+    bee_eighths: Optional[int] = None
+    drone_eighths: Optional[int] = None
+    drone_brood_eighths: Optional[int] = None
+    pollen_eighths: Optional[int] = None
+
+
+class InspectionBoxCreate(InspectionBoxBase):
     pass
 
-class InspectionFrameOut(InspectionFrameBase):
+
+class InspectionBoxOut(InspectionBoxBase):
     id: str
     inspection_id: str
 
     class Config:
         from_attributes = True
 
+
 class InspectionDetailCreate(BaseModel):
-    frames: List[InspectionFrameCreate]
+    boxes: List[InspectionBoxCreate]
+
 
 class InspectionDetailOut(BaseModel):
     id: str
     log_entry_id: str
-    frames: List[InspectionFrameOut]
+    boxes: List[InspectionBoxOut]
 
     class Config:
         from_attributes = True

@@ -36,7 +36,7 @@ Follow the quick automated setup below to get everything up and running in secon
 ### 🚀 Quick Automated Setup (Recommended)
 
 We provide interactive setup scripts for both **PowerShell (Windows)** and **Bash (macOS / Linux / Git Bash)**. These scripts will:
-1. Verify your Python installation (Python 3.12+).
+1. Verify your Python installation (**Python 3.13**).
 2. Create a Python Virtual Environment (`.venv`) inside the `backend/` directory.
 3. Upgrade `pip` and install all required dependencies from `backend/requirements.txt`.
 4. Copy the environment configuration template `backend/.env.example` to `backend/.env`.
@@ -64,7 +64,7 @@ Once the setup script finishes, you are ready to seed the database and start the
 
 ### 1. Manual Backend Setup (Alternative)
 
-The backend is built with Python 3.12+ (Python 3.13 recommended) and FastAPI.
+The backend is built with **Python 3.13** and FastAPI.
 
 #### 📁 Navigate to the backend directory
 ```bash
@@ -158,8 +158,15 @@ GEMINI_API_KEY=your_gemini_api_key_here
 # OPENAI_API_KEY=your_openai_api_key_here
 ```
 
+#### 🧱 Run Database Migrations (Alembic)
+Before seeding data, apply the database schema migrations using Alembic:
+
+```bash
+alembic upgrade head
+```
+
 #### 🌱 Seed the Database
-Before running the app, execute the seed script to set up default configurations (e.g., default Hive Frame Types like *Zander* or *Dadant*, and Seasonal Varroa Multipliers):
+After the schema is in place, execute the seed script to set up default configurations (e.g., default Hive Frame Types like *Zander* or *Dadant*, and Seasonal Varroa Multipliers):
 
 ```bash
 python -m app.scripts.seed
@@ -213,6 +220,63 @@ To preview and test the production build locally, run:
 npm run preview
 ```
 This hosts the compiled files on a local static web server (typically port `4173`).
+
+---
+
+### 3. Docker Setup (Backend + Frontend + Nginx)
+
+You can also run BeeBoard 2 via Docker with an Nginx reverse proxy in front of the backend and the built frontend.
+
+All Docker-related files live in the `docker/` directory:
+
+* `docker/Dockerfile.backend` – builds the Python FastAPI backend image.
+* `docker/Dockerfile.frontend` – builds the Vue frontend and serves it via Nginx.
+* `docker/nginx.conf` – Nginx configuration (serves SPA and proxies `/api/` to the backend).
+* `docker/docker-compose.yml` – defines the `backend`, `frontend` (build stage) and `nginx` services.
+* `docker/setup.ps1` – convenience script to start the stack.
+* `docker/update.ps1` – convenience script to rebuild/update the stack.
+
+#### 🔧 Configurable Ports & Data Directory
+
+The Docker setup is controlled via the following environment variables (with defaults):
+
+* `BEEBOARD_HTTP_PORT` – external HTTP port for Nginx (default: `8080`).
+* `BEEBOARD_BACKEND_PORT` – external port mapped to the backend container (default: `8000`).
+* `BEEBOARD_DOCKER_DATA` – host directory for persistent data (default: `./data` inside `docker/`).
+
+These are set automatically by the PowerShell helper scripts.
+
+#### ▶️ Start the Docker Stack (Windows / PowerShell)
+
+From the repository root, open PowerShell and run:
+
+```powershell
+cd docker
+./setup.ps1
+```
+
+This will:
+
+1. Build the backend and frontend images.
+2. Start the backend, build the frontend, and run Nginx as reverse proxy.
+3. Expose the app at `http://localhost:8080` (or your configured `BEEBOARD_HTTP_PORT`).
+
+You can override ports and data directory via parameters, e.g.:
+
+```powershell
+./setup.ps1 -HttpPort 80 -BackendPort 9000 -DataDir "D:\\beeboard-data"
+```
+
+#### 🔁 Update / Rebuild the Docker Stack
+
+To rebuild images and restart the stack after code changes:
+
+```powershell
+cd docker
+./update.ps1 -HttpPort 8080 -BackendPort 8000 -DataDir "data"
+```
+
+This will run `docker compose up -d --build` with the given configuration.
 
 ---
 

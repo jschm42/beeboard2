@@ -218,35 +218,39 @@
           </div>
         </div>
 
-        <!-- AI Insights Cron Configuration -->
-        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm space-y-4">
-          <div>
-            <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center">
-              <span>🕒 KI-Analyse Intervall (Cron-Job)</span>
-            </h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Bestimme, wie oft die automatischen KI-Berichte für deine Imkereien generiert werden. Die Eingabe erfolgt im standardmäßigen UNIX Cron-Format.
-            </p>
+        <!-- AI Insights Cron Config -->
+        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
+          <div class="flex items-start justify-between">
+            <div class="space-y-1">
+              <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center">
+                <span>🕒 AI-Insights Zeitplan</span>
+                <span class="ml-2 text-[10px] bg-blue-500/10 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded uppercase font-black">
+                  Cron-Format
+                </span>
+              </h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400 max-w-2xl">
+                Lege fest, wann automatisch neue AI-Insights für deine Stände generiert werden.
+                Verwende eine Cron-Expression im Format
+                <code class="bg-gray-100 dark:bg-dark-bg px-1 py-0.5 rounded font-mono">MINUTE STUNDE TAG MONAT WOCHENTAG</code>.
+                Beispiel: <code class="bg-gray-100 dark:bg-dark-bg px-1 py-0.5 rounded font-mono">0 */12 * * *</code> für alle 12 Stunden.
+              </p>
+            </div>
           </div>
 
-          <div class="space-y-3">
-            <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
-                Cron-Ausdruck *
-              </label>
-              <div class="relative rounded-xl shadow-sm max-w-md flex gap-3">
-                <input 
-                  v-model="llmConfig.insights_cron" 
-                  type="text" 
-                  required
-                  placeholder="z.B. 0 */12 * * *" 
-                  class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-mono"
-                />
-              </div>
-              <p class="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
-                Format: <code>Minute Stunde Tag Monat Wochentag</code>. 
-                Beispiele: <code>0 */12 * * *</code> (alle 12 Stunden), <code>0 8 * * *</code> (täglich um 08:00 Uhr), <code>*/30 * * * *</code> (alle 30 Minuten).
-              </p>
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-4 items-center">
+            <input
+              v-model="llmConfig.ai_insights_cron"
+              type="text"
+              placeholder="z.B. 0 6 * * * (täglich um 06:00)"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+            />
+            <div class="text-[11px] text-gray-500 dark:text-gray-400">
+              <div class="font-semibold mb-1">Beispiele:</div>
+              <ul class="space-y-0.5">
+                <li><code class="bg-gray-100 dark:bg-dark-bg px-1 py-0.5 rounded font-mono">0 */12 * * *</code> – alle 12 Stunden</li>
+                <li><code class="bg-gray-100 dark:bg-dark-bg px-1 py-0.5 rounded font-mono">0 6 * * *</code> – täglich um 06:00</li>
+                <li><code class="bg-gray-100 dark:bg-dark-bg px-1 py-0.5 rounded font-mono">0 6,18 * * *</code> – 06:00 und 18:00</li>
+              </ul>
             </div>
           </div>
         </div>
@@ -566,7 +570,7 @@ const llmConfig = ref({
   chatbot_system_prompt: '',
   draft_system_prompt: '',
   enable_weather_api: false,
-  insights_cron: ''
+  ai_insights_cron: ''
 })
 const loadingLLM = ref(false)
 const savingLLM = ref(false)
@@ -660,7 +664,7 @@ async function saveLLMConfig() {
       chatbot_system_prompt: llmConfig.value.chatbot_system_prompt,
       draft_system_prompt: llmConfig.value.draft_system_prompt,
       enable_weather_api: llmConfig.value.enable_weather_api,
-      insights_cron: llmConfig.value.insights_cron
+      ai_insights_cron: llmConfig.value.ai_insights_cron || null
     })
     llmConfig.value = res.data
     showToast('KI- und Wettereinstellungen erfolgreich aktualisiert.')

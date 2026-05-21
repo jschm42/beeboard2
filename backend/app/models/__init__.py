@@ -8,7 +8,7 @@ from app.models.logbook import (
     LogSession, 
     LogEntry, 
     InspectionDetail, 
-    InspectionFrame, 
+    InspectionBox,
     VarroaCountDetail, 
     VarroaTreatmentDetail, 
     LogEntryImage
@@ -31,7 +31,7 @@ __all__ = [
     "LogSession",
     "LogEntry",
     "InspectionDetail",
-    "InspectionFrame",
+    "InspectionBox",
     "VarroaCountDetail",
     "VarroaTreatmentDetail",
     "LogEntryImage",

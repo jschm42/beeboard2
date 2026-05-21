@@ -5,7 +5,7 @@ from app.schemas.admin import FrameTypeBase, FrameTypeCreate, FrameTypeOut, Varr
 from app.schemas.hive import HiveBoxBase, HiveBoxCreate, HiveBoxOut, HiveBase, HiveCreate, HiveOut
 from app.schemas.logbook import (
     LogSessionBase, LogSessionCreate, LogSessionOut,
-    InspectionFrameBase, InspectionFrameCreate, InspectionFrameOut,
+    InspectionBoxBase, InspectionBoxCreate, InspectionBoxOut,
     InspectionDetailCreate, InspectionDetailOut,
     VarroaCountDetailCreate, VarroaCountDetailOut,
     VarroaTreatmentDetailCreate, VarroaTreatmentDetailOut,
@@ -22,7 +22,7 @@ __all__ = [
     "FrameTypeBase", "FrameTypeCreate", "FrameTypeOut", "VarroaMultiplierBase", "VarroaMultiplierOut",
     "HiveBoxBase", "HiveBoxCreate", "HiveBoxOut", "HiveBase", "HiveCreate", "HiveOut",
     "LogSessionBase", "LogSessionCreate", "LogSessionOut",
-    "InspectionFrameBase", "InspectionFrameCreate", "InspectionFrameOut",
+    "InspectionBoxBase", "InspectionBoxCreate", "InspectionBoxOut",
     "InspectionDetailCreate", "InspectionDetailOut",
     "VarroaCountDetailCreate", "VarroaCountDetailOut",
     "VarroaTreatmentDetailCreate", "VarroaTreatmentDetailOut",

@@ -18,6 +18,8 @@
       <!-- Border glow when in onboarding mode (now acts as a premium outer halo) -->
       <div v-if="setupRequired" class="absolute -inset-0.5 bg-gradient-to-r from-amber-500 to-primary rounded-3xl blur opacity-30 -z-10 animate-pulse"></div>
 
+      <div class="text-xs text-red-500">setupRequired: {{ setupRequired }}</div>
+
       <!-- Brand Logo Header -->
       <div class="text-center">
         <div class="inline-flex items-center justify-center p-3 bg-primary/10 rounded-full mb-3">

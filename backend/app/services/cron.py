@@ -10,6 +10,7 @@ from app.models.hive import Hive
 from app.models.ai_insight import AIInsight
 from app.services.weather import fetch_current_weather
 from app.services.ai_assistant import get_effective_model_and_key, get_llm_config
+from app.models.administration import LLMConfig
 import litellm
 from app.core.config import settings
 
@@ -112,7 +113,7 @@ def start_scheduler():
     db = SessionLocal()
     try:
         config = get_llm_config(db)
-        cron_expression = config.insights_cron
+        cron_expression = config.ai_insights_cron or "0 */12 * * *"
     except Exception as e:
         logger.error(f"Error loading cron config on startup: {e}")
         cron_expression = "0 */12 * * *"
@@ -121,4 +122,4 @@ def start_scheduler():
         
     reschedule_insights_job(cron_expression)
     scheduler.start()
-    logger.info("APScheduler started.")
+    logger.info(f"APScheduler started (AI insights cron='{cron_expression}').")

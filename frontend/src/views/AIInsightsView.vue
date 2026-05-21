@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ai-insights-container">
     
     <div class="mb-8">
       <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
@@ -34,7 +34,35 @@
     </div>
 
     <div v-else class="space-y-8">
-      <div class="flex justify-end mb-4">
+      <!-- Filter & Actions Row -->
+      <div class="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+        <!-- Zeitraum Filter -->
+        <div class="flex flex-wrap items-end gap-3 flex-1">
+          <div>
+            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Von Datum</label>
+            <input 
+              v-model="filters.startDate" 
+              type="date" 
+              class="px-3 py-2 border border-gray-200 dark:border-gray-800 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Bis Datum</label>
+            <input 
+              v-model="filters.endDate" 
+              type="date" 
+              class="px-3 py-2 border border-gray-200 dark:border-gray-800 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+          <button 
+            @click="resetFilters" 
+            class="text-xs text-primary hover:underline font-bold mt-2"
+          >
+            Filter zurücksetzen
+          </button>
+        </div>
+
+        <!-- Generate Button -->
         <button 
           @click="triggerManualInsight" 
           :disabled="generating"
@@ -49,27 +77,45 @@
       </div>
 
       <div 
-        v-for="(insight, index) in insights" 
+        v-for="(insight, index) in filteredInsights" 
         :key="insight.id"
-        class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
+        :class="[
+          'bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-4 md:p-6 shadow-sm transition-all relative overflow-hidden cursor-pointer',
+          expandedId === insight.id ? 'md:col-span-2 shadow-md' : 'hover:shadow-md'
+        ]"
+        @click.stop="toggleExpand(insight.id)"
       >
         <div v-if="index === 0" class="absolute top-0 right-0 bg-amber-500 text-white text-xs font-black uppercase px-4 py-1.5 rounded-bl-xl shadow-sm z-10">
           Neueste Analyse
         </div>
 
-        <div class="mb-4">
-          <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">{{ formatDate(insight.created_at) }}</p>
-          <h2 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ insight.title }}</h2>
+        <div class="mb-3 flex items-start gap-3">
+          <div class="flex-1">
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">{{ formatDate(insight.created_at) }}</p>
+            <h2 class="text-lg md:text-2xl font-extrabold text-gray-900 dark:text-white line-clamp-2">{{ insight.title }}</h2>
+          </div>
+          <button 
+            @click.stop="deleteInsight(insight)" 
+            class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
+            title="Insight löschen"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </button>
         </div>
 
-        <div class="prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 markdown-content" v-html="renderMarkdown(insight.content)"></div>
+        <div 
+          class="prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 markdown-content transition-all duration-200"
+          :class="expandedId === insight.id ? '' : 'line-clamp-6 max-h-40 overflow-hidden'
+          "
+          v-html="renderMarkdown(insight.content)"
+        ></div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 import axios from 'axios'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
@@ -83,21 +129,71 @@ const loading = ref(true)
 const generating = ref(false)
 const insights = ref([])
 
+const filters = ref({
+  startDate: '',
+  endDate: ''
+})
+
+const expandedId = ref(null)
+
+// Close expanded card when clicking outside
+function handleClickOutside(event) {
+  const container = document.querySelector('.ai-insights-container')
+  if (container && !container.contains(event.target)) {
+    expandedId.value = null
+  }
+}
+
 onMounted(async () => {
+  document.addEventListener('click', handleClickOutside)
   if (apiaryStore.activeApiaryId) {
     await fetchInsights()
   }
 })
 
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
 async function fetchInsights() {
   loading.value = true
   try {
-    const res = await axios.get('/api/ai-insights', { params: { apiary_id: apiaryStore.activeApiaryId } })
+    const params = { apiary_id: apiaryStore.activeApiaryId }
+    if (filters.value.startDate) {
+      params.start_date = filters.value.startDate
+    }
+    if (filters.value.endDate) {
+      // include full day
+      params.end_date = filters.value.endDate + 'T23:59:59'
+    }
+    const res = await axios.get('/api/ai-insights', { params })
     insights.value = res.data
   } catch (err) {
     console.error(err)
   } finally {
     loading.value = false
+  }
+}
+
+const filteredInsights = computed(() => insights.value)
+
+function resetFilters() {
+  filters.value.startDate = ''
+  filters.value.endDate = ''
+  fetchInsights()
+}
+
+function toggleExpand(id) {
+  expandedId.value = expandedId.value === id ? null : id
+}
+
+async function deleteInsight(insight) {
+  if (!confirm('Diesen Insight-Eintrag wirklich löschen?')) return
+  try {
+    await axios.delete(`/api/ai-insights/${insight.id}`)
+    insights.value = insights.value.filter(i => i.id !== insight.id)
+  } catch (err) {
+    errorStore.showError('Fehler beim Löschen des Insights.', err)
   }
 }
 

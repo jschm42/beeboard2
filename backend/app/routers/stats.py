@@ -7,7 +7,7 @@ from app.core.database import get_db
 from app.core.security import get_current_user
 from app.models.user import User
 from app.models.hive import Hive
-from app.models.logbook import LogEntry, InspectionFrame, InspectionDetail
+from app.models.logbook import LogEntry, InspectionBox, InspectionDetail
 from app.routers.apiaries import check_access
 from app.services.calculations import calculate_inspection_totals, detect_season
 

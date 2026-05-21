@@ -89,12 +89,12 @@ def update_llm_config(
         config.draft_system_prompt = payload.draft_system_prompt
     if payload.enable_weather_api is not None:
         config.enable_weather_api = payload.enable_weather_api
-    if payload.insights_cron is not None:
+    if payload.ai_insights_cron is not None:
         from app.services.cron import reschedule_insights_job
-        success = reschedule_insights_job(payload.insights_cron)
+        success = reschedule_insights_job(payload.ai_insights_cron)
         if not success:
             raise HTTPException(status_code=400, detail="Ungültiges UNIX Cron-Format. Bitte 5 durch Leerzeichen getrennte Werte angeben (z.B. '0 */12 * * *').")
-        config.insights_cron = payload.insights_cron
+        config.ai_insights_cron = payload.ai_insights_cron
 
     db.commit()
     db.refresh(config)

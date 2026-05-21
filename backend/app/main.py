@@ -19,11 +19,8 @@ with engine.connect() as conn:
     try:
         result = conn.execute(text("PRAGMA table_info(llm_configs)"))
         columns = [row[1] for row in result.fetchall()]
-        if "openweathermap_api_key" not in columns:
-            conn.execute(text("ALTER TABLE llm_configs ADD COLUMN openweathermap_api_key VARCHAR"))
-            conn.commit()
-        if "insights_cron" not in columns:
-            conn.execute(text("ALTER TABLE llm_configs ADD COLUMN insights_cron VARCHAR DEFAULT '0 */12 * * *'"))
+        if "ai_insights_cron" not in columns:
+            conn.execute(text("ALTER TABLE llm_configs ADD COLUMN ai_insights_cron VARCHAR DEFAULT '0 */12 * * *'"))
             conn.commit()
     except Exception as e:
         print(f"Error running database migration: {e}")

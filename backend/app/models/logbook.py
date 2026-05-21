@@ -65,35 +65,45 @@ class InspectionDetail(UUIDTimeStampedModel):
 
     # Relationships
     log_entry: Mapped["LogEntry"] = relationship("LogEntry", back_populates="inspection_detail")
-    frames: Mapped[List["InspectionFrame"]] = relationship(
-        "InspectionFrame",
+    # New simplified box-based inspection model
+    boxes: Mapped[List["InspectionBox"]] = relationship(
+        "InspectionBox",
         back_populates="inspection",
         cascade="all, delete-orphan"
     )
 
-class InspectionFrame(UUIDTimeStampedModel):
-    __tablename__ = "inspection_frames"
+class InspectionBox(UUIDTimeStampedModel):
+    """Simplified box-based inspection snapshot.
+
+    Stores direct totals per box (Zarge) plus optional eighth-based inputs
+    when the user worked in Achtel-Modus.
+    """
+
+    __tablename__ = "inspection_boxes"
 
     inspection_id: Mapped[str] = mapped_column(ForeignKey("inspection_details.id", ondelete="CASCADE"))
-    frame_number: Mapped[int] = mapped_column(Integer)
-    side: Mapped[int] = mapped_column(Integer)  # 1 or 2
-    brood_eighths: Mapped[int] = mapped_column(Integer, default=0)
-    food_eighths: Mapped[int] = mapped_column(Integer, default=0)
-    bee_eighths: Mapped[int] = mapped_column(Integer, default=0)
-    drone_eighths: Mapped[int] = mapped_column(Integer, default=0)
-    drone_brood_eighths: Mapped[int] = mapped_column(Integer, default=0)
-    pollen_eighths: Mapped[int] = mapped_column(Integer, default=0)
 
-    # Snapshotted multipliers for biology statistics resilience
-    brood_multiplier: Mapped[float] = mapped_column(Float, default=1.0)
-    food_multiplier: Mapped[float] = mapped_column(Float, default=1.0)
-    bee_multiplier: Mapped[float] = mapped_column(Float, default=1.0)
-    drone_multiplier: Mapped[float] = mapped_column(Float, default=1.0)
-    drone_brood_multiplier: Mapped[float] = mapped_column(Float, default=1.0)
-    pollen_multiplier: Mapped[float] = mapped_column(Float, default=1.0)
+    # Index of the box within the hive (0,1,2,...) – UI order
+    box_index: Mapped[int] = mapped_column(Integer)
+
+    # Direct totals (exact/estimated quantities)
+    brood_total: Mapped[int] = mapped_column(Integer, default=0)
+    food_total: Mapped[int] = mapped_column(Integer, default=0)
+    bee_total: Mapped[int] = mapped_column(Integer, default=0)
+    drone_total: Mapped[int] = mapped_column(Integer, default=0)
+    drone_brood_total: Mapped[int] = mapped_column(Integer, default=0)
+    pollen_total: Mapped[int] = mapped_column(Integer, default=0)
+
+    # Optional eighth-based inputs (0–8 per box) when Achtel-Modus is used
+    brood_eighths: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    food_eighths: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    bee_eighths: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    drone_eighths: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    drone_brood_eighths: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    pollen_eighths: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
 
     # Relationships
-    inspection: Mapped["InspectionDetail"] = relationship("InspectionDetail", back_populates="frames")
+    inspection: Mapped["InspectionDetail"] = relationship("InspectionDetail", back_populates="boxes")
 
 class VarroaCountDetail(UUIDTimeStampedModel):
     __tablename__ = "varroa_count_details"

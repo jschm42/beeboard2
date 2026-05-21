@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.core.database import SessionLocal, engine, Base
+from app.core.database import SessionLocal, Base
 from app.models.administration import FrameType, VarroaMultiplier
 
 def seed_database(db: Session):
@@ -88,8 +88,8 @@ def seed_database(db: Session):
     print("Datenbank-Seeding erfolgreich abgeschlossen!")
 
 if __name__ == "__main__":
-    # Ensure tables exist
-    Base.metadata.create_all(bind=engine)
+    # Hinweis: Das Schema wird über Alembic-Migrationen verwaltet (alembic upgrade head).
+    # Dieses Script kümmert sich nur um fachliche Stammdaten (FrameTypes, VarroaMultipliers).
     db = SessionLocal()
     try:
         seed_database(db)

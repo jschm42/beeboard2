@@ -28,6 +28,5 @@ class LLMConfig(UUIDTimeStampedModel):
     chatbot_system_prompt: Mapped[str] = mapped_column(Text, nullable=False)
     draft_system_prompt: Mapped[str] = mapped_column(Text, nullable=False)
     enable_weather_api: Mapped[bool] = mapped_column(Boolean, default=False)
-    openweathermap_api_key: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    insights_cron: Mapped[str] = mapped_column(String(100), default="0 */12 * * *")
+    ai_insights_cron: Mapped[str | None] = mapped_column(String(64), nullable=True)
 

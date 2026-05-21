@@ -92,14 +92,14 @@ def get_llm_config(db: Session) -> LLMConfig:
             chatbot_system_prompt=DEFAULT_CHATBOT_PROMPT,
             draft_system_prompt=DEFAULT_DRAFT_PROMPT,
             enable_weather_api=False,
-            insights_cron="0 */12 * * *"
+            ai_insights_cron="0 */12 * * *",
         )
         db.add(config)
         db.commit()
         db.refresh(config)
     else:
-        if not config.insights_cron:
-            config.insights_cron = "0 */12 * * *"
+        if not config.ai_insights_cron:
+            config.ai_insights_cron = "0 */12 * * *"
             db.commit()
             db.refresh(config)
     return config
