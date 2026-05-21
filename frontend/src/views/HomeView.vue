@@ -341,12 +341,13 @@ async function fetchDashboardData() {
   try {
     const apiaryId = apiaryStore.activeApiaryId
     
-    // Fetch locations, hives, and entries in parallel
-    const [locRes, hiveRes, logRes, insightRes] = await Promise.all([
+    // Fetch locations, hives, tasks, and entries in parallel
+    const [locRes, hiveRes, logRes, insightRes, tasksRes] = await Promise.all([
       axios.get('/api/locations', { params: { apiary_id: apiaryId } }),
       axios.get('/api/hives', { params: { apiary_id: apiaryId } }),
       axios.get('/api/logbook/entries', { params: { apiary_id: apiaryId } }),
-      axios.get('/api/ai-insights/latest', { params: { apiary_id: apiaryId } }).catch(() => ({ data: null }))
+      axios.get('/api/ai-insights/latest', { params: { apiary_id: apiaryId } }).catch(() => ({ data: null })),
+      axios.get('/api/tasks', { params: { apiary_id: apiaryId, is_completed: false } })
     ])
     
     locations.value = locRes.data
@@ -358,7 +359,7 @@ async function fetchDashboardData() {
     calculateBiologicalAggregates(logRes.data)
     
     // Generate intelligent system-driven tasks
-    generateIntelligentTasks(logRes.data)
+    generateIntelligentTasks(logRes.data, tasksRes.data)
 
   } catch (err) {
     console.error('Fetch dashboard data failed:', err)
@@ -421,14 +422,31 @@ function calculateBiologicalAggregates(entries) {
   estimatedTotalFood.value = totalFood
 }
 
-function generateIntelligentTasks(entries) {
+function generateIntelligentTasks(entries, dbTasks = []) {
   const generated = []
   
-  // 1. General tasks
-  const manual = localStorage.getItem(`tasks_${apiaryStore.activeApiaryId}`)
-  if (manual) {
-    generated.push(...JSON.parse(manual))
-  }
+  // 1. General database tasks
+  dbTasks.forEach(t => {
+    let subtitle = t.description || 'Fällige Aufgabe'
+    if (t.location || t.hive) {
+      const parts = []
+      if (t.location) parts.push(`Standort: ${t.location.name}`)
+      if (t.hive) parts.push(`Volk: ${t.hive.name}`)
+      subtitle = `${parts.join(', ')} — ${subtitle}`
+    }
+    if (t.due_date) {
+      subtitle = `Fällig: ${formatDate(t.due_date)} | ${subtitle}`
+    }
+    
+    generated.push({
+      id: t.id,
+      title: t.title,
+      subtitle: subtitle,
+      urgent: t.priority === 'HIGH' || (t.due_date && isOverdue(t.due_date)),
+      completed: false,
+      isDbTask: true
+    })
+  })
 
   // 2. Automated rule-based check: Hives needing inspection (> 10 days since last inspection)
   const lastInspections = {}
@@ -457,7 +475,8 @@ function generateIntelligentTasks(entries) {
         title: `Erstinspektion fällig bei ${hive.name}`,
         subtitle: `Für dieses Bienenvolk wurde noch keine Inspektion erfasst.`,
         urgent: true,
-        completed: false
+        completed: false,
+        isDbTask: false
       })
     } else {
       const diffTime = Math.abs(today - lastDate)
@@ -468,7 +487,8 @@ function generateIntelligentTasks(entries) {
           title: `Inspektion fällig bei ${hive.name}`,
           subtitle: `Zuletzt kontrolliert vor ${diffDays} Tagen (Grenzwert: 10 Tage).`,
           urgent: diffDays > 15,
-          completed: false
+          completed: false,
+          isDbTask: false
         })
       }
     }
@@ -481,41 +501,59 @@ function generateIntelligentTasks(entries) {
       title: `Varroabehandlung einleiten bei ${warn.hive_name}`,
       subtitle: `Schätzwert: ${warn.estimated_total.toFixed(1)} Milben/Tag überschreitet den kritischen Schwellenwert!`,
       urgent: true,
-      completed: false
+      completed: false,
+      isDbTask: false
     })
   })
 
   tasks.value = generated
 }
 
-function completeTask(id) {
-  // If it's a manual task, we delete/complete it, else we mock-complete it
+async function completeTask(id) {
+  const task = tasks.value.find(t => t.id === id)
+  if (task && task.isDbTask) {
+    try {
+      await axios.post(`/api/tasks/${id}/complete`)
+    } catch (err) {
+      errorStore.showError('Fehler beim Abschließen der Aufgabe.', err, 'Aufgabe')
+      return
+    }
+  }
   tasks.value = tasks.value.filter(t => t.id !== id)
-  
-  // Persist if manual
-  if (id.startsWith('manual-')) {
-    const manuals = tasks.value.filter(t => t.id.startsWith('manual-'))
-    localStorage.setItem(`tasks_${apiaryStore.activeApiaryId}`, JSON.stringify(manuals))
+}
+
+async function addManualTask() {
+  if (!newTaskTitle.value.trim()) return
+  try {
+    const res = await axios.post('/api/tasks', {
+      title: newTaskTitle.value.trim(),
+      priority: 'MEDIUM'
+    }, {
+      params: { apiary_id: apiaryStore.activeApiaryId }
+    })
+    
+    const t = res.data
+    tasks.value.unshift({
+      id: t.id,
+      title: t.title,
+      subtitle: 'Fällige Aufgabe',
+      urgent: false,
+      completed: false,
+      isDbTask: true
+    })
+    newTaskTitle.value = ''
+  } catch (err) {
+    errorStore.showError('Fehler beim Hinzufügen der Aufgabe.', err, 'Aufgabe erstellen')
   }
 }
 
-function addManualTask() {
-  if (!newTaskTitle.value.trim()) return
-  
-  const newTask = {
-    id: `manual-${Date.now()}`,
-    title: newTaskTitle.value.trim(),
-    subtitle: 'Manuell hinzugefügte Aufgabe',
-    urgent: false,
-    completed: false
-  }
-
-  tasks.value.unshift(newTask)
-  
-  const manuals = tasks.value.filter(t => t.id.startsWith('manual-'))
-  localStorage.setItem(`tasks_${apiaryStore.activeApiaryId}`, JSON.stringify(manuals))
-  
-  newTaskTitle.value = ''
+function isOverdue(dateStr) {
+  if (!dateStr) return false
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const d = new Date(dateStr)
+  d.setHours(0, 0, 0, 0)
+  return d < today
 }
 
 async function createApiary() {

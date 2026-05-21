@@ -29,6 +29,9 @@
 
     <!-- Global Premium Error Modal -->
     <ErrorModal />
+    
+    <!-- Outlook-style Task Reminders Modal -->
+    <TaskReminderModal />
   </div>
 </template>
 
@@ -41,6 +44,7 @@ import { useApiaryStore } from './stores/apiary'
 import { useErrorStore } from './stores/error'
 import Sidebar from './components/Sidebar.vue'
 import ErrorModal from './components/ErrorModal.vue'
+import TaskReminderModal from './components/TaskReminderModal.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()

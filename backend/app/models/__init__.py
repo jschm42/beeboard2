@@ -16,6 +16,7 @@ from app.models.logbook import (
 from app.models.ai_insight import AIInsight
 from app.models.honey_batch import HoneyBatch
 from app.models.sales import ProductConfig, HoneySale
+from app.models.task import Task
 
 # Export all models for easier importing
 __all__ = [
@@ -40,5 +41,6 @@ __all__ = [
     "AIInsight",
     "HoneyBatch",
     "ProductConfig",
-    "HoneySale"
+    "HoneySale",
+    "Task"
 ]

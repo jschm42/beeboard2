@@ -12,6 +12,7 @@ async def fetch_current_weather(lat: float, lon: float) -> Optional[Dict[str, An
 
     # We use the free 2.5 weather API, which doesn't require a paid subscription/One Call plan
     url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&units=metric&lang=de&appid={api_key}"
+    print(f"Requesting OpenWeatherMap URL: {url}")
     
     async with httpx.AsyncClient() as client:
         try:
@@ -25,9 +26,14 @@ async def fetch_current_weather(lat: float, lon: float) -> Optional[Dict[str, An
                     "wind_speed": data.get("wind", {}).get("speed", 0.0),
                     "weather": data.get("weather", [])
                 }
+            elif response.status_code == 401:
+                if not hasattr(fetch_current_weather, "_warned_401"):
+                    print("WARN: OpenWeatherMap API key (OPENWEATHERMAP_API_KEY) in .env is invalid. Weather features will be disabled.")
+                    fetch_current_weather._warned_401 = True
+                return None
             else:
-                # Log error or handle gracefully
-                print(f"Error fetching weather: {response.status_code} {response.text}")
+                # Log other errors
+                print(f"Error fetching weather: {response.status_code}")
                 return None
         except Exception as e:
             print(f"Exception fetching weather: {e}")
@@ -50,6 +56,7 @@ async def geocode_address(address: str) -> Optional[Dict[str, Any]]:
     api_key = settings.OPENWEATHERMAP_API_KEY
     if api_key:
         url = f"https://api.openweathermap.org/geo/1.0/direct?q={address}&limit=1&appid={api_key}"
+        print(f"Requesting OpenWeatherMap Geocoding URL: {url}")
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.get(url, timeout=10.0)
@@ -64,8 +71,12 @@ async def geocode_address(address: str) -> Optional[Dict[str, Any]]:
                             "country": first.get("country"),
                             "state": first.get("state")
                         }
+                elif response.status_code == 401:
+                    if not hasattr(geocode_address, "_warned_401"):
+                        print("WARN: OpenWeatherMap API key is invalid for geocoding. Falling back to OpenStreetMap Nominatim.")
+                        geocode_address._warned_401 = True
                 else:
-                    print(f"OpenWeatherMap geocoding failed (status {response.status_code}): {response.text}")
+                    print(f"OpenWeatherMap geocoding failed with status {response.status_code}")
             except Exception as e:
                 print(f"Exception during OpenWeatherMap geocoding: {e}")
 
