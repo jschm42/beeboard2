@@ -483,7 +483,7 @@ def draft_entry_from_text(freetext: str, date_str: Optional[str] = None, db: Opt
         return json.loads(content)
     except Exception as e:
         logger.error(f"LiteLLM auto-draft error: {str(e)}")
-        return get_fallback_draft(freetext, date_str, error=str(e))
+        return get_fallback_draft(freetext, date_str)
 
 def get_fallback_draft(freetext: str, date_str: str, error: Optional[str] = None) -> Dict[str, Any]:
     """Generates a structured dictionary from text if LLM extraction fails or is unconfigured."""
@@ -516,8 +516,6 @@ def get_fallback_draft(freetext: str, date_str: str, error: Optional[str] = None
             break
 
     notes = freetext
-    if error:
-        notes += f"\n\n(Hinweis: KI-Extraktion fehlgeschlagen - {error})"
 
     draft = {
         "hive_name": hive_name,
