@@ -1,20 +1,26 @@
 # 🐝 BeeBoard 2 — Reactive Beekeeping Log & AI Assistant
 
-Welcome to **BeeBoard 2**, a modern, reactive beekeeping log (Stockkarte) and AI assistant designed to help beekeepers manage their apiaries (Standorte), hives (Bienenvölker), and inspections (Stockkarten-Einträge) with ease. 
+Welcome to **BeeBoard 2**, a modern beekeeping logbook (Stockkarte) with an integrated AI assistant.
 
-By combining a fast **FastAPI + SQLite** backend with an intuitive, dynamic **Vue 3 + Vite + Tailwind CSS** frontend, BeeBoard 2 delivers a premium digital companion for modern apiculture. It also features a contextual **AI Assistant** (powered by LiteLLM) that answers complex questions about your hives and parses natural language notes into structured records.
+The project helps beekeepers manage apiaries (Standorte), hives (Bienenvölker), inspections (Stockkarten-Einträge), honey harvests, sales, and recurring tasks in one place.
+
+BeeBoard 2 combines a fast **FastAPI + SQLite** backend with an intuitive **Vue 3 + Vite + Tailwind CSS** frontend. A context-aware **AI Assistant** (powered by LiteLLM) can answer questions about your data and convert natural-language notes into structured entries.
 
 ---
 
 ## 🚀 Key Features
 
-*   **🍯 Apiary & Location Management**: Track geographic locations, addresses, and custom notes for multiple apiaries.
-*   **🐝 Hive Management**: Record setup dates, frame types (e.g., Zander, Dadant), active status, and queen information (year of birth, marking color, breed).
-*   **📋 Inspection Logbook (Stockkarte)**: Record frame-level details (brood, food, and bees), swarm instinct, temperament, queen sightings, varroa drop rates, and autumn/winter treatments.
-*   **🤖 AI Bee Assistant**: Context-aware AI chatbot that reads your apiary data, hive configurations, and historical inspection logs to provide diagnostics and apicultural advice.
-*   **🎙️ Natural Language Drafts**: Dictate or type a simple note (e.g., *"Volk 1 had 5 frames of brood and 3 food, temper was fine"*), and let the AI automatically structure it into a logbook entry draft!
-*   **📊 Rich Statistics & Charts**: Visual data analysis of honey yields, varroa mite progression, frame metrics, and colony health trends.
-*   **🔐 User Authentication**: Secure, role-based registration and login with JWT tokens.
+*   **🍯 Multi-Apiary & Location Management**: Manage multiple stands with addresses, geo-context, notes, and ownership information.
+*   **🐝 Hive Lifecycle Management**: Track setup date, status, frame system (e.g., Zander, Dadant), queen metadata, and per-hive history.
+*   **📋 Detailed Inspection Logbook (Stockkarte)**: Capture brood/food/bee frame metrics, temperament, swarm signs, queen sightings, varroa counts, and seasonal treatments.
+*   **🧠 AI Assistant for Beekeeping Decisions**: Ask contextual questions based on your actual hive and inspection data to get practical diagnostics and suggestions.
+*   **🎙️ Natural-Language Entry Drafting**: Convert free text or dictated notes into structured logbook drafts to reduce manual input.
+*   **🍯 Honey Batch Management**: Record harvest and bottling data, batch metadata, and traceability information.
+*   **💶 Sales Tracking**: Track products, sales channels, pricing, and sales records connected to honey batches.
+*   **✅ Task Planning & Reminders**: Organize recurring and seasonal tasks for locations and hives.
+*   **📊 Statistics & Visual Analytics**: Analyze trends for yield, varroa progression, colony strength, and operational outcomes.
+*   **🔐 Secure Authentication & Roles**: JWT-based auth with role-aware access for protected areas.
+*   **🛠️ API-First Backend**: Well-structured REST endpoints with Pydantic schemas and SQLAlchemy models for maintainable integrations.
 
 ---
 
@@ -24,6 +30,40 @@ BeeBoard is organized as a clean **monorepo**:
 
 *   **`backend/`**: Python FastAPI app with SQLAlchemy ORM, LiteLLM integrations, SQLite database storage, and a robust test suite.
 *   **`frontend/`**: Vue 3 SPA powered by Vite, Pinia for reactive state management, Tailwind CSS for responsive styling, and Chart.js for data visualization.
+
+---
+
+## 🌍 Regional Focus & Internationalization
+
+BeeBoard 2 is currently optimized for **German beekeeping workflows and terminology** (for example: Stockkarte structure, common frame systems like Zander/Dadant, and German UI wording in key areas).
+
+The architecture is intentionally designed so it can be **internationalized**:
+
+*   Text labels and UI copy can be externalized for multilingual frontends.
+*   Domain defaults (units, tax, product naming, seasonal assumptions) can be adapted per region.
+*   AI prompt and parsing behavior can be adjusted for language- and country-specific beekeeping practices.
+
+If you want to run BeeBoard outside German-speaking contexts, treat the current defaults as a strong baseline and localize terminology, labels, and regional business rules.
+
+---
+
+## Third-Party Licenses and Attributions
+
+BeeBoard uses third-party APIs, open-source dependencies, icon sets, and brand assets.
+
+Please review [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for:
+
+1. A dependency license summary for frontend and backend packages.
+2. API and service attribution requirements (including OpenWeatherMap and OpenStreetMap Nominatim/ODbL references).
+3. Icon and brand asset usage notes.
+4. Font usage notes and future self-hosting guidance.
+5. Provenance notes for custom SVG assets generated with Recraft (paid credits).
+
+An in-app About dialog is available from the sidebar and summarizes the same attribution context for end users.
+
+For a practical pre-release process, use [RELEASE_COMPLIANCE_CHECKLIST.md](RELEASE_COMPLIANCE_CHECKLIST.md).
+
+For production and commercial deployments, verify all upstream license and terms pages directly as part of your release process.
 
 ---
 

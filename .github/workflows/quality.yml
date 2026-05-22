@@ -6,6 +6,121 @@ on:
   pull_request:
 
 jobs:
+  license-report:
+    name: License Report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm --prefix frontend ci
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Generate frontend license report
+        run: |
+          mkdir -p reports/licenses
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+
+          const pkg = JSON.parse(fs.readFileSync('frontend/package.json', 'utf8'));
+          const dependencies = {
+            ...(pkg.dependencies || {}),
+            ...(pkg.devDependencies || {}),
+          };
+
+          const lines = [
+            '# Frontend License Report',
+            '',
+            `Generated: ${new Date().toISOString()}`,
+            '',
+            '| Package | Version | License |',
+            '| --- | --- | --- |',
+          ];
+
+          for (const name of Object.keys(dependencies).sort()) {
+            const filePath = path.join('frontend', 'node_modules', ...name.split('/'), 'package.json');
+            if (!fs.existsSync(filePath)) {
+              lines.push(`| ${name} | NOT_INSTALLED | UNKNOWN |`);
+              continue;
+            }
+            const meta = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+            lines.push(`| ${meta.name || name} | ${meta.version || 'UNKNOWN'} | ${meta.license || 'UNSPECIFIED'} |`);
+          }
+
+          fs.writeFileSync('reports/licenses/frontend-licenses.md', `${lines.join('\n')}\n`, 'utf8');
+          NODE
+
+      - name: Generate backend license report
+        run: |
+          python <<'PY'
+          import datetime as dt
+          import importlib.metadata as md
+          import pathlib
+          import re
+
+          req_path = pathlib.Path('backend/requirements.txt')
+          out_path = pathlib.Path('reports/licenses/backend-licenses.md')
+          out_path.parent.mkdir(parents=True, exist_ok=True)
+
+          packages = []
+          for line in req_path.read_text(encoding='utf-8').splitlines():
+            line = line.strip()
+            if not line or line.startswith('#'):
+              continue
+            name = re.split(r'[<>=!~\[]', line, maxsplit=1)[0].strip()
+            if name:
+              packages.append(name)
+
+          lines = [
+            '# Backend License Report',
+            '',
+            f'Generated: {dt.datetime.utcnow().isoformat()}Z',
+            '',
+            '| Package | Version | License |',
+            '| --- | --- | --- |',
+          ]
+
+          for pkg in sorted(set(packages), key=str.lower):
+            try:
+              meta = md.distribution(pkg).metadata
+              version = meta.get('Version', 'UNKNOWN')
+              license_name = (meta.get('License') or '').strip()
+              if not license_name:
+                classifiers = [c for c in (meta.get_all('Classifier') or []) if c.startswith('License ::')]
+                license_name = '; '.join(classifiers) if classifiers else 'UNSPECIFIED'
+              lines.append(f'| {pkg} | {version} | {license_name} |')
+            except Exception:
+              lines.append(f'| {pkg} | NOT_INSTALLED | UNKNOWN |')
+
+          out_path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          PY
+
+      - name: Upload license reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-reports
+          path: reports/licenses/*.md
+
   backend:
     name: Backend Lint and Tests
     runs-on: ubuntu-latest

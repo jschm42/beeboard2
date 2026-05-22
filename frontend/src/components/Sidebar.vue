@@ -95,6 +95,14 @@
             <component :is="isDark ? Sun : Moon" class="w-4.5 h-4.5" />
             <span class="text-xs font-semibold">Design</span>
           </button>
+
+          <button
+            @click="aboutOpen = true"
+            class="p-2 rounded-xl text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border transition-colors duration-200 hover-scale flex justify-center items-center"
+            title="About"
+          >
+            <CircleHelp class="w-4.5 h-4.5" />
+          </button>
           
           <button 
             @click="logout" 
@@ -255,6 +263,14 @@
             <component :is="isDark ? Sun : Moon" class="w-4.5 h-4.5" />
             <span class="text-xs font-semibold">Design</span>
           </button>
+
+          <button
+            @click="aboutOpen = true"
+            class="p-2 rounded-xl text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border transition-colors duration-200 hover-scale flex justify-center items-center"
+            title="About"
+          >
+            <CircleHelp class="w-4.5 h-4.5" />
+          </button>
           
           <button 
             @click="logout" 
@@ -268,6 +284,8 @@
       </div>
     </aside>
 
+    <AboutDialog v-model="aboutOpen" />
+
   </div>
 </template>
 
@@ -279,6 +297,7 @@ import beeboardLogo from '../assets/beeboard-logo.svg'
 import { APP_NAME, APP_VERSION } from '../config/app.js'
 import { useAuthStore } from '../stores/auth'
 import { useApiaryStore } from '../stores/apiary'
+import AboutDialog from './AboutDialog.vue'
 import { 
   LayoutDashboard, 
   MapPin, 
@@ -294,7 +313,8 @@ import {
   Menu,
   X,
   ShoppingBag,
-  ClipboardList
+  ClipboardList,
+  CircleHelp
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -304,6 +324,7 @@ const apiaryStore = useApiaryStore()
 const mobileMenuOpen = ref(false)
 const isDark = ref(false)
 const unreadInsightsCount = ref(0)
+const aboutOpen = ref(false)
 
 const navItems = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
