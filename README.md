@@ -6,6 +6,13 @@ The project helps beekeepers manage apiaries (Standorte), hives (Bienenvölker),
 
 BeeBoard 2 combines a fast **FastAPI + SQLite** backend with an intuitive **Vue 3 + Vite + Tailwind CSS** frontend. A context-aware **AI Assistant** (powered by LiteLLM) can answer questions about your data and convert natural-language notes into structured entries.
 
+> [!WARNING]
+> **Current scope:** BeeBoard is currently primarily in **German language** and aligned with **German beekeeping practices**.
+> 
+> **Planned direction:** Internationalization is planned, and most core features are already broadly applicable across regions.
+> 
+> **Community support wanted:** Help with translations, regional defaults, domain validation, and UX adaptation for non-German beekeeping workflows is very welcome.
+
 ---
 
 ## 🚀 Key Features
