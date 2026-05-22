@@ -1,0 +1,14 @@
+extends: default
+
+rules:
+  line-length:
+    max: 120
+    level: warning
+  new-lines: disable
+  document-start: disable
+  truthy: disable
+
+ignore: |
+  frontend/node_modules/
+  backend/.venv/
+  backend/venv/
