@@ -28,111 +28,6 @@
       <span>{{ alertMessage }}</span>
     </div>
 
-    <!-- Create/Edit Hive Form (Inline, embedded on page) -->
-    <div v-if="showModal" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl shadow-md w-full max-w-2xl mx-auto p-6 mb-8 animate-scale">
-      <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100 dark:border-dark-border">
-        <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-          {{ isEditMode ? '🐝 Volk-Einstellungen bearbeiten' : '🐝 Neues Volk anlegen' }}
-        </h3>
-        <button @click="closeModal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-      
-      <form @submit.prevent="submitForm">
-        <div class="space-y-4">
-          
-          <div>
-            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Volksbezeichnung / Name *</label>
-            <input 
-              v-model="form.name" 
-              type="text" 
-              required
-              placeholder="z.B. Volk 14"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-            />
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Standort (Stand) *</label>
-            <select 
-              v-model="form.locationId" 
-              required
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer"
-            >
-              <option value="" disabled>Bitte Standort wählen...</option>
-              <option v-for="loc in locations" :key="loc.id" :value="loc.id">
-                {{ loc.name }}
-              </option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Wabenmaß *</label>
-            <select 
-              v-model="form.frameTypeId" 
-              required
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer"
-            >
-              <option value="" disabled>Bitte Wabenmaß wählen...</option>
-              <option v-for="ft in frameTypes" :key="ft.id" :value="ft.id">
-                {{ ft.name }}
-              </option>
-            </select>
-          </div>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Königin Jahr (Schlüpfjahr)</label>
-              <input 
-                v-model.number="form.queenYear" 
-                type="number" 
-                placeholder="z.B. 2025"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-              />
-            </div>
-            <div class="flex flex-col justify-end pb-2">
-              <label class="flex items-center space-x-2 cursor-pointer select-none">
-                <input 
-                  v-model="form.isActive" 
-                  type="checkbox"
-                  class="rounded text-primary focus:ring-primary h-4.5 w-4.5"
-                />
-                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Volk ist aktiv</span>
-              </label>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Notizen (Königinlinie etc.)</label>
-            <textarea 
-              v-model="form.notes" 
-              placeholder="Königin F1 Carnica, standbegattet, sanftmütig..."
-              rows="3"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-            ></textarea>
-          </div>
-
-        </div>
-
-        <div class="flex justify-end space-x-3 mt-6 border-t border-gray-100 dark:border-dark-border pt-4">
-          <button 
-            type="button" 
-            @click="closeModal" 
-            class="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-          >
-            Abbrechen
-          </button>
-          <button 
-            type="submit" 
-            class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md hover-scale"
-          >
-            Speichern
-          </button>
-        </div>
-      </form>
-    </div>
-
     <!-- Empty State -->
     <div v-if="!loading && hives.length === 0" class="glass rounded-3xl p-12 text-center max-w-lg mx-auto border border-dashed border-gray-300 dark:border-gray-700 mt-8">
       <div class="text-4xl mb-4">🐝</div>
@@ -241,426 +136,233 @@
 
       </div>
 
-      <!-- Main Splitscreen Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
-        <!-- Left Panel: Hives List (7 cols on desktop) -->
-        <div class="lg:col-span-7 space-y-4">
-          
-          <div v-if="loading" class="flex flex-col items-center justify-center py-20 bg-white dark:bg-dark-card rounded-3xl border border-gray-200 dark:border-dark-border">
-            <svg class="animate-spin h-10 w-10 text-primary mb-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            <p class="text-gray-500 dark:text-gray-400 font-bold">Lade Bienenvölker...</p>
-          </div>
+      <div v-if="loading" class="flex flex-col items-center justify-center py-20 bg-white dark:bg-dark-card rounded-3xl border border-gray-200 dark:border-dark-border">
+        <svg class="animate-spin h-10 w-10 text-primary mb-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        <p class="text-gray-500 dark:text-gray-400 font-bold">Lade Bienenvölker...</p>
+      </div>
 
-          <template v-else>
-            <!-- No results matching filters -->
-            <div v-if="filteredHives.length === 0" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-8 text-center text-gray-400 dark:text-gray-500 italic text-sm">
-              Keine Bienenvölker entsprechen den ausgewählten Filtern.
-            </div>
-
-            <!-- TILES VIEW -->
-            <template v-else-if="viewMode === 'tiles'">
-              <div 
-                v-for="hive in filteredHives" 
-                :key="hive.id"
-                @click="selectHive(hive)"
-                class="bg-white dark:bg-dark-card border rounded-3xl p-5 shadow-sm transition-all duration-200 cursor-pointer flex flex-col justify-between"
-                :class="[
-                  selectedHive?.id === hive.id 
-                    ? 'border-primary ring-2 ring-primary/20 shadow-md scale-[1.01]' 
-                    : 'border-gray-200 dark:border-dark-border hover:border-primary/50'
-                ]"
-              >
-                <!-- Main Hive Info Row -->
-                <div class="flex items-center justify-between w-full">
-                  <div class="flex items-center space-x-4 min-w-0">
-                    <!-- Profile Thumbnail (twice as large: w-28 h-28 instead of w-14 h-14) -->
-                    <div class="w-28 h-28 rounded-2xl bg-amber-500/10 border border-amber-500/20 shrink-0 flex items-center justify-center overflow-hidden">
-                      <img 
-                        v-if="hive.image_path" 
-                        :src="`/uploads/${hive.image_path}`" 
-                        alt="Hive picture" 
-                        class="w-full h-full object-cover"
-                      />
-                      <span v-else class="text-5xl">🐝</span>
-                    </div>
-
-                    <!-- Hive Info -->
-                    <div class="min-w-0">
-                      <div class="flex items-center space-x-2">
-                        <h3 class="font-extrabold text-lg text-gray-900 dark:text-white truncate">
-                          {{ hive.name }}
-                        </h3>
-                        <span 
-                          class="px-2 py-0.5 text-[10px] font-black rounded-full tracking-wider shrink-0 uppercase"
-                          :class="hive.is_active ? 'bg-green-500/10 text-green-500' : 'bg-gray-500/10 text-gray-500'"
-                        >
-                          {{ hive.is_active ? 'Aktiv' : 'Inaktiv' }}
-                        </span>
-                      </div>
-                      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center space-x-1">
-                        <span>📍 Standort:</span>
-                        <span class="font-bold text-gray-700 dark:text-gray-300 truncate max-w-[150px]">
-                          {{ hive.location?.name || 'Kein Standort' }}
-                        </span>
-                      </p>
-                      
-                      <!-- Frame size (removed Faktor!) -->
-                      <p class="text-xs text-gray-400 font-bold uppercase mt-1 tracking-wider">
-                        {{ hive.frame_type?.name }}
-                      </p>
-                    </div>
-                  </div>
-
-                  <!-- Queen marker color and boxes count -->
-                  <div class="flex flex-col items-end space-y-2 shrink-0 pl-3">
-                    <!-- Queen Color Year -->
-                    <div v-if="hive.queen_year" class="flex items-center space-x-1.5 bg-gray-50 dark:bg-dark-bg/60 border border-gray-200 dark:border-dark-border px-2 py-1 rounded-lg">
-                      <div 
-                        class="w-3 h-3 rounded-full border border-gray-400 shadow-sm shrink-0" 
-                        :style="{ backgroundColor: getQueenColor(hive.queen_year) }"
-                        :title="`Königin Jahr ${hive.queen_year}`"
-                      ></div>
-                      <span class="text-[10px] font-bold text-gray-600 dark:text-gray-400">👑 '{{ hive.queen_year.toString().slice(-2) }}</span>
-                    </div>
-                    
-                    <span class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-extrabold rounded-full">
-                      {{ hive.boxes?.length || 0 }} Zargen
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Tasks Section -->
-                <div v-if="getTasksForHive(hive.id).length > 0" class="mt-4 pt-4 border-t border-gray-100 dark:border-dark-border/60 w-full" @click.stop>
-                  <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1">
-                      📋 Aufgaben ({{ getTasksForHive(hive.id).filter(t => !t.is_completed).length }} offen)
-                    </span>
-                    <div class="flex items-center space-x-2">
-                      <router-link 
-                        :to="{ name: 'tasks', query: { hiveId: hive.id } }" 
-                        class="text-xs font-extrabold text-gray-500 hover:text-primary hover:underline"
-                      >
-                        Anzeigen
-                      </router-link>
-                      <span class="text-gray-300 dark:text-gray-700">|</span>
-                      <button 
-                        type="button"
-                        @click.stop="openCreateTaskModal(hive)"
-                        class="text-xs font-extrabold text-primary hover:underline flex items-center gap-0.5 cursor-pointer"
-                      >
-                        + Erstellen
-                      </button>
-                    </div>
-                  </div>
-                  <ul class="space-y-1.5">
-                    <li 
-                      v-for="task in getTasksForHive(hive.id).slice(0, 3)" 
-                      :key="task.id"
-                      class="text-xs flex items-center justify-between bg-gray-50/50 dark:bg-dark-bg/30 px-3 py-1.5 rounded-xl border border-gray-100 dark:border-dark-border/40"
-                    >
-                      <div class="flex items-center gap-1.5 min-w-0">
-                        <span :class="task.is_completed ? 'text-green-500' : 'text-amber-500'">
-                          {{ task.is_completed ? '✓' : '●' }}
-                        </span>
-                        <span class="font-semibold text-gray-700 dark:text-gray-300 truncate" :class="{'line-through opacity-50': task.is_completed}">
-                          {{ task.title }}
-                        </span>
-                      </div>
-                      <span class="text-[10px] text-gray-400 font-bold shrink-0">
-                        {{ task.due_date ? formatDate(task.due_date) : 'Kein Datum' }}
-                      </span>
-                    </li>
-                    <li v-if="getTasksForHive(hive.id).length > 3" class="text-[10px] text-gray-400 italic pl-3">
-                      ... und {{ getTasksForHive(hive.id).length - 3 }} weitere Aufgaben.
-                    </li>
-                  </ul>
-                </div>
-                <div v-else class="mt-4 pt-4 border-t border-gray-100 dark:border-dark-border/60 flex items-center justify-between w-full" @click.stop>
-                  <span class="text-xs font-bold text-gray-400 italic">Keine verknüpften Aufgaben</span>
-                  <button 
-                    type="button"
-                    @click.stop="openCreateTaskModal(hive)"
-                    class="text-xs font-extrabold text-primary hover:underline flex items-center gap-1 cursor-pointer"
-                  >
-                    + Erstellen
-                  </button>
-                </div>
-
-              </div>
-            </template>
-
-            <!-- LIST VIEW -->
-            <template v-else-if="viewMode === 'list'">
-              <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl overflow-hidden shadow-sm">
-                <div class="overflow-x-auto">
-                  <table class="min-w-full divide-y divide-gray-100 dark:divide-dark-border">
-                    <thead class="bg-gray-50/50 dark:bg-dark-bg/25">
-                      <tr>
-                        <th class="px-6 py-4 text-left text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider font-sans">Volk</th>
-                        <th class="px-6 py-4 text-left text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider font-sans">Standort</th>
-                        <th class="px-6 py-4 text-left text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider font-sans">Königin</th>
-                        <th class="px-6 py-4 text-left text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider font-sans">Zargen</th>
-                        <th class="px-6 py-4 text-left text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider font-sans">Aufgaben</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100 dark:divide-dark-border/60">
-                      <tr 
-                        v-for="hive in filteredHives" 
-                        :key="hive.id"
-                        @click="selectHive(hive)"
-                        class="hover:bg-gray-50 dark:hover:bg-dark-bg/40 cursor-pointer transition-colors duration-150"
-                        :class="selectedHive?.id === hive.id ? 'bg-primary/[0.03] dark:bg-primary/[0.02]' : ''"
-                      >
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <div class="flex items-center space-x-3">
-                            <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0 overflow-hidden">
-                              <img 
-                                v-if="hive.image_path" 
-                                :src="`/uploads/${hive.image_path}`" 
-                                alt="Hive thumb" 
-                                class="w-full h-full object-cover"
-                              />
-                              <span v-else class="text-sm">🐝</span>
-                            </div>
-                            <div>
-                              <div class="text-sm font-extrabold text-gray-900 dark:text-white flex items-center gap-1.5">
-                                <span>{{ hive.name }}</span>
-                                <span 
-                                  class="px-1.5 py-0.2 text-[8px] font-black rounded-full uppercase"
-                                  :class="hive.is_active ? 'bg-green-500/10 text-green-500' : 'bg-gray-500/10 text-gray-500'"
-                                >
-                                  {{ hive.is_active ? 'A' : 'I' }}
-                                </span>
-                              </div>
-                              <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{{ hive.frame_type?.name }}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300 font-bold">
-                          {{ hive.location?.name || 'Kein Standort' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <div v-if="hive.queen_year" class="flex items-center space-x-1.5">
-                            <div 
-                              class="w-2.5 h-2.5 rounded-full border border-gray-400 shadow-sm shrink-0" 
-                              :style="{ backgroundColor: getQueenColor(hive.queen_year) }"
-                            ></div>
-                            <span class="text-xs font-bold text-gray-600 dark:text-gray-400">👑 '{{ hive.queen_year.toString().slice(-2) }}</span>
-                          </div>
-                          <span v-else class="text-xs text-gray-400">—</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-600 dark:text-gray-400">
-                          {{ hive.boxes?.length || 0 }} Zargen
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <div class="flex items-center space-x-2" @click.stop>
-                            <span 
-                              class="px-2 py-0.5 text-[10px] font-black rounded-full"
-                              :class="getTasksForHive(hive.id).filter(t => !t.is_completed).length > 0 
-                                ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400' 
-                                : 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400'"
-                            >
-                              {{ getTasksForHive(hive.id).filter(t => !t.is_completed).length }} offen
-                            </span>
-                            
-                            <!-- Links -->
-                            <div class="flex items-center space-x-1.5 ml-2">
-                              <router-link 
-                                :to="{ name: 'tasks', query: { hiveId: hive.id } }" 
-                                class="text-xs font-extrabold text-gray-500 hover:text-primary hover:underline"
-                              >
-                                Anzeigen
-                              </router-link>
-                              <span class="text-gray-300 dark:text-gray-700">|</span>
-                              <button 
-                                type="button"
-                                @click.stop="openCreateTaskModal(hive)"
-                                class="text-xs font-extrabold text-primary hover:underline flex items-center gap-0.5 cursor-pointer"
-                              >
-                                + Erstellen
-                              </button>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </template>
-          </template>
-
+      <template v-else>
+        <!-- No results matching filters -->
+        <div v-if="filteredHives.length === 0" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-8 text-center text-gray-400 dark:text-gray-500 italic text-sm">
+          Keine Bienenvölker entsprechen den ausgewählten Filtern.
         </div>
 
-        <!-- Right Panel: Box Structure Details & Editor (5 cols on desktop) -->
-        <div class="lg:col-span-5">
-          <div v-if="!selectedHive" class="bg-gray-50 dark:bg-dark-card/20 border border-dashed border-gray-300 dark:border-gray-700 rounded-3xl p-8 text-center text-gray-400 italic text-sm">
-            Wähle ein Volk aus der Liste aus, um die Zargenstruktur zu verwalten, Fotos hochzuladen oder Einstellungen anzupassen.
-          </div>
-
-          <div v-else class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm space-y-6">
-            
-            <!-- Selected Hive Header Info -->
-            <div class="flex justify-between items-start border-b border-gray-100 dark:border-dark-border pb-4">
-              <div>
-                <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ selectedHive.name }}</h2>
-                <p class="text-xs text-gray-400 mt-1">Gekoppeltes Wabenmaß: {{ selectedHive.frame_type?.name }}</p>
-              </div>
-              
-              <div class="flex space-x-1">
-                <button 
-                  @click="openEditModal(selectedHive)" 
-                  class="p-2 text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border rounded-xl transition-all duration-150"
-                  title="Profil bearbeiten"
-                >
-                  <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                </button>
-                <button 
-                  @click="deleteHive(selectedHive)" 
-                  class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all duration-150"
-                  title="Volk auflösen / löschen"
-                >
-                  <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                </button>
-              </div>
-            </div>
-
-            <!-- Profile Photo Uploader -->
-            <div class="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-dark-bg/60 border border-gray-200 dark:border-gray-800 rounded-2xl">
-              <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 shrink-0 overflow-hidden flex items-center justify-center">
+        <!-- TILES VIEW -->
+        <template v-else-if="viewMode === 'tiles'">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div 
+              v-for="hive in filteredHives" 
+              :key="hive.id"
+              @click="openEditModal(hive)"
+              class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-5 shadow-sm hover:shadow-md hover:border-primary/50 transition-all duration-200 cursor-pointer flex flex-col justify-between"
+            >
+              <!-- Card Header/Image -->
+              <div class="relative w-full aspect-video rounded-2xl bg-amber-500/10 border border-amber-500/20 mb-4 overflow-hidden flex items-center justify-center">
                 <img 
-                  v-if="selectedHive.image_path" 
-                  :src="`/uploads/${selectedHive.image_path}`" 
-                  alt="Hive thumb" 
+                  v-if="hive.image_path" 
+                  :src="`/uploads/${hive.image_path}`" 
+                  alt="Hive picture" 
                   class="w-full h-full object-cover"
                 />
-                <span v-else class="text-xl">📸</span>
-              </div>
-              <div>
-                <p class="text-xs font-bold text-gray-700 dark:text-gray-300">Bienenvolk Foto</p>
-                <input 
-                  type="file" 
-                  ref="photoInput" 
-                  @change="uploadPhoto" 
-                  accept="image/*" 
-                  class="hidden"
-                />
-                <button 
-                  @click="$refs.photoInput.click()" 
-                  class="text-[11px] font-extrabold text-primary hover:text-primary-hover hover:underline uppercase tracking-wider mt-1"
+                <span v-else class="text-6xl animate-pulse">🐝</span>
+                
+                <!-- Queen marking color badge (overlay at top right) -->
+                <div v-if="hive.queen_year" class="absolute top-2.5 right-2.5 flex items-center space-x-1 bg-white/95 dark:bg-dark-card/95 border border-gray-100 dark:border-dark-border px-2 py-1 rounded-xl shadow-sm">
+                  <div 
+                    class="w-2.5 h-2.5 rounded-full border border-gray-400 shadow-sm shrink-0" 
+                    :style="{ backgroundColor: getQueenColor(hive.queen_year) }"
+                  ></div>
+                  <span class="text-[10px] font-black text-gray-700 dark:text-gray-300">👑 '{{ hive.queen_year.toString().slice(-2) }}</span>
+                </div>
+
+                <!-- Active/Inactive Status overlay (at top left) -->
+                <span 
+                  class="absolute top-2.5 left-2.5 px-2 py-0.5 text-[10px] font-black rounded-full tracking-wider uppercase shadow-sm"
+                  :class="hive.is_active ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'"
                 >
-                  Foto hochladen
-                </button>
+                  {{ hive.is_active ? 'Aktiv' : 'Inaktiv' }}
+                </span>
               </div>
-            </div>
 
-            <!-- Zargen Editor Section -->
-            <div>
-              <h3 class="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4">🧱 Zargen-Editor</h3>
-              
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                <!-- Visual stack representation -->
-                <BeehiveVisualizer 
-                  :boxes="editedBoxes" 
-                  :selectedBoxId="selectedBoxId" 
-                  @select-box="onSelectBox" 
-                  @update-boxes="onUpdateBoxes"
-                />
-
-                <!-- Box properties config panel (Larger text!) -->
-                <div class="space-y-4">
-                  <div v-if="!selectedBox" class="text-sm text-gray-400 italic p-5 bg-gray-50 dark:bg-dark-bg/60 rounded-2xl border text-center">
-                    Wähle eine Zarge im Stapel aus, um deren Werte (Brut/Honig, Wabenzahl) zu editieren oder sie zu löschen.
-                  </div>
-                  
-                  <div v-else class="p-5 bg-gray-50 dark:bg-dark-bg/60 border border-gray-200 dark:border-dark-800 rounded-2xl space-y-4">
-                    <div class="flex justify-between items-center pb-2.5 border-b border-gray-200 dark:border-gray-700">
-                      <span class="text-sm font-black uppercase text-gray-600 dark:text-gray-300">Zarge #{{ selectedBox.order }}</span>
-                      <span 
-                        class="px-2.5 py-0.5 text-xs font-bold rounded-full"
-                        :class="selectedBox.box_type === 'BROOD' ? 'bg-amber-600/10 text-amber-500' : 'bg-yellow-500/10 text-yellow-500'"
-                      >
-                        {{ selectedBox.box_type === 'BROOD' ? 'Brutraum' : 'Honigraum' }}
-                      </span>
-                    </div>
-
-                    <div>
-                      <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Typ</label>
-                      <select 
-                        v-model="selectedBox.box_type"
-                        class="w-full px-3 py-2 bg-white dark:bg-dark-card border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-semibold"
-                      >
-                        <option value="BROOD">Brutraum</option>
-                        <option value="HONEY">Honigraum</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Anzahl Waben</label>
-                      <input 
-                        v-model.number="selectedBox.frame_count"
-                        type="number"
-                        min="1"
-                        max="24"
-                        class="w-full px-3 py-2 bg-white dark:bg-dark-card border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-semibold"
-                      />
-                    </div>
-
-                    <div>
-                      <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Wabenmaß</label>
-                      <select 
-                        v-model="selectedBox.frame_type_id"
-                        class="w-full px-3 py-2 bg-white dark:bg-dark-card border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-semibold"
-                      >
-                        <option v-for="ft in frameTypes" :key="ft.id" :value="ft.id">
-                          {{ ft.name }}
-                        </option>
-                      </select>
-                    </div>
-
-                    <!-- Delete button in config panel! -->
-                    <div class="pt-2 border-t border-gray-200/50 dark:border-gray-700/50">
-                      <button 
-                        type="button"
-                        @click="deleteSelectedBox"
-                        class="w-full py-2 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 font-extrabold text-xs rounded-xl tracking-wider uppercase border border-red-200 dark:border-red-900/50 transition-colors flex items-center justify-center gap-1 cursor-pointer"
-                      >
-                        <span>Zarge löschen</span> 🗑️
-                      </button>
-                    </div>
-
-                  </div>
-
-                  <!-- Add Chamber CTA -->
-                  <button 
-                    type="button"
-                    @click="addChamber"
-                    class="w-full py-3 bg-gray-100 hover:bg-gray-200 dark:bg-dark-border dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-extrabold text-sm rounded-xl tracking-wider uppercase border border-gray-300 dark:border-gray-700 transition-colors"
-                  >
-                    + Zarge hinzufügen
-                  </button>
+              <!-- Hive Info -->
+              <div class="mb-4">
+                <h3 class="font-extrabold text-lg text-gray-900 dark:text-white truncate">{{ hive.name }}</h3>
+                
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center space-x-1">
+                  <span>📍 Standort:</span>
+                  <span class="font-bold text-gray-700 dark:text-gray-300 truncate">
+                    {{ hive.location?.name || 'Kein Standort' }}
+                  </span>
+                </p>
+                
+                <div class="flex items-center justify-between mt-2">
+                  <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                    {{ hive.frame_type?.name }}
+                  </span>
+                  <span class="px-2 py-0.5 bg-primary/15 text-primary text-[10px] font-extrabold rounded-full">
+                    {{ hive.boxes?.length || 0 }} Zargen
+                  </span>
                 </div>
               </div>
 
-              <!-- Save Chamber Structure CTA -->
-              <div v-if="boxesChanged" class="mt-6 pt-4 border-t border-gray-100 dark:border-dark-border flex justify-end">
+              <!-- Tasks Section -->
+              <div v-if="getTasksForHive(hive.id).length > 0" class="mt-auto pt-3 border-t border-gray-100 dark:border-dark-border/60 w-full" @click.stop>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                    📋 Aufgaben ({{ getTasksForHive(hive.id).filter(t => !t.is_completed).length }} offen)
+                  </span>
+                  <div class="flex items-center space-x-1.5">
+                    <router-link 
+                      :to="{ name: 'tasks', query: { hiveId: hive.id } }" 
+                      class="text-[10px] font-extrabold text-gray-500 hover:text-primary"
+                    >
+                      Anzeigen
+                    </router-link>
+                    <span class="text-gray-300 dark:text-gray-700">|</span>
+                    <button 
+                      type="button"
+                      @click.stop="openCreateTaskModal(hive)"
+                      class="text-[10px] font-extrabold text-primary hover:underline cursor-pointer"
+                    >
+                      + Erstellen
+                    </button>
+                  </div>
+                </div>
+                <ul class="space-y-1.5">
+                  <li 
+                    v-for="task in getTasksForHive(hive.id).slice(0, 2)" 
+                    :key="task.id"
+                    class="text-[11px] flex items-center justify-between bg-gray-50/50 dark:bg-dark-bg/30 px-2 py-1 rounded-lg border border-gray-100 dark:border-dark-border/40"
+                  >
+                    <div class="flex items-center gap-1 min-w-0">
+                      <span :class="task.is_completed ? 'text-green-500' : 'text-amber-500'">
+                        {{ task.is_completed ? '✓' : '●' }}
+                      </span>
+                      <span class="font-semibold text-gray-700 dark:text-gray-300 truncate" :class="{'line-through opacity-50': task.is_completed}">
+                        {{ task.title }}
+                      </span>
+                    </div>
+                  </li>
+                  <li v-if="getTasksForHive(hive.id).length > 2" class="text-[9px] text-gray-400 italic pl-1">
+                    ... und {{ getTasksForHive(hive.id).length - 2 }} weitere.
+                  </li>
+                </ul>
+              </div>
+              <div v-else class="mt-auto pt-3 border-t border-gray-100 dark:border-dark-border/60 flex items-center justify-between w-full" @click.stop>
+                <span class="text-[10px] text-gray-400 italic">Keine Aufgaben</span>
                 <button 
-                  type="button" 
-                  @click="saveChamberStructure"
-                  class="px-6 py-3 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm uppercase tracking-wider rounded-xl shadow-md hover-scale"
+                  type="button"
+                  @click.stop="openCreateTaskModal(hive)"
+                  class="text-[10px] font-extrabold text-primary hover:underline cursor-pointer"
                 >
-                  Speichern & Struktur sichern 💾
+                  + Erstellen
                 </button>
               </div>
 
             </div>
-
           </div>
-        </div>
+        </template>
 
-      </div> <!-- Closes Main Splitscreen Grid -->
-    </div> <!-- Closes new v-else wrapper -->
+        <!-- LIST VIEW -->
+        <template v-else-if="viewMode === 'list'">
+          <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl overflow-hidden shadow-sm">
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-100 dark:divide-dark-border">
+                <thead class="bg-gray-50 dark:bg-dark-bg/50">
+                  <tr>
+                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-450 dark:text-gray-450 uppercase tracking-wider">Volk</th>
+                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-450 dark:text-gray-450 uppercase tracking-wider">Standort</th>
+                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-450 dark:text-gray-450 uppercase tracking-wider">Königin</th>
+                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-450 dark:text-gray-450 uppercase tracking-wider">Zargen</th>
+                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-450 dark:text-gray-450 uppercase tracking-wider">Aufgaben</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-dark-card divide-y divide-gray-100 dark:divide-dark-border">
+                  <tr 
+                    v-for="hive in filteredHives" 
+                    :key="hive.id"
+                    @click="openEditModal(hive)"
+                    class="hover:bg-gray-50/80 dark:hover:bg-dark-bg/25 transition-colors cursor-pointer"
+                  >
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 mr-3 overflow-hidden flex items-center justify-center">
+                          <img 
+                            v-if="hive.image_path" 
+                            :src="`/uploads/${hive.image_path}`" 
+                            alt="Hive thumbnail" 
+                            class="w-full h-full object-cover"
+                          />
+                          <span v-else class="text-xl">🐝</span>
+                        </div>
+                        <div>
+                          <div class="flex items-center gap-1.5">
+                            <span class="text-sm font-black text-gray-900 dark:text-white">{{ hive.name }}</span>
+                            <span 
+                              class="px-1.5 py-0.2 text-[8px] font-black rounded-full uppercase"
+                              :class="hive.is_active ? 'bg-green-500/10 text-green-500' : 'bg-gray-500/10 text-gray-500'"
+                            >
+                              {{ hive.is_active ? 'A' : 'I' }}
+                            </span>
+                          </div>
+                          <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{{ hive.frame_type?.name }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300 font-bold">
+                      {{ hive.location?.name || 'Kein Standort' }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div v-if="hive.queen_year" class="flex items-center space-x-1.5">
+                        <div 
+                          class="w-2.5 h-2.5 rounded-full border border-gray-400 shadow-sm shrink-0" 
+                          :style="{ backgroundColor: getQueenColor(hive.queen_year) }"
+                        ></div>
+                        <span class="text-xs font-bold text-gray-600 dark:text-gray-400">👑 '{{ hive.queen_year.toString().slice(-2) }}</span>
+                      </div>
+                      <span v-else class="text-xs text-gray-400">—</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-600 dark:text-gray-400">
+                      {{ hive.boxes?.length || 0 }} Zargen
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center space-x-2" @click.stop>
+                        <span 
+                          class="px-2 py-0.5 text-[10px] font-black rounded-full"
+                          :class="getTasksForHive(hive.id).filter(t => !t.is_completed).length > 0 
+                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400' 
+                            : 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400'"
+                        >
+                          {{ getTasksForHive(hive.id).filter(t => !t.is_completed).length }} offen
+                        </span>
+                        
+                        <!-- Links -->
+                        <div class="flex items-center space-x-1.5 ml-2">
+                          <router-link 
+                            :to="{ name: 'tasks', query: { hiveId: hive.id } }" 
+                            class="text-xs font-extrabold text-gray-500 hover:text-primary hover:underline"
+                          >
+                            Anzeigen
+                          </router-link>
+                          <span class="text-gray-300 dark:text-gray-700">|</span>
+                          <button 
+                            type="button"
+                            @click.stop="openCreateTaskModal(hive)"
+                            class="text-xs font-extrabold text-primary hover:underline flex items-center gap-0.5 cursor-pointer"
+                          >
+                            + Erstellen
+                          </button>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </template>
+      </template>
+    </div>
 
     <!-- CREATE TASK DIALOG MODAL -->
     <div v-if="showTaskModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -799,6 +501,284 @@
       </div>
     </div>
 
+    <!-- HIVE EDIT/CREATE DIALOG MODAL -->
+    <div v-if="showModal" class="fixed inset-0 z-50 overflow-y-auto font-sans" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+      <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Backdrop -->
+        <div @click="closeModal" class="fixed inset-0 z-0 bg-black/50 dark:bg-black/75 backdrop-blur-sm transition-opacity animate-fade-in" aria-hidden="true"></div>
+
+        <!-- Center modal contents -->
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <!-- Modal Box -->
+        <div class="relative z-10 inline-block align-bottom bg-white dark:bg-dark-card rounded-[2rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl sm:w-full border border-gray-150/40 dark:border-dark-border animate-scale">
+          <!-- Header -->
+          <div class="px-8 py-5 border-b border-gray-100 dark:border-dark-border flex justify-between items-center bg-gray-50/50 dark:bg-dark-bg/25">
+            <h3 class="text-xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2" id="modal-title">
+              {{ isEditMode ? '🐝 Volk-Einstellungen bearbeiten' : '🐝 Neues Bienenvolk anlegen' }}
+            </h3>
+            <button type="button" @click="closeModal" class="text-gray-400 hover:text-gray-650 dark:hover:text-gray-200 p-2 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-full transition-all cursor-pointer">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          <form @submit.prevent="submitForm">
+            <!-- Modal Body (Two columns on desktop) -->
+            <div class="p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+              
+              <!-- Left Column: Metadata (Form) -->
+              <div class="lg:col-span-5 space-y-4">
+                <h4 class="text-xs font-bold text-gray-400 dark:text-gray-505 uppercase tracking-widest mb-2 border-b border-gray-100 dark:border-dark-border/40 pb-2">📋 Stammdaten</h4>
+                
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">Volksbezeichnung / Name *</label>
+                  <input 
+                    v-model="form.name" 
+                    type="text" 
+                    required
+                    placeholder="z.B. Volk 14"
+                    class="w-full px-4 py-3 border border-gray-305 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-semibold transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">Standort (Stand) *</label>
+                  <select 
+                    v-model="form.locationId" 
+                    required
+                    class="w-full px-4 py-3 border border-gray-305 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer font-semibold transition-all"
+                  >
+                    <option value="" disabled>Bitte Standort wählen...</option>
+                    <option v-for="loc in locations" :key="loc.id" :value="loc.id">
+                      {{ loc.name }}
+                    </option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">Wabenmaß *</label>
+                  <select 
+                    v-model="form.frameTypeId" 
+                    required
+                    class="w-full px-4 py-3 border border-gray-350 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer font-semibold transition-all"
+                  >
+                    <option value="" disabled>Bitte Wabenmaß wählen...</option>
+                    <option v-for="ft in frameTypes" :key="ft.id" :value="ft.id">
+                      {{ ft.name }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">Königin Jahr</label>
+                    <input 
+                      v-model.number="form.queenYear" 
+                      type="number" 
+                      placeholder="z.B. 2026"
+                      class="w-full px-4 py-3 border border-gray-305 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-semibold transition-all"
+                    />
+                  </div>
+                  <div class="flex flex-col justify-end pb-3">
+                    <label class="flex items-center space-x-2.5 cursor-pointer select-none">
+                      <input 
+                        v-model="form.isActive" 
+                        type="checkbox"
+                        class="rounded text-primary focus:ring-primary h-5 w-5 border-gray-300 dark:border-gray-700"
+                      />
+                      <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Volk ist aktiv</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">Notizen (Königinlinie etc.)</label>
+                  <textarea 
+                    v-model="form.notes" 
+                    placeholder="Königin F1 Carnica, standbegattet, sanftmütig..."
+                    rows="3"
+                    class="w-full px-4 py-3 border border-gray-305 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm transition-all"
+                  ></textarea>
+                </div>
+              </div>
+
+              <!-- Right Column: Box Editor & Photo (Only in Edit Mode) -->
+              <div class="lg:col-span-7 space-y-6">
+                <h4 class="text-xs font-bold text-gray-400 dark:text-gray-505 uppercase tracking-widest mb-2 border-b border-gray-100 dark:border-dark-border/40 pb-2">📦 Struktur & Foto</h4>
+                
+                <template v-if="isEditMode">
+                  <!-- Profile Photo Uploader -->
+                  <div class="flex items-center space-x-5 p-4 bg-gray-50 dark:bg-dark-bg/60 border border-gray-150/40 dark:border-gray-800 rounded-2xl">
+                    <div class="w-16 h-16 rounded-xl bg-amber-500/10 border border-amber-500/20 shrink-0 overflow-hidden flex items-center justify-center relative group">
+                      <img 
+                        v-if="selectedHive?.image_path" 
+                        :src="`/uploads/${selectedHive.image_path}`" 
+                        alt="Hive profile picture" 
+                        class="w-full h-full object-cover"
+                      />
+                      <span v-else class="text-3xl">📸</span>
+                    </div>
+                    <div>
+                      <p class="text-xs font-black text-gray-850 dark:text-gray-200">Bienenvolk Profilbild</p>
+                      <p class="text-[10px] text-gray-400 mt-0.5">Zeigt ein individuelles Foto für dieses Volk in der Kachelübersicht an.</p>
+                      <input 
+                        type="file" 
+                        ref="photoInput" 
+                        @change="uploadPhoto" 
+                        accept="image/*" 
+                        class="hidden"
+                      />
+                      <button 
+                        type="button"
+                        @click="$refs.photoInput.click()" 
+                        class="text-[11px] font-black text-primary hover:text-primary-hover hover:underline uppercase tracking-wider mt-1.5 cursor-pointer flex items-center gap-1"
+                      >
+                        <span>Bild hochladen</span> 📤
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Zargen Editor Section -->
+                  <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                      
+                      <!-- Visual stack representation -->
+                      <div class="md:col-span-5 flex justify-center">
+                        <BeehiveVisualizer 
+                          :boxes="editedBoxes" 
+                          :selectedBoxId="selectedBoxId" 
+                          @select-box="onSelectBox" 
+                          @update-boxes="onUpdateBoxes"
+                        />
+                      </div>
+
+                      <!-- Box properties config panel -->
+                      <div class="md:col-span-7 space-y-4">
+                        <div v-if="!selectedBox" class="text-xs text-gray-400 dark:text-gray-500 italic p-6 bg-gray-50 dark:bg-dark-bg/60 rounded-2xl border border-gray-150/40 text-center">
+                          Wähle eine Zarge im Stapel aus, um deren Werte (Brut/Honig, Wabenzahl) zu editieren oder sie zu löschen.
+                        </div>
+                        
+                        <div v-else class="p-5 bg-gray-50 dark:bg-dark-bg/60 border border-gray-200 dark:border-gray-800 rounded-2xl space-y-4 animate-scale">
+                          <div class="flex justify-between items-center pb-2.5 border-b border-gray-200 dark:border-gray-700">
+                            <span class="text-xs font-black uppercase text-gray-600 dark:text-gray-450">Zarge #{{ selectedBox.order }}</span>
+                            <span 
+                              class="px-2.5 py-0.5 text-[10px] font-black rounded-full uppercase"
+                              :class="selectedBox.box_type === 'BROOD' ? 'bg-amber-600/10 text-amber-500' : 'bg-yellow-500/10 text-yellow-550'"
+                            >
+                              {{ selectedBox.box_type === 'BROOD' ? 'Brutraum' : 'Honigraum' }}
+                            </span>
+                          </div>
+
+                          <div>
+                            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Kammertyp</label>
+                            <select 
+                              v-model="selectedBox.box_type"
+                              class="w-full px-3 py-2 bg-white dark:bg-dark-card border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold cursor-pointer"
+                            >
+                              <option value="BROOD">Brutraum</option>
+                              <option value="HONEY">Honigraum</option>
+                            </select>
+                          </div>
+
+                          <div class="grid grid-cols-2 gap-3">
+                            <div>
+                              <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Anzahl Waben</label>
+                              <input 
+                                v-model.number="selectedBox.frame_count"
+                                type="number"
+                                min="1"
+                                max="24"
+                                class="w-full px-3 py-2 bg-white dark:bg-dark-card border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold"
+                              />
+                            </div>
+
+                            <div>
+                              <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Wabenmaß</label>
+                              <select 
+                                v-model="selectedBox.frame_type_id"
+                                class="w-full px-3 py-2 bg-white dark:bg-dark-card border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold cursor-pointer"
+                              >
+                                <option v-for="ft in frameTypes" :key="ft.id" :value="ft.id">
+                                  {{ ft.name }}
+                                </option>
+                              </select>
+                            </div>
+                          </div>
+
+                          <!-- Delete button in config panel -->
+                          <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
+                            <button 
+                              type="button"
+                              @click="deleteSelectedBox"
+                              class="w-full py-2 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 font-extrabold text-[11px] rounded-xl tracking-wider uppercase border border-red-200 dark:border-red-900/50 transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                            >
+                              <span>Zarge entfernen</span> 🗑️
+                            </button>
+                          </div>
+
+                        </div>
+
+                        <!-- Add Chamber CTA -->
+                        <button 
+                          type="button"
+                          @click="addChamber"
+                          class="w-full py-3 bg-gray-100 hover:bg-gray-250 dark:bg-dark-border dark:hover:bg-gray-750 text-gray-800 dark:text-gray-205 font-extrabold text-xs rounded-xl tracking-wider uppercase border border-gray-200 dark:border-gray-700 transition-colors cursor-pointer flex items-center justify-center gap-1"
+                        >
+                          <span>+ Zarge hinzufügen</span>
+                        </button>
+                      </div>
+
+                    </div>
+                  </div>
+                </template>
+
+                <template v-else>
+                  <!-- Helper / Hint for new hives -->
+                  <div class="h-full flex flex-col items-center justify-center p-8 bg-gray-50 dark:bg-dark-bg/40 border border-dashed border-gray-300 dark:border-gray-800 rounded-3xl text-center min-h-[300px]">
+                    <span class="text-5xl mb-4">📦</span>
+                    <h5 class="text-sm font-bold text-gray-700 dark:text-white mb-2">Zargenstruktur & Foto-Upload</h5>
+                    <p class="text-xs text-gray-450 dark:text-gray-500 max-w-sm">
+                      Nachdem du das neue Bienenvolk erstellt hast, kannst du hier im Dialog das Zargensystem aufbauen und ein Bild hochladen.
+                    </p>
+                  </div>
+                </template>
+              </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="px-8 py-5 bg-gray-50 dark:bg-dark-bg/25 border-t border-gray-100 dark:border-dark-border flex justify-between items-center">
+              <div>
+                <button 
+                  v-if="isEditMode"
+                  type="button" 
+                  @click="deleteHive(selectedHive); closeModal()" 
+                  class="px-4 py-2 bg-red-50 hover:bg-red-105 dark:bg-red-950/20 text-red-600 dark:text-red-400 font-bold text-xs uppercase tracking-wider rounded-xl border border-red-200 dark:border-red-900/50 cursor-pointer transition-colors"
+                >
+                  Volk auflösen 🗑️
+                </button>
+              </div>
+              <div class="flex space-x-2">
+                <button 
+                  type="button" 
+                  @click="closeModal" 
+                  class="px-5 py-2.5 text-xs font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer"
+                >
+                  Abbrechen
+                </button>
+                <button 
+                  type="submit" 
+                  class="px-6 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md cursor-pointer transition-all hover-scale"
+                >
+                  {{ isEditMode ? 'Speichern' : 'Volk anlegen' }}
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -907,7 +887,7 @@ async function fetchHives() {
     if (selectedHive.value) {
       const refreshed = hives.value.find(h => h.id === selectedHive.value.id)
       if (refreshed) {
-        selectHive(refreshed)
+        selectHive(refreshed, boxesChanged.value)
       } else {
         selectedHive.value = null
       }
@@ -940,19 +920,21 @@ async function fetchFrameTypes() {
   }
 }
 
-function selectHive(hive) {
+function selectHive(hive, preserveEditedBoxes = false) {
   selectedHive.value = hive
-  // Deep clone boxes to edit state
-  editedBoxes.value = (hive.boxes || []).map(box => ({
-    id: box.id,
-    order: box.order,
-    frame_count: box.frame_count,
-    box_type: box.box_type,
-    frame_type_id: box.frame_type_id,
-    frame_type_name: box.frame_type?.name
-  }))
-  selectedBoxId.value = null
-  boxesChanged.value = false
+  if (!preserveEditedBoxes) {
+    // Deep clone boxes to edit state
+    editedBoxes.value = (hive.boxes || []).map(box => ({
+      id: box.id,
+      order: box.order,
+      frame_count: box.frame_count,
+      box_type: box.box_type,
+      frame_type_id: box.frame_type_id,
+      frame_type_name: box.frame_type?.name
+    }))
+    selectedBoxId.value = null
+    boxesChanged.value = false
+  }
 }
 
 function onSelectBox(id) {
@@ -1056,6 +1038,12 @@ function openCreateModal() {
   form.queenYear = new Date().getFullYear()
   form.isActive = true
   form.notes = ''
+  
+  selectedHive.value = null
+  editedBoxes.value = []
+  selectedBoxId.value = null
+  boxesChanged.value = false
+  
   showModal.value = true
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
@@ -1069,6 +1057,9 @@ function openEditModal(hive) {
   form.queenYear = hive.queen_year
   form.isActive = hive.is_active
   form.notes = hive.notes || ''
+  
+  selectHive(hive)
+  
   showModal.value = true
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
@@ -1091,7 +1082,17 @@ async function submitForm() {
 
     if (isEditMode.value) {
       await axios.put(`/api/hives/${editingId.value}`, payload)
-      showAlert('Vok erfolgreich aktualisiert!', 'success')
+      if (boxesChanged.value) {
+        const boxesPayload = editedBoxes.value.map(box => ({
+          order: box.order,
+          frame_type_id: box.frame_type_id,
+          frame_count: box.frame_count,
+          box_type: box.box_type
+        }))
+        await axios.post(`/api/hives/${editingId.value}/boxes`, boxesPayload)
+        boxesChanged.value = false
+      }
+      showAlert('Volk erfolgreich aktualisiert!', 'success')
     } else {
       await axios.post('/api/hives', payload, {
         params: { apiary_id: apiaryStore.activeApiaryId }
