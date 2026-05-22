@@ -1,10 +1,10 @@
-# 🐝 BeeBoard 2 — Reactive Beekeeping Log & AI Assistant
+# 🐝 BeeBoard — Reactive Beekeeping Log & AI Assistant
 
 Welcome to **BeeBoard**, a modern beekeeping logbook (Stockkarte) with an integrated AI assistant.
 
 The project helps beekeepers manage apiaries (Standorte), hives (Bienenvölker), inspections (Stockkarten-Einträge), honey harvests, sales, and recurring tasks in one place.
 
-BeeBoard 2 combines a fast **FastAPI + SQLite** backend with an intuitive **Vue 3 + Vite + Tailwind CSS** frontend. A context-aware **AI Assistant** (powered by LiteLLM) can answer questions about your data and convert natural-language notes into structured entries.
+BeeBoard combines a fast **FastAPI + SQLite** backend with an intuitive **Vue 3 + Vite + Tailwind CSS** frontend. A context-aware **AI Assistant** (powered by LiteLLM) can answer questions about your data and convert natural-language notes into structured entries.
 
 > [!WARNING]
 > **Current scope:** BeeBoard is currently primarily in **German language** and aligned with **German beekeeping practices**.
