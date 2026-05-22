@@ -192,8 +192,8 @@ async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apia
                 api_key=api_key
             )
         except Exception as e:
-            logger.error(f"LiteLLM completion error: {str(e)}")
-            return f"Fehler bei der KI-Anfrage: {str(e)}"
+            logger.exception("LiteLLM completion error")
+            return "Fehler bei der KI-Anfrage. Bitte versuche es später erneut."
             
         response_message = response.choices[0].message
         
@@ -433,8 +433,8 @@ async def chatbot_completion(query: str, apiary_id: str, current_user: User, db:
     try:
         return await run_agent_loop(system_prompt, query, db, apiary_id, current_user, effective_model, api_key)
     except Exception as e:
-        logger.error(f"LiteLLM error: {str(e)}")
-        return f"Entschuldigung, es gab einen Fehler bei der Bearbeitung deiner Anfrage: {str(e)}"
+        logger.exception("LiteLLM error")
+        return "Entschuldigung, es gab einen internen Fehler bei der Bearbeitung deiner Anfrage."
 
 def draft_entry_from_text(freetext: str, date_str: Optional[str] = None, db: Optional[Session] = None) -> Dict[str, Any]:
     """
