@@ -654,26 +654,26 @@
 
                       <!-- Box properties config panel -->
                       <div class="md:col-span-7 space-y-4">
-                        <div v-if="!selectedBox" class="text-xs text-gray-400 dark:text-gray-500 italic p-6 bg-gray-50 dark:bg-dark-bg/60 rounded-2xl border border-gray-150/40 text-center">
+                        <div v-if="!selectedBox" class="text-sm text-gray-600 dark:text-gray-300 italic p-6 bg-white/90 dark:bg-dark-bg/70 rounded-2xl border border-gray-300 dark:border-gray-600 text-center leading-relaxed">
                           Wähle eine Zarge im Stapel aus, um deren Werte (Brut/Honig, Wabenzahl) zu editieren oder sie zu löschen.
                         </div>
                         
-                        <div v-else class="p-5 bg-gray-50 dark:bg-dark-bg/60 border border-gray-200 dark:border-gray-800 rounded-2xl space-y-4 animate-scale">
+                        <div v-else class="p-5 bg-white/90 dark:bg-dark-bg/70 border border-gray-300 dark:border-gray-600 rounded-2xl space-y-4 animate-scale shadow-sm">
                           <div class="flex justify-between items-center pb-2.5 border-b border-gray-200 dark:border-gray-700">
-                            <span class="text-xs font-black uppercase text-gray-600 dark:text-gray-450">Zarge #{{ selectedBox.order }}</span>
+                            <span class="text-xs font-black uppercase text-gray-700 dark:text-gray-200">Zarge #{{ selectedBox.order }}</span>
                             <span 
                               class="px-2.5 py-0.5 text-[10px] font-black rounded-full uppercase"
-                              :class="selectedBox.box_type === 'BROOD' ? 'bg-amber-600/10 text-amber-500' : 'bg-yellow-500/10 text-yellow-550'"
+                              :class="selectedBox.box_type === 'BROOD' ? 'bg-amber-500/20 text-amber-700 dark:bg-amber-600/20 dark:text-amber-300' : 'bg-yellow-400/25 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-300'"
                             >
                               {{ selectedBox.box_type === 'BROOD' ? 'Brutraum' : 'Honigraum' }}
                             </span>
                           </div>
 
                           <div>
-                            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Kammertyp</label>
+                            <label class="block text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-1">Kammertyp</label>
                             <select 
                               v-model="selectedBox.box_type"
-                              class="w-full px-3 py-2 bg-white dark:bg-dark-card border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold cursor-pointer"
+                              class="w-full px-3 py-2 bg-white dark:bg-dark-card border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold text-gray-800 dark:text-gray-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/40"
                             >
                               <option value="BROOD">Brutraum</option>
                               <option value="HONEY">Honigraum</option>
@@ -682,21 +682,21 @@
 
                           <div class="grid grid-cols-2 gap-3">
                             <div>
-                              <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Anzahl Waben</label>
+                              <label class="block text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-1">Anzahl Waben</label>
                               <input 
                                 v-model.number="selectedBox.frame_count"
                                 type="number"
                                 min="1"
                                 max="24"
-                                class="w-full px-3 py-2 bg-white dark:bg-dark-card border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold"
+                                class="w-full px-3 py-2 bg-white dark:bg-dark-card border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/40"
                               />
                             </div>
 
                             <div>
-                              <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Wabenmaß</label>
+                              <label class="block text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-1">Wabenmaß</label>
                               <select 
                                 v-model="selectedBox.frame_type_id"
-                                class="w-full px-3 py-2 bg-white dark:bg-dark-card border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold cursor-pointer"
+                                class="w-full px-3 py-2 bg-white dark:bg-dark-card border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold text-gray-800 dark:text-gray-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/40"
                               >
                                 <option v-for="ft in frameTypes" :key="ft.id" :value="ft.id">
                                   {{ ft.name }}
@@ -722,9 +722,10 @@
                         <button 
                           type="button"
                           @click="addChamber"
-                          class="w-full py-3 bg-gray-100 hover:bg-gray-250 dark:bg-dark-border dark:hover:bg-gray-750 text-gray-800 dark:text-gray-205 font-extrabold text-xs rounded-xl tracking-wider uppercase border border-gray-200 dark:border-gray-700 transition-colors cursor-pointer flex items-center justify-center gap-1"
+                          class="w-full py-3.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs rounded-xl tracking-wider uppercase border border-amber-400/30 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/40"
                         >
-                          <span>+ Zarge hinzufügen</span>
+                          <span class="text-base leading-none">+</span>
+                          <span>Zarge hinzufügen</span>
                         </button>
                       </div>
 
