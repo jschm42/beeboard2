@@ -1,6 +1,6 @@
 # 🐝 BeeBoard 2 — Reactive Beekeeping Log & AI Assistant
 
-Welcome to **BeeBoard 2**, a modern beekeeping logbook (Stockkarte) with an integrated AI assistant.
+Welcome to **BeeBoard**, a modern beekeeping logbook (Stockkarte) with an integrated AI assistant.
 
 The project helps beekeepers manage apiaries (Standorte), hives (Bienenvölker), inspections (Stockkarten-Einträge), honey harvests, sales, and recurring tasks in one place.
 
@@ -37,20 +37,6 @@ BeeBoard is organized as a clean **monorepo**:
 
 *   **`backend/`**: Python FastAPI app with SQLAlchemy ORM, LiteLLM integrations, SQLite database storage, and a robust test suite.
 *   **`frontend/`**: Vue 3 SPA powered by Vite, Pinia for reactive state management, Tailwind CSS for responsive styling, and Chart.js for data visualization.
-
----
-
-## 🌍 Regional Focus & Internationalization
-
-BeeBoard 2 is currently optimized for **German beekeeping workflows and terminology** (for example: Stockkarte structure, common frame systems like Zander/Dadant, and German UI wording in key areas).
-
-The architecture is intentionally designed so it can be **internationalized**:
-
-*   Text labels and UI copy can be externalized for multilingual frontends.
-*   Domain defaults (units, tax, product naming, seasonal assumptions) can be adapted per region.
-*   AI prompt and parsing behavior can be adjusted for language- and country-specific beekeeping practices.
-
-If you want to run BeeBoard outside German-speaking contexts, treat the current defaults as a strong baseline and localize terminology, labels, and regional business rules.
 
 ---
 
