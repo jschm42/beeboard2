@@ -30,7 +30,16 @@
             class="w-5 h-5 flex-shrink-0 transition-colors duration-200"
             :class="$route.path.startsWith(item.path) ? 'text-white' : 'text-gray-400 dark:text-gray-500 group-hover:text-primary dark:group-hover:text-primary'"
           />
-          <span>{{ item.name }}</span>
+          <span class="flex-1">{{ item.name }}</span>
+          <span
+            v-if="item.path === '/ai-insights' && unreadInsightsCount > 0"
+            class="min-w-5 h-5 px-1.5 rounded-full text-[10px] font-black flex items-center justify-center"
+            :class="$route.path.startsWith(item.path)
+              ? 'bg-white/20 text-white'
+              : 'bg-primary/15 text-primary'"
+          >
+            {{ unreadInsightsCount > 99 ? '99+' : unreadInsightsCount }}
+          </span>
         </router-link>
       </nav>
 
@@ -181,7 +190,16 @@
             class="w-5 h-5 flex-shrink-0 transition-colors duration-200"
             :class="$route.path.startsWith(item.path) ? 'text-white' : 'text-gray-400 dark:text-gray-500 group-hover:text-primary dark:group-hover:text-primary'"
           />
-          <span>{{ item.name }}</span>
+          <span class="flex-1">{{ item.name }}</span>
+          <span
+            v-if="item.path === '/ai-insights' && unreadInsightsCount > 0"
+            class="min-w-5 h-5 px-1.5 rounded-full text-[10px] font-black flex items-center justify-center"
+            :class="$route.path.startsWith(item.path)
+              ? 'bg-white/20 text-white'
+              : 'bg-primary/15 text-primary'"
+          >
+            {{ unreadInsightsCount > 99 ? '99+' : unreadInsightsCount }}
+          </span>
         </router-link>
       </nav>
 
@@ -254,8 +272,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 import beeboardLogo from '../assets/beeboard-logo.svg'
 import { APP_NAME, APP_VERSION } from '../config/app.js'
 import { useAuthStore } from '../stores/auth'
@@ -284,6 +303,7 @@ const apiaryStore = useApiaryStore()
 
 const mobileMenuOpen = ref(false)
 const isDark = ref(false)
+const unreadInsightsCount = ref(0)
 
 const navItems = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
@@ -316,7 +336,37 @@ onMounted(() => {
     isDark.value = false
     document.documentElement.classList.remove('dark')
   }
+
+  fetchUnreadInsightsCount()
+  window.addEventListener('ai-insights-updated', fetchUnreadInsightsCount)
 })
+
+onBeforeUnmount(() => {
+  window.removeEventListener('ai-insights-updated', fetchUnreadInsightsCount)
+})
+
+watch(() => apiaryStore.activeApiaryId, () => {
+  fetchUnreadInsightsCount()
+})
+
+async function fetchUnreadInsightsCount() {
+  if (!apiaryStore.activeApiaryId) {
+    unreadInsightsCount.value = 0
+    return
+  }
+
+  try {
+    const res = await axios.get('/api/ai-insights', {
+      params: {
+        apiary_id: apiaryStore.activeApiaryId,
+        read_status: 'unread'
+      }
+    })
+    unreadInsightsCount.value = Array.isArray(res.data) ? res.data.length : 0
+  } catch {
+    unreadInsightsCount.value = 0
+  }
+}
 
 function toggleDarkMode() {
   isDark.value = !isDark.value

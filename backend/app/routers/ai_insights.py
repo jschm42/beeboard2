@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Literal
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -18,16 +18,29 @@ class AIInsightSchema(BaseModel):
     apiary_id: str
     title: str
     content: str
+    is_read: bool
+    read_at: Optional[datetime] = None
     created_at: datetime
     
     class Config:
         from_attributes = True
+
+
+class AIInsightCreateIn(BaseModel):
+    apiary_id: str
+    title: str
+    content: str
+
+
+class AIInsightReadUpdateIn(BaseModel):
+    is_read: bool = True
 
 @router.get("", response_model=List[AIInsightSchema])
 def list_insights(
     apiary_id: str = Query(...),
     start_date: Optional[datetime] = Query(None, description="Filter: nur Insights ab diesem Datum"),
     end_date: Optional[datetime] = Query(None, description="Filter: nur Insights bis zu diesem Datum"),
+    read_status: Literal["all", "read", "unread"] = Query("all", description="Filter nach Lesestatus"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -38,9 +51,33 @@ def list_insights(
         query = query.filter(AIInsight.created_at >= start_date)
     if end_date:
         query = query.filter(AIInsight.created_at <= end_date)
+    if read_status == "read":
+        query = query.filter(AIInsight.is_read.is_(True))
+    elif read_status == "unread":
+        query = query.filter(AIInsight.is_read.is_(False))
 
     insights = query.order_by(AIInsight.created_at.desc()).all()
     return insights
+
+
+@router.post("", response_model=AIInsightSchema, status_code=201)
+def create_insight(
+    payload: AIInsightCreateIn,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    check_access(payload.apiary_id, current_user, db)
+    insight = AIInsight(
+        apiary_id=payload.apiary_id,
+        title=payload.title,
+        content=payload.content,
+        is_read=False,
+        read_at=None
+    )
+    db.add(insight)
+    db.commit()
+    db.refresh(insight)
+    return insight
 
 
 @router.delete("/{insight_id}", status_code=204)
@@ -57,6 +94,26 @@ def delete_insight(
     db.delete(insight)
     db.commit()
     return None
+
+
+@router.patch("/{insight_id}/read", response_model=AIInsightSchema)
+def update_insight_read_status(
+    insight_id: str,
+    payload: AIInsightReadUpdateIn,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    insight = db.query(AIInsight).filter(AIInsight.id == insight_id).first()
+    if not insight:
+        raise HTTPException(status_code=404, detail="Insight nicht gefunden")
+
+    check_access(insight.apiary_id, current_user, db)
+
+    insight.is_read = payload.is_read
+    insight.read_at = datetime.utcnow() if payload.is_read else None
+    db.commit()
+    db.refresh(insight)
+    return insight
 
 @router.get("/latest", response_model=Optional[AIInsightSchema])
 def get_latest_insight(

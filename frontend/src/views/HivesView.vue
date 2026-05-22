@@ -640,10 +640,10 @@
 
                   <!-- Zargen Editor Section -->
                   <div class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
                       
                       <!-- Visual stack representation -->
-                      <div class="md:col-span-5 flex justify-center">
+                      <div class="lg:col-span-6 flex justify-center lg:justify-start">
                         <BeehiveVisualizer 
                           :boxes="editedBoxes" 
                           :selectedBoxId="selectedBoxId" 
@@ -653,7 +653,7 @@
                       </div>
 
                       <!-- Box properties config panel -->
-                      <div class="md:col-span-7 space-y-4">
+                      <div class="lg:col-span-6 space-y-4">
                         <div v-if="!selectedBox" class="text-sm text-gray-600 dark:text-gray-300 italic p-6 bg-white/90 dark:bg-dark-bg/70 rounded-2xl border border-gray-300 dark:border-gray-600 text-center leading-relaxed">
                           Wähle eine Zarge im Stapel aus, um deren Werte (Brut/Honig, Wabenzahl) zu editieren oder sie zu löschen.
                         </div>

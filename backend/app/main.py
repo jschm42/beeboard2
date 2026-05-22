@@ -25,6 +25,15 @@ with engine.connect() as conn:
         if "kleinunternehmer_regelung" not in columns:
             conn.execute(text("ALTER TABLE llm_configs ADD COLUMN kleinunternehmer_regelung BOOLEAN DEFAULT 0"))
             conn.commit()
+
+        result = conn.execute(text("PRAGMA table_info(ai_insights)"))
+        ai_insight_columns = [row[1] for row in result.fetchall()]
+        if "is_read" not in ai_insight_columns:
+            conn.execute(text("ALTER TABLE ai_insights ADD COLUMN is_read BOOLEAN DEFAULT 0 NOT NULL"))
+            conn.commit()
+        if "read_at" not in ai_insight_columns:
+            conn.execute(text("ALTER TABLE ai_insights ADD COLUMN read_at DATETIME"))
+            conn.commit()
     except Exception as e:
         print(f"Error running database migration: {e}")
 
