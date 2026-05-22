@@ -121,9 +121,11 @@ import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import { useApiaryStore } from '../stores/apiary'
 import { useErrorStore } from '../stores/error'
+import { useConfirmStore } from '../stores/confirm'
 
 const apiaryStore = useApiaryStore()
 const errorStore = useErrorStore()
+const confirmStore = useConfirmStore()
 
 const loading = ref(true)
 const generating = ref(false)
@@ -188,7 +190,13 @@ function toggleExpand(id) {
 }
 
 async function deleteInsight(insight) {
-  if (!confirm('Diesen Insight-Eintrag wirklich löschen?')) return
+  const confirmed = await confirmStore.ask({
+    title: 'Insight-Eintrag löschen',
+    message: 'Diesen Insight-Eintrag wirklich löschen?',
+    type: 'danger',
+    confirmText: 'Ja, löschen'
+  })
+  if (!confirmed) return
   try {
     await axios.delete(`/api/ai-insights/${insight.id}`)
     insights.value = insights.value.filter(i => i.id !== insight.id)

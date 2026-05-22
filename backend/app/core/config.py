@@ -3,8 +3,15 @@ from pathlib import Path
 from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# ---------------------------------------------------------------------------
+# BeeBoard — zentrale App-Konstanten (nicht per .env konfigurierbar)
+# ---------------------------------------------------------------------------
+APP_NAME: str = "BeeBoard"
+APP_VERSION: str = "2.1.0"
+APP_DESCRIPTION: str = "Reaktives Imkerei-Managementsystem"
+
+
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "BeeBoard API"
     SECRET_KEY: str = "supersecretkeychangeinproduction1234567890"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours

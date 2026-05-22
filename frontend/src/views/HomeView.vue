@@ -216,7 +216,7 @@
           <div v-if="latestInsight" class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 dark:from-dark-card dark:to-dark-bg dark:border-amber-900/50 rounded-3xl p-6 shadow-sm relative overflow-hidden">
             <div class="flex items-center gap-2 mb-4">
               <span class="bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 text-xs font-black uppercase px-3 py-1 rounded-full">KI-Analyse</span>
-              <span class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">{{ formatDate(latestInsight.created_at) }}</span>
+              <span class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">{{ formatDateTime(latestInsight.created_at) }}</span>
             </div>
             <h3 class="text-xl font-black mb-3 text-gray-900 dark:text-white">{{ latestInsight.title }}</h3>
             <div class="prose dark:prose-invert max-w-none text-sm text-gray-700 dark:text-gray-300 line-clamp-4 markdown-content mb-4" v-html="renderMarkdown(latestInsight.content)"></div>
@@ -448,64 +448,6 @@ function generateIntelligentTasks(entries, dbTasks = []) {
     })
   })
 
-  // 2. Automated rule-based check: Hives needing inspection (> 10 days since last inspection)
-  const lastInspections = {}
-  hives.value.forEach(hive => {
-    if (hive.is_active) {
-      lastInspections[hive.id] = null
-    }
-  })
-
-  entries.forEach(entry => {
-    if (entry.entry_type === 'INSPECTION' && lastInspections[entry.hive_id] === null) {
-      lastInspections[entry.hive_id] = new Date(entry.date)
-    }
-  })
-
-  const today = new Date()
-  Object.keys(lastInspections).forEach(hiveId => {
-    const hive = hives.value.find(h => h.id === hiveId)
-    if (!hive) return
-
-    const lastDate = lastInspections[hiveId]
-    if (!lastDate) {
-      // Never inspected!
-      generated.push({
-        id: `auto-inspect-${hiveId}`,
-        title: `Erstinspektion fällig bei ${hive.name}`,
-        subtitle: `Für dieses Bienenvolk wurde noch keine Inspektion erfasst.`,
-        urgent: true,
-        completed: false,
-        isDbTask: false
-      })
-    } else {
-      const diffTime = Math.abs(today - lastDate)
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-      if (diffDays > 10) {
-        generated.push({
-          id: `auto-inspect-${hiveId}`,
-          title: `Inspektion fällig bei ${hive.name}`,
-          subtitle: `Zuletzt kontrolliert vor ${diffDays} Tagen (Grenzwert: 10 Tage).`,
-          urgent: diffDays > 15,
-          completed: false,
-          isDbTask: false
-        })
-      }
-    }
-  })
-
-  // 3. Automated Varroa treatment needed tasks
-  varroaWarnings.value.forEach(warn => {
-    generated.push({
-      id: `auto-varroa-${warn.hive_id}`,
-      title: `Varroabehandlung einleiten bei ${warn.hive_name}`,
-      subtitle: `Schätzwert: ${warn.estimated_total.toFixed(1)} Milben/Tag überschreitet den kritischen Schwellenwert!`,
-      urgent: true,
-      completed: false,
-      isDbTask: false
-    })
-  })
-
   tasks.value = generated
 }
 
@@ -573,6 +515,12 @@ function formatDate(dateStr) {
   if (!dateStr) return ''
   const d = new Date(dateStr)
   return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
+function formatDateTime(dateStr) {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
 function formatNumber(num) {

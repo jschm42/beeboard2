@@ -30,6 +30,9 @@
     <!-- Global Premium Error Modal -->
     <ErrorModal />
     
+    <!-- Custom confirmation modal -->
+    <ConfirmationModal />
+    
     <!-- Outlook-style Task Reminders Modal -->
     <TaskReminderModal />
   </div>
@@ -44,6 +47,7 @@ import { useApiaryStore } from './stores/apiary'
 import { useErrorStore } from './stores/error'
 import Sidebar from './components/Sidebar.vue'
 import ErrorModal from './components/ErrorModal.vue'
+import ConfirmationModal from './components/ConfirmationModal.vue'
 import TaskReminderModal from './components/TaskReminderModal.vue'
 
 const router = useRouter()
@@ -55,8 +59,11 @@ const errorStore = useErrorStore()
 axios.interceptors.response.use(
   response => response,
   error => {
-    // Prevent global modal popups for standard boot checks
-    const isBootCheck = error.config?.url?.includes('/api/auth/setup-status') || error.config?.url?.includes('/api/auth/me')
+    // Prevent global modal popups for standard boot checks and background polling
+    const isBootCheck = 
+      error.config?.url?.includes('/api/auth/setup-status') || 
+      error.config?.url?.includes('/api/auth/me') ||
+      error.config?.url?.includes('/api/tasks')  // TaskReminderModal fires before auth is confirmed
     if (isBootCheck) {
       return Promise.reject(error)
     }
@@ -72,7 +79,9 @@ axios.interceptors.response.use(
         if (authStore.isAuthenticated) {
           authStore.logout()
         }
-        router.push('/login')
+        if (router.currentRoute.value.path !== '/login') {
+          router.push('/login')
+        }
       } else if (status === 403) {
         friendlyMessage = detail || 'Sie haben keine ausreichenden Berechtigungen, um diese Aktion auszuführen.'
       } else if (status === 404) {

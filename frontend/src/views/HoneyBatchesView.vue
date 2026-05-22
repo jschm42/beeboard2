@@ -510,6 +510,7 @@
 <script setup>
 import { ref, onMounted, reactive, watch } from 'vue'
 import { useApiaryStore } from '../stores/apiary'
+import { useConfirmStore } from '../stores/confirm'
 import axios from 'axios'
 
 const DIB_HONEY_TYPES = {
@@ -554,6 +555,7 @@ const DIB_HONEY_TYPES = {
 }
 
 const apiaryStore = useApiaryStore()
+const confirmStore = useConfirmStore()
 
 const batches = ref([])
 const loading = ref(false)
@@ -822,7 +824,13 @@ async function submitForm() {
 
 async function deleteBatch(b) {
   const identifier = b.batch_number || `MHD: ${formatDate(b.best_before_date)}`
-  if (!confirm(`Möchtest du die Honig-Charge "${identifier}" wirklich löschen?`)) return
+  const confirmed = await confirmStore.ask({
+    title: 'Honig-Charge löschen',
+    message: `Möchtest du die Honig-Charge "${identifier}" wirklich löschen?`,
+    type: 'danger',
+    confirmText: 'Ja, löschen'
+  })
+  if (!confirmed) return
   try {
     await axios.delete(`/api/honey-batches/${b.id}`)
     showAlert('Honig-Charge erfolgreich gelöscht.', 'success')

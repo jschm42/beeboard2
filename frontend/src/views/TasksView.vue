@@ -29,7 +29,28 @@
     </div>
 
     <div v-else class="space-y-6 animate-scale">
-      
+
+      <!-- Quick Filter Bar -->
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider shrink-0">Schnellfilter:</span>
+        <button
+          v-for="qf in quickFilters"
+          :key="qf.key"
+          @click="setQuickFilter(qf.key)"
+          class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-extrabold tracking-wide border transition-all duration-200"
+          :class="quickFilter === qf.key
+            ? qf.activeClass
+            : 'bg-white dark:bg-dark-card border-gray-200 dark:border-dark-border text-gray-500 dark:text-gray-400 hover:border-primary/40 hover:text-primary'"
+        >
+          <span>{{ qf.icon }}</span>
+          <span>{{ qf.label }}</span>
+          <span
+            class="ml-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-black"
+            :class="quickFilter === qf.key ? 'bg-white/20' : 'bg-gray-100 dark:bg-dark-border text-gray-500'"
+          >{{ qf.count }}</span>
+        </button>
+      </div>
+
       <!-- Filter Panel Card -->
       <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
         <div class="flex justify-between items-center mb-4">
@@ -215,29 +236,29 @@
             </div>
 
             <!-- Title -->
-            <h4 class="font-extrabold text-base text-gray-900 dark:text-white mt-3 leading-tight" :class="{'line-through text-gray-400 dark:text-gray-500': task.is_completed}">
+            <h4 class="font-extrabold text-lg text-gray-900 dark:text-white mt-3 leading-tight" :class="{'line-through text-gray-400 dark:text-gray-500': task.is_completed}">
               {{ task.title }}
             </h4>
 
             <!-- Description -->
-            <p v-if="task.description" class="text-xs text-gray-500 dark:text-gray-400 mt-1.5 line-clamp-2 leading-relaxed italic">
+            <p v-if="task.description" class="text-sm text-gray-500 dark:text-gray-400 mt-2 line-clamp-3 leading-relaxed italic">
               "{{ task.description }}"
             </p>
 
             <!-- Links (Location / Hive) -->
-            <div class="mt-3 flex flex-wrap gap-1.5">
-              <span v-if="task.location" class="inline-flex items-center text-[10px] font-bold bg-blue-500/10 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400 px-2 py-0.5 rounded-lg">
+            <div class="mt-3.5 flex flex-wrap gap-1.5">
+              <span v-if="task.location" class="inline-flex items-center text-xs font-bold bg-blue-500/10 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400 px-2.5 py-1 rounded-lg">
                 📍 Stand: {{ task.location.name }}
               </span>
-              <span v-if="task.hive" class="inline-flex items-center text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:bg-amber-950/30 dark:text-primary px-2 py-0.5 rounded-lg">
+              <span v-if="task.hive" class="inline-flex items-center text-xs font-bold bg-amber-500/10 text-amber-700 dark:bg-amber-950/30 dark:text-primary px-2.5 py-1 rounded-lg">
                 🐝 Volk: {{ task.hive.name }}
               </span>
             </div>
           </div>
 
           <!-- Bottom Footer details and check off action -->
-          <div class="mt-5 pt-3 border-t border-gray-100 dark:border-dark-border/60 flex items-center justify-between">
-            <div class="text-[10px] font-mono">
+          <div class="mt-5 pt-3.5 border-t border-gray-100 dark:border-dark-border/60 flex items-center justify-between">
+            <div class="text-xs font-mono">
               <span v-if="task.is_completed" class="text-green-500 dark:text-green-400 font-bold">
                 Erledigt am: {{ formatDate(task.completed_at) }}
               </span>
@@ -249,9 +270,9 @@
             <button 
               v-if="!task.is_completed"
               @click="completeTask(task.id)"
-              class="px-3.5 py-1.5 bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white font-extrabold text-[10px] uppercase tracking-wider rounded-xl shadow transition-colors flex items-center gap-1 cursor-pointer"
+              class="px-3.5 py-1.5 bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow transition-colors flex items-center gap-1 cursor-pointer"
             >
-              <span>Abhaken</span> ✓
+              <span>Erledigt</span> ✓
             </button>
           </div>
         </div>
@@ -368,12 +389,12 @@
     <div v-if="showTaskModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
       <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <!-- Backdrop -->
-        <div @click="showTaskModal = false" class="fixed inset-0 bg-black/45 backdrop-blur-sm transition-opacity" aria-hidden="true"></div>
+        <div @click="showTaskModal = false" class="fixed inset-0 z-0 bg-black/45 transition-opacity" aria-hidden="true"></div>
 
         <!-- Center modal contents -->
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-        <div class="inline-block align-bottom bg-white dark:bg-dark-card rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-100 dark:border-dark-border animate-scale">
+        <div class="relative z-10 inline-block align-bottom bg-white dark:bg-dark-card rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-100 dark:border-dark-border animate-scale">
           <!-- Header -->
           <div class="px-6 py-4 border-b border-gray-100 dark:border-dark-border flex justify-between items-center bg-gray-50/50 dark:bg-dark-bg/25">
             <h3 class="text-lg font-extrabold text-gray-900 dark:text-white" id="modal-title">
@@ -460,7 +481,7 @@
                   <input 
                     v-model="taskForm.dueDate" 
                     type="date" 
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-semibold"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-dark-bg text-gray-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-semibold [color-scheme:light] dark:[color-scheme:dark]"
                   />
                 </div>
               </div>
@@ -522,12 +543,18 @@
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useApiaryStore } from '../stores/apiary'
 import { useErrorStore } from '../stores/error'
+import { useConfirmStore } from '../stores/confirm'
 import axios from 'axios'
 
 const apiaryStore = useApiaryStore()
 const errorStore = useErrorStore()
+const confirmStore = useConfirmStore()
+const route = useRoute()
+const router = useRouter()
+
 
 const loading = ref(false)
 const tasks = ref([])
@@ -537,13 +564,50 @@ const viewMode = ref('tiles')
 
 // Filter state
 const filters = ref({
-  status: 'PENDING',
+  status: 'ALL',
   locationId: '',
   hiveId: '',
   priority: '',
   startDate: '',
   endDate: ''
 })
+
+// Quick filter state — persisted in sessionStorage
+const QF_KEY = 'bb_task_quick_filter'
+const quickFilter = ref(sessionStorage.getItem(QF_KEY) || 'TODAY')
+
+function setQuickFilter(key) {
+  quickFilter.value = key
+  sessionStorage.setItem(QF_KEY, key)
+}
+
+function todayStr() {
+  return new Date().toISOString().split('T')[0]
+}
+
+const quickFilters = computed(() => [
+  {
+    key: 'TODAY',
+    label: 'Heute fällig',
+    icon: '📅',
+    activeClass: 'bg-primary border-primary text-white shadow-md shadow-primary/20',
+    count: tasks.value.filter(t => !t.is_completed && t.due_date === todayStr()).length
+  },
+  {
+    key: 'OVERDUE',
+    label: 'Überfällig',
+    icon: '🔴',
+    activeClass: 'bg-red-500 border-red-500 text-white shadow-md shadow-red-500/20',
+    count: tasks.value.filter(t => !t.is_completed && t.due_date && t.due_date < todayStr()).length
+  },
+  {
+    key: 'UPCOMING',
+    label: 'Anstehend',
+    icon: '⏳',
+    activeClass: 'bg-blue-500 border-blue-500 text-white shadow-md shadow-blue-500/20',
+    count: tasks.value.filter(t => !t.is_completed && (!t.due_date || t.due_date > todayStr())).length
+  }
+])
 
 // Modal form state
 const showTaskModal = ref(false)
@@ -593,13 +657,52 @@ async function fetchData() {
   }
 }
 
-onMounted(() => {
-  fetchData()
+onMounted(async () => {
+  await fetchData()
+  if (route.query.hiveId) {
+    filters.value.hiveId = route.query.hiveId
+    filters.value.status = 'ALL'
+    quickFilter.value = 'ALL'
+    
+    if (route.query.createTask === 'true') {
+      openCreateTaskModal()
+    }
+  }
 })
 
 watch(() => apiaryStore.activeApiaryId, () => {
   fetchData()
 })
+
+watch(() => route.query.hiveId, (newHiveId) => {
+  if (newHiveId) {
+    filters.value.hiveId = newHiveId
+    filters.value.status = 'ALL'
+    quickFilter.value = 'ALL'
+    if (route.query.createTask === 'true') {
+      openCreateTaskModal(newHiveId)
+    }
+  } else {
+    filters.value.hiveId = ''
+  }
+})
+
+watch(() => route.query.createTask, (newVal) => {
+  if (newVal === 'true') {
+    openCreateTaskModal()
+  }
+})
+
+watch(showTaskModal, (isOpen) => {
+  if (!isOpen) {
+    if (route.query.createTask) {
+      const query = { ...route.query }
+      delete query.createTask
+      router.replace({ query })
+    }
+  }
+})
+
 
 // If location changes, reset hive filter
 function onLocationChange() {
@@ -608,8 +711,18 @@ function onLocationChange() {
 
 // Compute client-side filtering matching standard backend API filters
 const filteredTasks = computed(() => {
+  const today = todayStr()
   return tasks.value.filter(task => {
-    // 1. Status Filter
+    // 0. Quick Filter (applied first)
+    if (quickFilter.value === 'TODAY') {
+      if (task.is_completed || task.due_date !== today) return false
+    } else if (quickFilter.value === 'OVERDUE') {
+      if (task.is_completed || !task.due_date || task.due_date >= today) return false
+    } else if (quickFilter.value === 'UPCOMING') {
+      if (task.is_completed || (task.due_date && task.due_date <= today)) return false
+    }
+
+    // 1. Status Filter (detail filter)
     if (filters.value.status === 'PENDING' && task.is_completed) return false
     if (filters.value.status === 'COMPLETED' && !task.is_completed) return false
     if (filters.value.status === 'OVERDUE') {
@@ -666,7 +779,13 @@ async function completeTask(id) {
 }
 
 async function deleteTask(id) {
-  if (!confirm('Möchtest du diese Aufgabe wirklich löschen?')) return
+  const confirmed = await confirmStore.ask({
+    title: 'Aufgabe löschen',
+    message: 'Möchtest du diese Aufgabe wirklich löschen?',
+    type: 'danger',
+    confirmText: 'Ja, löschen'
+  })
+  if (!confirmed) return
   try {
     await axios.delete(`/api/tasks/${id}`)
     tasks.value = tasks.value.filter(t => t.id !== id)
@@ -675,14 +794,27 @@ async function deleteTask(id) {
   }
 }
 
-function openCreateTaskModal() {
+function openCreateTaskModal(overrideHiveId = null) {
   isEditMode.value = false
   editingTaskId.value = null
+  
+  let initialLocationId = ''
+  let initialHiveId = ''
+  
+  const targetHiveId = overrideHiveId || route.query.hiveId
+  if (targetHiveId) {
+    const hive = hives.value.find(h => h.id === targetHiveId)
+    if (hive) {
+      initialHiveId = hive.id
+      initialLocationId = hive.location_id || ''
+    }
+  }
+
   taskForm.value = {
     title: '',
     description: '',
-    locationId: '',
-    hiveId: '',
+    locationId: initialLocationId,
+    hiveId: initialHiveId,
     priority: 'MEDIUM',
     dueDate: '',
     isRecurring: false,

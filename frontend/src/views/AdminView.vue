@@ -744,9 +744,11 @@
 <script setup>
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useAuthStore } from '../stores/auth'
+import { useConfirmStore } from '../stores/confirm'
 import axios from 'axios'
 
 const authStore = useAuthStore()
+const confirmStore = useConfirmStore()
 
 const activeTab = ref('users')
 
@@ -1013,7 +1015,13 @@ async function submitFrameTypeForm() {
 }
 
 async function deleteFrameType(ft) {
-  if (!confirm(`Möchtest du das Wabenmaß '${ft.name}' wirklich löschen?`)) {
+  const confirmed = await confirmStore.ask({
+    title: 'Wabenmaß löschen',
+    message: `Möchtest du das Wabenmaß '${ft.name}' wirklich löschen?`,
+    type: 'danger',
+    confirmText: 'Ja, löschen'
+  })
+  if (!confirmed) {
     return
   }
   try {

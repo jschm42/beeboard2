@@ -135,7 +135,7 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="locations.length === 0" class="glass rounded-3xl p-12 text-center max-w-lg mx-auto border border-dashed border-gray-300 dark:border-gray-700 mt-8">
+    <div v-else-if="!showModal && locations.length === 0" class="glass rounded-3xl p-12 text-center max-w-lg mx-auto border border-dashed border-gray-300 dark:border-gray-700 mt-8">
       <div class="text-4xl mb-4">📍</div>
       <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-1">Keine Bienenstandorte vorhanden</h3>
       <p class="text-gray-500 dark:text-gray-400 mb-6">Erstelle deinen ersten Standort, um danach Bienenvölker dort ansiedeln zu können.</p>
@@ -211,9 +211,11 @@
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
 import { useApiaryStore } from '../stores/apiary'
+import { useConfirmStore } from '../stores/confirm'
 import axios from 'axios'
 
 const apiaryStore = useApiaryStore()
+const confirmStore = useConfirmStore()
 
 const locations = ref([])
 const loading = ref(false)
@@ -338,7 +340,13 @@ async function submitForm() {
 }
 
 async function deleteLocation(loc) {
-  if (!confirm(`Möchtest du den Standort "${loc.name}" wirklich löschen?`)) return
+  const confirmed = await confirmStore.ask({
+    title: 'Standort löschen',
+    message: `Möchtest du den Standort "${loc.name}" wirklich löschen?`,
+    type: 'danger',
+    confirmText: 'Ja, löschen'
+  })
+  if (!confirmed) return
   try {
     await axios.delete(`/api/locations/${loc.id}`)
     showAlert('Standort erfolgreich gelöscht.', 'success')

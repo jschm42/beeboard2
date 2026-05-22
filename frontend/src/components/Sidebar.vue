@@ -4,13 +4,13 @@
     <aside class="fixed inset-y-0 left-0 z-30 w-64 bg-white dark:bg-dark-card border-r border-gray-200 dark:border-dark-border flex flex-col justify-between hidden md:flex transition-colors duration-300">
       
       <!-- Brand Logo Section -->
-      <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-dark-border/60">
-        <router-link to="/" class="flex items-center space-x-2 text-primary font-bold text-xl hover-scale">
-          <!-- Bee SVG Icon -->
-          <svg class="w-8 h-8 fill-primary animate-pulse" viewBox="0 0 24 24">
-            <path d="M12 2C11.5 2 11 2.2 10.6 2.6L7.4 5.8C6.9 6.3 6.9 7.1 7.4 7.6L8.4 8.6C7.6 9.8 7 11 7 12H5C3.3 12 2 13.3 2 15C2 16.7 3.3 18 5 18H7C7 19.1 7.9 20 9 20H15C16.1 20 17 19.1 17 18H19C20.7 18 22 16.7 22 15C22 13.3 20.7 12 19 12H17C17 11 16.4 9.8 15.6 8.6L16.6 7.6C17.1 7.1 17.1 6.3 16.6 5.8L13.4 2.6C13 2.2 12.5 2 12 2M12 4L14.4 6.4L13 7.8L12.5 7.3C12.1 6.9 11.3 6.9 10.9 7.3L10.4 7.8L9.6 7L12 4M9 10H15V12H9V10M5 14H19C19.6 14 20 14.4 20 15C20 15.6 19.6 16 19 16H5C4.4 16 4 15.6 4 15C4 14.4 4.4 14 5 14M9 18H15V19H9V18Z"/>
-          </svg>
-          <span class="tracking-wider font-extrabold uppercase text-gray-800 dark:text-white">Bee<span class="text-primary">Board</span></span>
+      <div class="h-20 flex items-center px-5 border-b border-gray-200 dark:border-dark-border/60">
+        <router-link to="/" class="flex items-center gap-3 hover-scale">
+          <img :src="beeboardLogo" alt="BeeBoard" class="h-12 w-auto flex-shrink-0" />
+          <div class="flex flex-col leading-tight">
+            <span class="text-base font-extrabold tracking-tight text-gray-800 dark:text-white">{{ APP_NAME }}</span>
+            <span class="text-[10px] font-semibold text-gray-400 dark:text-gray-500 tracking-wider">v{{ APP_VERSION }}</span>
+          </div>
         </router-link>
       </div>
 
@@ -111,11 +111,9 @@
           <X v-else class="w-6 h-6" />
         </button>
 
-        <router-link to="/" class="flex items-center space-x-2 text-primary font-bold text-lg hover-scale">
-          <svg class="w-7 h-7 fill-primary animate-pulse" viewBox="0 0 24 24">
-            <path d="M12 2C11.5 2 11 2.2 10.6 2.6L7.4 5.8C6.9 6.3 6.9 7.1 7.4 7.6L8.4 8.6C7.6 9.8 7 11 7 12H5C3.3 12 2 13.3 2 15C2 16.7 3.3 18 5 18H7C7 19.1 7.9 20 9 20H15C16.1 20 17 19.1 17 18H19C20.7 18 22 16.7 22 15C22 13.3 20.7 12 19 12H17C17 11 16.4 9.8 15.6 8.6L16.6 7.6C17.1 7.1 17.1 6.3 16.6 5.8L13.4 2.6C13 2.2 12.5 2 12 2M12 4L14.4 6.4L13 7.8L12.5 7.3C12.1 6.9 11.3 6.9 10.9 7.3L10.4 7.8L9.6 7L12 4M9 10H15V12H9V10M5 14H19C19.6 14 20 14.4 20 15C20 15.6 19.6 16 19 16H5C4.4 16 4 15.6 4 15C4 14.4 4.4 14 5 14M9 18H15V19H9V18Z"/>
-          </svg>
-          <span class="tracking-wider font-extrabold uppercase text-gray-800 dark:text-white">Bee<span class="text-primary">Board</span></span>
+        <router-link to="/" class="flex items-center gap-2 hover-scale">
+          <img :src="beeboardLogo" alt="BeeBoard" class="h-10 w-auto" />
+          <span class="font-extrabold text-sm text-gray-800 dark:text-white tracking-tight">{{ APP_NAME }}</span>
         </router-link>
       </div>
 
@@ -149,11 +147,12 @@
     >
       <!-- Brand Logo Section -->
       <div class="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-dark-border/60">
-        <router-link to="/" @click="mobileMenuOpen = false" class="flex items-center space-x-2 text-primary font-bold text-xl hover-scale">
-          <svg class="w-8 h-8 fill-primary animate-pulse" viewBox="0 0 24 24">
-            <path d="M12 2C11.5 2 11 2.2 10.6 2.6L7.4 5.8C6.9 6.3 6.9 7.1 7.4 7.6L8.4 8.6C7.6 9.8 7 11 7 12H5C3.3 12 2 13.3 2 15C2 16.7 3.3 18 5 18H7C7 19.1 7.9 20 9 20H15C16.1 20 17 19.1 17 18H19C20.7 18 22 16.7 22 15C22 13.3 20.7 12 19 12H17C17 11 16.4 9.8 15.6 8.6L16.6 7.6C17.1 7.1 17.1 6.3 16.6 5.8L13.4 2.6C13 2.2 12.5 2 12 2M12 4L14.4 6.4L13 7.8L12.5 7.3C12.1 6.9 11.3 6.9 10.9 7.3L10.4 7.8L9.6 7L12 4M9 10H15V12H9V10M5 14H19C19.6 14 20 14.4 20 15C20 15.6 19.6 16 19 16H5C4.4 16 4 15.6 4 15C4 14.4 4.4 14 5 14M9 18H15V19H9V18Z"/>
-          </svg>
-          <span class="tracking-wider font-extrabold uppercase text-gray-800 dark:text-white">Bee<span class="text-primary">Board</span></span>
+        <router-link to="/" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 hover-scale">
+          <img :src="beeboardLogo" alt="BeeBoard" class="h-9 w-auto" />
+          <div class="flex flex-col leading-tight">
+            <span class="text-sm font-extrabold text-gray-800 dark:text-white tracking-tight">{{ APP_NAME }}</span>
+            <span class="text-[9px] font-semibold text-gray-400 dark:text-gray-500">v{{ APP_VERSION }}</span>
+          </div>
         </router-link>
 
         <button 
@@ -257,6 +256,8 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import beeboardLogo from '../assets/beeboard-logo.svg'
+import { APP_NAME, APP_VERSION } from '../config/app.js'
 import { useAuthStore } from '../stores/auth'
 import { useApiaryStore } from '../stores/apiary'
 import { 

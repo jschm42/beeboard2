@@ -2,8 +2,8 @@
   <div class="min-h-screen flex items-center justify-center bg-gray-900 px-4 py-12 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
     
     <!-- Premium Honeycomb Background Blur Circles -->
-    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
-    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-600/10 rounded-full blur-3xl animate-pulse"></div>
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-600/10 rounded-full blur-3xl"></div>
     
     <!-- Honeycomb Pattern SVG overlay -->
     <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:24px_24px]"></div>
@@ -16,29 +16,22 @@
     >
       
       <!-- Border glow when in onboarding mode (now acts as a premium outer halo) -->
-      <div v-if="setupRequired" class="absolute -inset-0.5 bg-gradient-to-r from-amber-500 to-primary rounded-3xl blur opacity-30 -z-10 animate-pulse"></div>
-
-      <div class="text-xs text-red-500">setupRequired: {{ setupRequired }}</div>
+      <div v-if="setupRequired" class="absolute -inset-0.5 bg-gradient-to-r from-amber-500 to-primary rounded-3xl blur opacity-30 -z-10"></div>
 
       <!-- Brand Logo Header -->
       <div class="text-center">
-        <div class="inline-flex items-center justify-center p-3 bg-primary/10 rounded-full mb-3">
-          <!-- Bee SVG Icon -->
-          <svg class="w-12 h-12 fill-primary" :class="setupRequired ? 'animate-bounce' : 'animate-pulse'" viewBox="0 0 24 24">
-            <path d="M12 2C11.5 2 11 2.2 10.6 2.6L7.4 5.8C6.9 6.3 6.9 7.1 7.4 7.6L8.4 8.6C7.6 9.8 7 11 7 12H5C3.3 12 2 13.3 2 15C2 16.7 3.3 18 5 18H7C7 19.1 7.9 20 9 20H15C16.1 20 17 19.1 17 18H19C20.7 18 22 16.7 22 15C22 13.3 20.7 12 19 12H17C17 11 16.4 9.8 15.6 8.6L16.6 7.6C17.1 7.1 17.1 6.3 16.6 5.8L13.4 2.6C13 2.2 12.5 2 12 2M12 4L14.4 6.4L13 7.8L12.5 7.3C12.1 6.9 11.3 6.9 10.9 7.3L10.4 7.8L9.6 7L12 4M9 10H15V12H9V10M5 14H19C19.6 14 20 14.4 20 15C20 15.6 19.6 16 19 16H5C4.4 16 4 15.6 4 15C4 14.4 4.4 14 5 14M9 18H15V19H9V18Z"/>
-          </svg>
+        <div class="inline-flex items-center justify-center p-4 bg-primary/10 rounded-2xl mb-3">
+          <img :src="beeboardLogo" alt="BeeBoard" class="w-16 h-16 object-contain" />
         </div>
         <h2 class="text-3xl font-extrabold tracking-tight text-white">Bee<span class="text-primary">Board</span></h2>
+        <p class="mt-1 text-xs text-gray-500 font-mono tracking-widest">v{{ APP_VERSION }}</p>
         <p class="mt-2 text-sm text-gray-400">Verwalte deine Bienenvölker mit modernster Präzision</p>
       </div>
 
       <!-- Onboarding Header (only shown during first-run) -->
       <div v-if="setupRequired" class="text-center space-y-2 bg-gray-900/80 p-4 rounded-2xl border border-primary/20">
         <div class="inline-flex items-center space-x-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full text-xs font-black text-primary uppercase tracking-widest">
-          <span class="relative flex h-2 w-2">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-            <span class="relative rounded-full h-2 w-2 bg-primary"></span>
-          </span>
+          <span class="inline-block h-2 w-2 rounded-full bg-primary"></span>
           <span>Ersteinrichtung</span>
         </div>
         <h3 class="text-lg font-bold text-white">Superadmin einrichten</h3>
@@ -254,6 +247,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import beeboardLogo from '../assets/beeboard-logo.svg'
+import { APP_VERSION } from '../config/app.js'
 import { useAuthStore } from '../stores/auth'
 import { useApiaryStore } from '../stores/apiary'
 

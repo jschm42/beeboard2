@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
 
-from app.core.config import settings
+from app.core.config import settings, APP_NAME, APP_VERSION, APP_DESCRIPTION
 from app.core.database import engine
 from app.models import Base
 from app.routers import auth, apiaries, locations, hives, logbook, stats, ai, admin, ai_insights, honey, sales, tasks
@@ -34,9 +34,9 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(
-    title=settings.PROJECT_NAME,
-    description="FastAPI Backend for BeeBoard - Reactive Beekeeping Log",
-    version="2.0.0",
+    title=f"{APP_NAME} API",
+    description=APP_DESCRIPTION,
+    version=APP_VERSION,
     lifespan=lifespan
 )
 
@@ -71,4 +71,4 @@ app.include_router(tasks.router, prefix="/api")
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "ok", "app": settings.PROJECT_NAME}
+    return {"status": "ok", "app": APP_NAME, "version": APP_VERSION}

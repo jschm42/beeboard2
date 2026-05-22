@@ -75,8 +75,11 @@ export const useAuthStore = defineStore('auth', {
         const response = await axios.get('/api/auth/me')
         this.user = response.data
       } catch (err) {
-        console.error('Fetch user profile failed, logging out...', err)
+        console.error('Fetch user profile failed (stale token?), logging out...', err)
         this.logout()
+        // Also clear stale apiary selection so components don't fire authenticated
+        // requests with an invalid apiary ID after a fresh DB creation
+        localStorage.removeItem('activeApiaryId')
       }
     },
     logout() {

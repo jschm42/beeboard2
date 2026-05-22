@@ -1229,11 +1229,13 @@
 import { ref, onMounted, reactive, computed, watch } from 'vue'
 import { useApiaryStore } from '../stores/apiary'
 import { useErrorStore } from '../stores/error'
+import { useConfirmStore } from '../stores/confirm'
 import AIChatPane from '../components/AIChatPane.vue'
 import axios from 'axios'
 
 const apiaryStore = useApiaryStore()
 const errorStore = useErrorStore()
+const confirmStore = useConfirmStore()
 
 // Sessions & stream data
 const sessions = ref([])
@@ -1572,7 +1574,13 @@ async function submitSessionForm() {
 }
 
 async function deleteSession(session) {
-  if (!confirm(`Möchtest du die Arbeitssitzung "${session.title}" wirklich löschen? Alle darin enthaltenen Inspektionen und Fotos werden endgültig gelöscht.`)) return
+  const confirmed = await confirmStore.ask({
+    title: 'Arbeitssitzung löschen',
+    message: `Möchtest du die Arbeitssitzung "${session.title}" wirklich löschen? Alle darin enthaltenen Inspektionen und Fotos werden endgültig gelöscht.`,
+    type: 'danger',
+    confirmText: 'Ja, löschen'
+  })
+  if (!confirmed) return
   try {
     await axios.delete(`/api/logbook/sessions/${session.id}`)
     if (selectedSession.value?.id === session.id) {
@@ -1783,7 +1791,13 @@ async function submitEntryForm() {
 }
 
 async function deleteEntry(entry) {
-  if (!confirm('Möchtest du diesen Eintrag und alle verknüpften Messwerte und Fotos wirklich löschen?')) return
+  const confirmed = await confirmStore.ask({
+    title: 'Eintrag löschen',
+    message: 'Möchtest du diesen Eintrag und alle verknüpften Messwerte und Fotos wirklich löschen?',
+    type: 'danger',
+    confirmText: 'Ja, löschen'
+  })
+  if (!confirmed) return
   try {
     await axios.delete(`/api/logbook/entries/${entry.id}`)
     await refreshCurrentEntries()
@@ -1812,7 +1826,13 @@ async function uploadEntryImage(event, entryId) {
 }
 
 async function deleteEntryImage(imageId) {
-  if (!confirm('Bild wirklich löschen?')) return
+  const confirmed = await confirmStore.ask({
+    title: 'Bild löschen',
+    message: 'Bild wirklich löschen?',
+    type: 'danger',
+    confirmText: 'Ja, löschen'
+  })
+  if (!confirmed) return
   try {
     await axios.delete(`/api/logbook/images/${imageId}`)
     await refreshCurrentEntries()

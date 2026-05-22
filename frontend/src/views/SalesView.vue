@@ -597,8 +597,10 @@
 import { ref, computed, onMounted, reactive, watch } from 'vue'
 import axios from 'axios'
 import { useApiaryStore } from '../stores/apiary'
+import { useConfirmStore } from '../stores/confirm'
 
 const apiaryStore = useApiaryStore()
+const confirmStore = useConfirmStore()
 
 const activeTab = ref('sales')
 const sales = ref([])
@@ -872,7 +874,13 @@ async function submitSaleForm() {
 }
 
 async function deleteSale(s) {
-  if (!confirm('Möchtest du diese Verkaufstransaktion wirklich löschen?')) return
+  const confirmed = await confirmStore.ask({
+    title: 'Verkauf löschen',
+    message: 'Möchtest du diese Verkaufstransaktion wirklich löschen?',
+    type: 'danger',
+    confirmText: 'Ja, löschen'
+  })
+  if (!confirmed) return
   try {
     await axios.delete(`/api/sales/${s.id}`)
     showAlert('Verkaufstransaktion erfolgreich gelöscht.', 'success')
@@ -945,7 +953,13 @@ async function submitProductForm() {
 }
 
 async function deleteProduct(p) {
-  if (!confirm(`Möchtest du das Produkt "${p.name}" wirklich löschen?`)) return
+  const confirmed = await confirmStore.ask({
+    title: 'Produkt löschen',
+    message: `Möchtest du das Produkt "${p.name}" wirklich löschen?`,
+    type: 'danger',
+    confirmText: 'Ja, löschen'
+  })
+  if (!confirmed) return
   try {
     await axios.delete(`/api/sales/products/${p.id}`)
     showAlert('Produktkonfiguration erfolgreich gelöscht.', 'success')

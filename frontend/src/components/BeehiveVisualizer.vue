@@ -1,12 +1,8 @@
 <template>
-  <div class="flex flex-col items-center justify-center p-6 border border-gray-100 dark:border-dark-border rounded-3xl bg-gray-50/50 dark:bg-dark-card/30 backdrop-blur-sm relative overflow-hidden">
-    
-    <!-- Decorative wooden cover banner (Roof) -->
-    <div class="w-[228px] h-4 bg-gradient-to-r from-amber-800 to-amber-700 dark:from-amber-900 dark:to-amber-800 rounded-t-lg shadow-md border-b border-amber-950"></div>
-    <div class="w-[222px] h-1.5 bg-amber-900 dark:bg-amber-950 rounded-b-sm mb-2 shadow-inner"></div>
+  <div class="flex flex-col items-center justify-center p-6 border border-gray-100 dark:border-dark-border rounded-3xl bg-gray-50/50 dark:bg-dark-card/30 backdrop-blur-sm relative overflow-visible">
 
     <!-- Empty stack helper -->
-    <div v-if="boxes.length === 0" class="py-8 text-center text-gray-400 text-xs italic">
+    <div v-if="boxes.length === 0" class="py-8 text-center text-gray-400 text-sm italic">
       Keine Zargen definiert. Klicke auf "+ Zarge hinzufügen", um den Stapel aufzubauen!
     </div>
 
@@ -17,7 +13,7 @@
         :key="box.id || idx"
         class="relative transition-all duration-300 transform cursor-grab active:cursor-grabbing"
         :class="[
-          selectedBoxId === box.id ? 'scale-[1.03] z-10' : '',
+          selectedBoxId === box.id ? 'scale-[1.08] z-10 shadow-xl' : '',
           draggedIdx === idx ? 'opacity-30 scale-[0.98]' : 'hover:scale-[1.02]',
           dragOverIdx === idx && draggedIdx !== idx ? 'scale-[1.04] z-20' : ''
         ]"
@@ -32,34 +28,28 @@
         <!-- Box Shape representation -->
         <div 
           @click="selectBox(box)"
-          class="w-full h-14 rounded-lg border-2 cursor-pointer transition-all duration-200 flex flex-col justify-center items-center shadow-sm relative overflow-hidden"
+          class="w-full h-20 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col justify-center items-center shadow-md relative overflow-hidden"
           :class="[
             selectedBoxId === box.id 
-              ? 'border-primary ring-2 ring-primary/20 shadow-md' 
+              ? 'border-primary border-[4px] ring-8 ring-primary/30 shadow-2xl z-30' 
               : (dragOverIdx === idx && draggedIdx !== idx
                 ? 'border-primary ring-4 ring-primary/40 shadow-lg'
-                : 'border-amber-950/40 dark:border-amber-950/70'),
+                : 'border-amber-950/45 dark:border-amber-950/75'),
             box.box_type === 'BROOD'
               ? 'bg-gradient-to-r from-amber-600/90 to-amber-700/90 dark:from-amber-700/90 dark:to-amber-800/90 text-white'
               : 'bg-gradient-to-r from-yellow-500/90 to-yellow-600/90 dark:from-yellow-600/90 dark:to-yellow-700/90 text-gray-900'
           ]"
         >
-          <!-- Wooden handle indentation in the middle -->
-          <div 
-            class="w-12 h-3.5 rounded-md absolute left-1/2 -translate-x-1/2 opacity-70 shadow-inner"
-            :class="box.box_type === 'BROOD' ? 'bg-amber-800' : 'bg-yellow-700/40'"
-          ></div>
-
-          <!-- Text content overlay -->
-          <span class="text-xs font-black tracking-wide z-10 uppercase">
+          <!-- Text content overlay (Larger text!) -->
+          <span class="text-base font-black tracking-wide z-10 uppercase">
             {{ box.box_type === 'BROOD' ? 'Brutraum' : 'Honigraum' }}
           </span>
-          <span class="text-[9px] font-extrabold opacity-90 z-10">
+          <span class="text-sm font-extrabold opacity-95 z-10">
             {{ box.frame_count }} Waben ({{ box.frame_type_name || 'Standard' }})
           </span>
 
           <!-- Left Side: Order Indicator -->
-          <span class="absolute left-3.5 text-[10px] font-black opacity-40">
+          <span class="absolute left-4 text-sm font-black opacity-50">
             #{{ box.order }}
           </span>
         </div>
@@ -100,16 +90,8 @@
       </div>
     </div>
 
-    <!-- Entrance flight board design at the bottom (Boden) -->
-    <div class="w-[230px] h-3 bg-gradient-to-r from-amber-800 to-amber-900 dark:from-amber-900 dark:to-amber-950 rounded-t-sm mt-3 relative flex justify-center shadow-md">
-      <!-- Flight hole gate (Einflugloch) -->
-      <div class="w-16 h-2 bg-black rounded-t-sm absolute -top-2"></div>
-      <!-- Flight board (Anflugbrett) -->
-      <div class="w-[160px] h-4 bg-amber-700/80 dark:bg-amber-800/80 rounded-b-lg skew-x-12 translate-y-0.5 shadow-lg border-t border-amber-600/50"></div>
-    </div>
-
     <!-- Legend Indicator -->
-    <div class="flex space-x-4 mt-8 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+    <div class="flex space-x-4 mt-6 text-xs font-bold text-gray-500 uppercase tracking-wider">
       <div class="flex items-center space-x-1">
         <div class="w-3.5 h-3.5 bg-gradient-to-r from-amber-600 to-amber-700 border border-amber-800 rounded-sm"></div>
         <span>Brutraum</span>
@@ -125,6 +107,9 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import { useConfirmStore } from '../stores/confirm'
+
+const confirmStore = useConfirmStore()
 
 const props = defineProps({
   boxes: {
@@ -235,8 +220,14 @@ function moveDown(box) {
   }
 }
 
-function deleteBox(box) {
-  if (!confirm('Möchtest du diese Zarge wirklich aus der Beute entfernen?')) return
+async function deleteBox(box) {
+  const confirmed = await confirmStore.ask({
+    title: 'Zarge entfernen',
+    message: 'Möchtest du diese Zarge wirklich aus der Beute entfernen?',
+    type: 'danger',
+    confirmText: 'Ja, entfernen'
+  })
+  if (!confirmed) return
   
   // Filter out deleted box
   let remaining = props.boxes.filter(b => b.id !== box.id)
