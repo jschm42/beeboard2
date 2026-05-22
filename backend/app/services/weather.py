@@ -12,7 +12,7 @@ async def fetch_current_weather(lat: float, lon: float) -> Optional[Dict[str, An
 
     # We use the free 2.5 weather API, which doesn't require a paid subscription/One Call plan
     url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&units=metric&lang=de&appid={api_key}"
-    print(f"Requesting OpenWeatherMap URL: {url}")
+    print("Requesting OpenWeatherMap current weather data.")
     
     async with httpx.AsyncClient() as client:
         try:
