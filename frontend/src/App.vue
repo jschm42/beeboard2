@@ -104,6 +104,13 @@ axios.interceptors.response.use(
 )
 
 onMounted(async () => {
+  const persistedTheme = localStorage.getItem('theme')
+  const useDark = persistedTheme
+    ? persistedTheme === 'dark'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches
+
+  document.documentElement.classList.toggle('dark', useDark)
+
   // Restore Bearer token from localStorage into axios headers on every page load
   authStore.initAxiosHeaders()
   // Re-fetch current user profile if a token exists

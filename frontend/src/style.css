@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-primary: #f59e0b; /* Amber 500 (Honey Gold) */
   --color-primary-hover: #d97706; /* Amber 600 */
@@ -29,11 +31,11 @@
 }
 
 .glass {
-  @apply bg-white/70 backdrop-blur-md border border-white/20;
+  @apply bg-white/85 backdrop-blur-md border border-white/40;
 }
 
 .dark .glass {
-  @apply bg-dark-card/70 backdrop-blur-md border border-dark-border/50;
+  @apply bg-dark-card/75 backdrop-blur-md border border-dark-border/70;
 }
 
 /* Scrollbar styling */
