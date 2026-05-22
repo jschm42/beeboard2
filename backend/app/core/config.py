@@ -3,11 +3,24 @@ from pathlib import Path
 from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Read shared app version from repo root.
+_VERSION_FALLBACK = "2.1.0"
+_VERSION_FILE = Path(__file__).resolve().parents[3] / "VERSION"
+
+
+def _load_app_version() -> str:
+    try:
+        version = _VERSION_FILE.read_text(encoding="utf-8").strip()
+        return version or _VERSION_FALLBACK
+    except OSError:
+        return _VERSION_FALLBACK
+
+
 # ---------------------------------------------------------------------------
 # BeeBoard — zentrale App-Konstanten (nicht per .env konfigurierbar)
 # ---------------------------------------------------------------------------
 APP_NAME: str = "BeeBoard"
-APP_VERSION: str = "2.1.0"
+APP_VERSION: str = _load_app_version()
 APP_DESCRIPTION: str = "Reaktives Imkerei-Managementsystem"
 
 
