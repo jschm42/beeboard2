@@ -1,6 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
-from typing import Optional
+from typing import Dict, Literal, Optional
 
 class FrameTypeBase(BaseModel):
     name: str
@@ -54,8 +54,23 @@ class LLMConfigOut(LLMConfigBase):
         from_attributes = True
 
 class UserAdminUpdate(BaseModel):
+    username: Optional[str] = None
+    email: Optional[EmailStr] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    password: Optional[str] = Field(default=None, min_length=8)
     role: Optional[str] = None
     is_active: Optional[bool] = None
+
+
+class UserAdminCreate(BaseModel):
+    username: str
+    email: EmailStr
+    password: str = Field(min_length=8)
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    role: Literal["USER", "SYSTEM_ADMIN"] = "USER"
+    is_active: bool = True
 
 class NumberRangeBase(BaseModel):
     name: str
@@ -78,4 +93,45 @@ class NumberRangeOut(NumberRangeBase):
 
     class Config:
         from_attributes = True
+
+
+class SecretSourceStatus(BaseModel):
+    db_configured: bool
+    env_configured: bool
+    effective_source: Optional[Literal["db", "env"]] = None
+
+
+class ApiKeyConfigOut(BaseModel):
+    api_keys: Dict[str, SecretSourceStatus]
+
+
+class ApiKeyConfigUpdate(BaseModel):
+    GEMINI_API_KEY: Optional[str] = None
+    OPENAI_API_KEY: Optional[str] = None
+    OPENROUTER_API_KEY: Optional[str] = None
+    ANTHROPIC_API_KEY: Optional[str] = None
+    OPENWEATHERMAP_API_KEY: Optional[str] = None
+
+
+class SMTPConfigOut(BaseModel):
+    host: Optional[str] = None
+    port: int
+    from_email: Optional[str] = None
+    use_tls: bool
+    use_ssl: bool
+    username_configured: bool
+    password_configured: bool
+    db_configured: bool
+    env_configured: bool
+    effective_source: Optional[Literal["db", "env"]] = None
+
+
+class SMTPConfigUpdate(BaseModel):
+    smtp_host: Optional[str] = None
+    smtp_port: Optional[int] = Field(default=None, ge=1, le=65535)
+    smtp_username: Optional[str] = None
+    smtp_password: Optional[str] = None
+    smtp_from_email: Optional[EmailStr] = None
+    smtp_use_tls: Optional[bool] = None
+    smtp_use_ssl: Optional[bool] = None
 

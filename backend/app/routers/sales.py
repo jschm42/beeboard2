@@ -16,6 +16,7 @@ from app.schemas.sales import (
     HoneySaleCreate, HoneySaleUpdate, HoneySaleOut
 )
 from app.routers.apiaries import check_access
+from app.services.system_settings import get_llm_config
 
 router = APIRouter(prefix="/sales", tags=["sales"])
 
@@ -243,7 +244,6 @@ def get_tax_settings(
     db: Session = Depends(get_db)
 ):
     """Retrieves the system-wide tax settings (e.g. Kleinunternehmer-Regelung)."""
-    from app.services.ai_assistant import get_llm_config
     config = get_llm_config(db)
     return {"kleinunternehmer_regelung": config.kleinunternehmer_regelung}
 
@@ -264,7 +264,6 @@ def export_sales_csv(
     if end_date:
         query = query.filter(HoneySale.sale_date <= end_date)
     
-    from app.services.ai_assistant import get_llm_config
     config = get_llm_config(db)
     is_kleinunternehmer = config.kleinunternehmer_regelung
 

@@ -85,9 +85,17 @@
     <!-- Tab Content: User Management -->
     <div v-if="activeTab === 'users'" class="space-y-6">
       <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl overflow-hidden shadow-sm">
-        <div class="px-6 py-5 border-b border-gray-100 dark:border-dark-border">
-          <h2 class="text-lg font-bold text-gray-900 dark:text-white">Registrierte Benutzer</h2>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Aktiviere/Deaktiviere Konten und verwalte die System-Administratorrechte der Benutzer.</p>
+        <div class="px-6 py-5 border-b border-gray-100 dark:border-dark-border flex items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white">Registrierte Benutzer</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Aktiviere/Deaktiviere Konten und verwalte Benutzer inklusive Rollen, Profilen und Passwörtern.</p>
+          </div>
+          <button
+            @click="openCreateUserDialog"
+            class="px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl shadow-md"
+          >
+            + Benutzer anlegen
+          </button>
         </div>
 
         <div v-if="loadingUsers" class="flex flex-col items-center justify-center py-20">
@@ -104,6 +112,7 @@
                 <th class="px-6 py-4">E-Mail-Adresse</th>
                 <th class="px-6 py-4 text-center">Status</th>
                 <th class="px-6 py-4 text-center">Rolle</th>
+                <th class="px-6 py-4 text-right">Aktionen</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-dark-border text-sm">
@@ -184,6 +193,24 @@
                     </span>
                   </div>
                 </td>
+
+                <td class="px-6 py-4 text-right space-x-2">
+                  <button
+                    @click="openEditUserDialog(u)"
+                    class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border rounded-lg transition-all duration-150 inline-flex"
+                    title="Benutzer bearbeiten"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                  </button>
+                  <button
+                    @click="deleteUser(u)"
+                    :disabled="u.id === authStore.user?.id"
+                    class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all duration-150 inline-flex disabled:opacity-40 disabled:cursor-not-allowed"
+                    title="Benutzer löschen"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  </button>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -211,7 +238,7 @@
               </h3>
               <p class="text-xs text-gray-500 dark:text-gray-400 max-w-2xl">
                 Wenn aktiviert, fragt der KI-Assistent bei Standortabfragen die aktuellen Wetterbedingungen an den Koordinaten der Stände ab.
-                Der API-Schlüssel wird sicher über die Server-Umgebungsvariablen (<code>.env</code>) konfiguriert.
+                Der API-Schlüssel kann in der Administration hinterlegt werden und überschreibt dann den Wert aus <code>.env</code>.
               </p>
             </div>
             
@@ -226,6 +253,39 @@
                 :class="llmConfig.enable_weather_api ? 'translate-x-5' : 'translate-x-0'"
               />
             </button>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm space-y-4">
+          <div class="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <h3 class="text-base font-bold text-gray-900 dark:text-white">🔐 API-Schlüssel und SMTP</h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">DB-Werte sind verschlüsselt gespeichert und haben Vorrang vor <code>.env</code>.</p>
+            </div>
+            <div class="flex gap-2">
+              <button @click="openApiKeyDialog" class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-100 dark:hover:bg-dark-border text-gray-700 dark:text-gray-300">API-Schlüssel verwalten</button>
+              <button @click="openSmtpDialog" class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-100 dark:hover:bg-dark-border text-gray-700 dark:text-gray-300">SMTP konfigurieren</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div v-for="provider in apiProviders" :key="provider" class="px-3 py-2 rounded-xl border border-gray-200 dark:border-dark-border text-xs">
+              <div class="flex items-center justify-between">
+                <span class="font-semibold text-gray-700 dark:text-gray-200">{{ provider }}</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" :class="apiSourceClass(provider)">{{ apiSourceLabel(provider) }}</span>
+              </div>
+              <div class="text-gray-500 dark:text-gray-400 mt-1">DB konfiguriert: {{ apiDbConfigured(provider) ? 'Ja' : 'Nein' }}</div>
+              <div class="text-gray-500 dark:text-gray-400 mt-1">.env konfiguriert: {{ apiEnvConfigured(provider) ? 'Ja' : 'Nein' }}</div>
+            </div>
+            <div class="px-3 py-2 rounded-xl border border-gray-200 dark:border-dark-border text-xs">
+              <div class="flex items-center justify-between">
+                <span class="font-semibold text-gray-700 dark:text-gray-200">SMTP</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" :class="smtpSourceClass">{{ smtpSourceLabel }}</span>
+              </div>
+              <div class="text-gray-500 dark:text-gray-400 mt-1">DB konfiguriert: {{ smtpConfig.db_configured ? 'Ja' : 'Nein' }}</div>
+              <div class="text-gray-500 dark:text-gray-400 mt-1">.env konfiguriert: {{ smtpConfig.env_configured ? 'Ja' : 'Nein' }}</div>
+              <div class="text-gray-500 dark:text-gray-400 mt-1">SMTP-Benutzer gesetzt: {{ smtpConfig.username_configured ? 'Ja' : 'Nein' }}</div>
+              <div class="text-gray-500 dark:text-gray-400 mt-1">SMTP-Passwort gesetzt: {{ smtpConfig.password_configured ? 'Ja' : 'Nein' }}</div>
+            </div>
           </div>
         </div>
 
@@ -738,6 +798,74 @@
       </div>
     </div>
 
+    <div v-if="showUserDialog" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div class="w-full max-w-2xl bg-white dark:bg-dark-card rounded-2xl border border-gray-200 dark:border-dark-border p-6 space-y-4">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ isEditUser ? 'Benutzer bearbeiten' : 'Benutzer anlegen' }}</h3>
+        <form @submit.prevent="submitUserForm" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <input v-model="userForm.username" type="text" required placeholder="Benutzername" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm" />
+            <input v-model="userForm.email" type="email" required placeholder="E-Mail" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm" />
+            <input v-model="userForm.first_name" type="text" placeholder="Vorname" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm" />
+            <input v-model="userForm.last_name" type="text" placeholder="Nachname" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm" />
+            <input v-model="userForm.password" type="password" :required="!isEditUser" placeholder="Passwort (mind. 8 Zeichen)" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm" />
+            <select v-model="userForm.role" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm">
+              <option value="USER">USER</option>
+              <option value="SYSTEM_ADMIN">SYSTEM_ADMIN</option>
+            </select>
+          </div>
+          <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+            <input v-model="userForm.is_active" type="checkbox" class="rounded text-primary" /> Aktiv
+          </label>
+          <div class="flex justify-end gap-2">
+            <button type="button" @click="showUserDialog = false" class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-semibold">Abbrechen</button>
+            <button type="submit" class="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold" :disabled="savingUser">{{ savingUser ? 'Speichere...' : 'Speichern' }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div v-if="showApiDialog" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div class="w-full max-w-2xl bg-white dark:bg-dark-card rounded-2xl border border-gray-200 dark:border-dark-border p-6 space-y-4">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white">API-Schlüssel verwalten</h3>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Neue Werte werden verschlüsselt gespeichert. Leeres Feld ändert nichts.</p>
+        <div class="space-y-3">
+          <div v-for="provider in apiProviders" :key="`dialog-${provider}`" class="space-y-1">
+            <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">{{ provider }}</label>
+            <div class="flex gap-2">
+              <input v-model="apiKeyForm[provider]" type="password" :placeholder="`Neuen ${provider}-Key eingeben`" class="flex-1 px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm" />
+              <button @click="clearApiKey(provider)" type="button" class="px-3 py-2 border border-gray-300 dark:border-dark-border rounded-xl text-xs font-semibold">DB-Key löschen</button>
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2">
+          <button type="button" @click="showApiDialog = false" class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-semibold">Schließen</button>
+          <button type="button" @click="saveApiKeys" class="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold" :disabled="savingApiKeys">{{ savingApiKeys ? 'Speichere...' : 'Speichern' }}</button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="showSmtpDialog" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div class="w-full max-w-2xl bg-white dark:bg-dark-card rounded-2xl border border-gray-200 dark:border-dark-border p-6 space-y-4">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white">SMTP konfigurieren</h3>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Zugangsdaten werden verschlüsselt gespeichert. Leere Felder für Benutzer/Passwort löschen die DB-Werte.</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <input v-model="smtpForm.smtp_host" type="text" placeholder="SMTP Host" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm" />
+          <input v-model.number="smtpForm.smtp_port" type="number" min="1" max="65535" placeholder="Port" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm" />
+          <input v-model="smtpForm.smtp_from_email" type="email" placeholder="Absender-E-Mail" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm" />
+          <input v-model="smtpForm.smtp_username" type="text" placeholder="SMTP Benutzername" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm" />
+          <input v-model="smtpForm.smtp_password" type="password" placeholder="SMTP Passwort" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm md:col-span-2" />
+        </div>
+        <div class="flex gap-4 text-sm text-gray-700 dark:text-gray-300">
+          <label class="flex items-center gap-2"><input v-model="smtpForm.smtp_use_tls" type="checkbox" class="rounded text-primary" /> TLS</label>
+          <label class="flex items-center gap-2"><input v-model="smtpForm.smtp_use_ssl" type="checkbox" class="rounded text-primary" /> SSL</label>
+        </div>
+        <div class="flex justify-end gap-2">
+          <button type="button" @click="showSmtpDialog = false" class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-semibold">Schließen</button>
+          <button type="button" @click="saveSmtpConfig" class="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold" :disabled="savingSmtp">{{ savingSmtp ? 'Speichere...' : 'Speichern' }}</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -756,6 +884,55 @@ const activeTab = ref('users')
 const users = ref([])
 const loadingUsers = ref(false)
 const togglingUser = ref(null)
+const showUserDialog = ref(false)
+const isEditUser = ref(false)
+const editingUserId = ref(null)
+const savingUser = ref(false)
+const userForm = reactive({
+  username: '',
+  email: '',
+  first_name: '',
+  last_name: '',
+  password: '',
+  role: 'USER',
+  is_active: true
+})
+
+const showApiDialog = ref(false)
+const savingApiKeys = ref(false)
+const apiProviders = ['GEMINI_API_KEY', 'OPENAI_API_KEY', 'OPENROUTER_API_KEY', 'ANTHROPIC_API_KEY', 'OPENWEATHERMAP_API_KEY']
+const apiKeyConfig = ref({ api_keys: {} })
+const apiKeyForm = reactive({
+  GEMINI_API_KEY: '',
+  OPENAI_API_KEY: '',
+  OPENROUTER_API_KEY: '',
+  ANTHROPIC_API_KEY: '',
+  OPENWEATHERMAP_API_KEY: ''
+})
+
+const showSmtpDialog = ref(false)
+const savingSmtp = ref(false)
+const smtpConfig = ref({
+  host: '',
+  port: 587,
+  from_email: '',
+  use_tls: true,
+  use_ssl: false,
+  username_configured: false,
+  password_configured: false,
+  db_configured: false,
+  env_configured: false,
+  effective_source: null
+})
+const smtpForm = reactive({
+  smtp_host: '',
+  smtp_port: 587,
+  smtp_username: '',
+  smtp_password: '',
+  smtp_from_email: '',
+  smtp_use_tls: true,
+  smtp_use_ssl: false
+})
 
 // LLM States
 const llmConfig = ref({
@@ -807,6 +984,208 @@ async function fetchLLMConfig() {
     loadingLLM.value = false
   }
 }
+
+async function fetchSecretConfig() {
+  try {
+    const [apiRes, smtpRes] = await Promise.all([
+      axios.get('/api/admin/secret-config/api-keys'),
+      axios.get('/api/admin/secret-config/smtp')
+    ])
+    apiKeyConfig.value = apiRes.data
+    smtpConfig.value = smtpRes.data
+  } catch (err) {
+    console.error('Fetch secret config error:', err)
+    showToast('Fehler beim Laden der Schlüssel-/SMTP-Konfiguration', 'error')
+  }
+}
+
+function openCreateUserDialog() {
+  isEditUser.value = false
+  editingUserId.value = null
+  userForm.username = ''
+  userForm.email = ''
+  userForm.first_name = ''
+  userForm.last_name = ''
+  userForm.password = ''
+  userForm.role = 'USER'
+  userForm.is_active = true
+  showUserDialog.value = true
+}
+
+function openEditUserDialog(user) {
+  isEditUser.value = true
+  editingUserId.value = user.id
+  userForm.username = user.username
+  userForm.email = user.email
+  userForm.first_name = user.first_name || ''
+  userForm.last_name = user.last_name || ''
+  userForm.password = ''
+  userForm.role = user.role
+  userForm.is_active = user.is_active
+  showUserDialog.value = true
+}
+
+async function submitUserForm() {
+  savingUser.value = true
+  try {
+    const payload = {
+      username: userForm.username,
+      email: userForm.email,
+      first_name: userForm.first_name || null,
+      last_name: userForm.last_name || null,
+      role: userForm.role,
+      is_active: userForm.is_active
+    }
+    if (userForm.password) {
+      payload.password = userForm.password
+    }
+
+    if (isEditUser.value) {
+      await axios.put(`/api/admin/users/${editingUserId.value}`, payload)
+      showToast('Benutzer erfolgreich aktualisiert.')
+    } else {
+      if (!userForm.password || userForm.password.length < 8) {
+        showToast('Passwort muss mindestens 8 Zeichen haben.', 'error')
+        return
+      }
+      await axios.post('/api/admin/users', payload)
+      showToast('Benutzer erfolgreich angelegt.')
+    }
+
+    showUserDialog.value = false
+    await fetchUsers()
+  } catch (err) {
+    console.error('Save user error:', err)
+    showToast(err.response?.data?.detail || 'Fehler beim Speichern des Benutzers.', 'error')
+  } finally {
+    savingUser.value = false
+  }
+}
+
+async function deleteUser(user) {
+  const confirmed = await confirmStore.ask({
+    title: 'Benutzer löschen',
+    message: `Möchtest du den Benutzer '${user.username}' wirklich löschen?`,
+    type: 'danger',
+    confirmText: 'Ja, löschen'
+  })
+  if (!confirmed) return
+  try {
+    await axios.delete(`/api/admin/users/${user.id}`)
+    showToast(`Benutzer '${user.username}' wurde gelöscht.`)
+    await fetchUsers()
+  } catch (err) {
+    console.error('Delete user error:', err)
+    showToast(err.response?.data?.detail || 'Fehler beim Löschen des Benutzers.', 'error')
+  }
+}
+
+function openApiKeyDialog() {
+  for (const provider of apiProviders) {
+    apiKeyForm[provider] = ''
+  }
+  showApiDialog.value = true
+}
+
+function clearApiKey(provider) {
+  apiKeyForm[provider] = ''
+  saveApiKeys({ [provider]: '' })
+}
+
+async function saveApiKeys(forcedPayload = null) {
+  savingApiKeys.value = true
+  try {
+    const payload = forcedPayload || Object.fromEntries(
+      apiProviders.filter((p) => apiKeyForm[p]).map((p) => [p, apiKeyForm[p]])
+    )
+    if (!Object.keys(payload).length) {
+      showToast('Keine Änderungen zum Speichern vorhanden.', 'error')
+      return
+    }
+    const res = await axios.put('/api/admin/secret-config/api-keys', payload)
+    apiKeyConfig.value = res.data
+    for (const provider of apiProviders) {
+      apiKeyForm[provider] = ''
+    }
+    showToast('API-Schlüssel-Konfiguration aktualisiert.')
+  } catch (err) {
+    console.error('Save API keys error:', err)
+    showToast(err.response?.data?.detail || 'Fehler beim Speichern der API-Schlüssel.', 'error')
+  } finally {
+    savingApiKeys.value = false
+  }
+}
+
+function openSmtpDialog() {
+  smtpForm.smtp_host = smtpConfig.value.host || ''
+  smtpForm.smtp_port = smtpConfig.value.port || 587
+  smtpForm.smtp_username = ''
+  smtpForm.smtp_password = ''
+  smtpForm.smtp_from_email = smtpConfig.value.from_email || ''
+  smtpForm.smtp_use_tls = smtpConfig.value.use_tls ?? true
+  smtpForm.smtp_use_ssl = smtpConfig.value.use_ssl ?? false
+  showSmtpDialog.value = true
+}
+
+async function saveSmtpConfig() {
+  savingSmtp.value = true
+  try {
+    const payload = {
+      smtp_host: smtpForm.smtp_host || null,
+      smtp_port: Number(smtpForm.smtp_port),
+      smtp_username: smtpForm.smtp_username || '',
+      smtp_password: smtpForm.smtp_password || '',
+      smtp_from_email: smtpForm.smtp_from_email || null,
+      smtp_use_tls: smtpForm.smtp_use_tls,
+      smtp_use_ssl: smtpForm.smtp_use_ssl
+    }
+    const res = await axios.put('/api/admin/secret-config/smtp', payload)
+    smtpConfig.value = res.data
+    smtpForm.smtp_username = ''
+    smtpForm.smtp_password = ''
+    showToast('SMTP-Konfiguration aktualisiert.')
+    showSmtpDialog.value = false
+  } catch (err) {
+    console.error('Save SMTP config error:', err)
+    showToast(err.response?.data?.detail || 'Fehler beim Speichern der SMTP-Konfiguration.', 'error')
+  } finally {
+    savingSmtp.value = false
+  }
+}
+
+function apiEnvConfigured(provider) {
+  return Boolean(apiKeyConfig.value.api_keys?.[provider]?.env_configured)
+}
+
+function apiDbConfigured(provider) {
+  return Boolean(apiKeyConfig.value.api_keys?.[provider]?.db_configured)
+}
+
+function apiSourceLabel(provider) {
+  const source = apiKeyConfig.value.api_keys?.[provider]?.effective_source
+  if (source === 'db') return 'DB'
+  if (source === 'env') return '.env'
+  return 'Nicht gesetzt'
+}
+
+function apiSourceClass(provider) {
+  const source = apiKeyConfig.value.api_keys?.[provider]?.effective_source
+  if (source === 'db') return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+  if (source === 'env') return 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+  return 'bg-gray-200/60 text-gray-600 dark:text-gray-300'
+}
+
+const smtpSourceLabel = computed(() => {
+  if (smtpConfig.value.effective_source === 'db') return 'DB'
+  if (smtpConfig.value.effective_source === 'env') return '.env'
+  return 'Nicht gesetzt'
+})
+
+const smtpSourceClass = computed(() => {
+  if (smtpConfig.value.effective_source === 'db') return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+  if (smtpConfig.value.effective_source === 'env') return 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+  return 'bg-gray-200/60 text-gray-600 dark:text-gray-300'
+})
 
 // Update active status for user
 async function toggleUserActive(user) {
@@ -1105,6 +1484,7 @@ async function submitNumberRangeForm() {
 onMounted(() => {
   fetchUsers()
   fetchLLMConfig()
+  fetchSecretConfig()
   fetchFrameTypes()
   fetchNumberRanges()
 })

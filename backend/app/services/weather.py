@@ -1,12 +1,15 @@
 import httpx
 from typing import Optional, Dict, Any
-from app.core.config import settings
+from sqlalchemy.orm import Session
 
-async def fetch_current_weather(lat: float, lon: float) -> Optional[Dict[str, Any]]:
+from app.core.config import settings
+from app.services.system_settings import get_effective_api_key
+
+async def fetch_current_weather(lat: float, lon: float, db: Optional[Session] = None) -> Optional[Dict[str, Any]]:
     """
     Fetches the current weather for a given latitude and longitude using OpenWeatherMap.
     """
-    api_key = settings.OPENWEATHERMAP_API_KEY
+    api_key = get_effective_api_key(db, "OPENWEATHERMAP_API_KEY") if db else settings.OPENWEATHERMAP_API_KEY
     if not api_key:
         return None
 
@@ -39,21 +42,21 @@ async def fetch_current_weather(lat: float, lon: float) -> Optional[Dict[str, An
             print(f"Exception fetching weather: {e}")
             return None
 
-def fetch_current_weather_sync(lat: float, lon: float) -> Optional[Dict[str, Any]]:
+def fetch_current_weather_sync(lat: float, lon: float, db: Optional[Session] = None) -> Optional[Dict[str, Any]]:
     """Synchronous version of fetch_current_weather."""
     import asyncio
     try:
         loop = asyncio.get_running_loop()
-        return loop.run_until_complete(fetch_current_weather(lat, lon))
+        return loop.run_until_complete(fetch_current_weather(lat, lon, db))
     except RuntimeError:
-        return asyncio.run(fetch_current_weather(lat, lon))
+        return asyncio.run(fetch_current_weather(lat, lon, db))
 
-async def geocode_address(address: str) -> Optional[Dict[str, Any]]:
+async def geocode_address(address: str, db: Optional[Session] = None) -> Optional[Dict[str, Any]]:
     """
     Geocodes an address query using OpenWeatherMap Geocoding API.
     Falls back to OpenStreetMap Nominatim if OpenWeatherMap key is invalid/unconfigured or fails.
     """
-    api_key = settings.OPENWEATHERMAP_API_KEY
+    api_key = get_effective_api_key(db, "OPENWEATHERMAP_API_KEY") if db else settings.OPENWEATHERMAP_API_KEY
     if api_key:
         params = {"q": address, "limit": 1, "appid": api_key}
         async with httpx.AsyncClient() as client:

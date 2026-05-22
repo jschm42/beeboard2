@@ -51,10 +51,11 @@ def create_location(
 @router.get("/geocode")
 async def geocode(
     address: str = Query(..., description="The address/city to geocode"),
-    current_user: User = Depends(get_current_user)
+    _current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """Geocodes an address to latitude and longitude."""
-    res = await geocode_address(address)
+    res = await geocode_address(address, db)
     if not res:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

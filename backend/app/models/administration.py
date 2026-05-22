@@ -1,5 +1,5 @@
 from typing import Optional
-from sqlalchemy import String, Boolean, Float, Text
+from sqlalchemy import String, Boolean, Float, Text, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import UUIDTimeStampedModel
@@ -30,6 +30,18 @@ class LLMConfig(UUIDTimeStampedModel):
     enable_weather_api: Mapped[bool] = mapped_column(Boolean, default=False)
     ai_insights_cron: Mapped[str | None] = mapped_column(String(64), nullable=True)
     kleinunternehmer_regelung: Mapped[bool] = mapped_column(Boolean, default=False)
+    gemini_api_key_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
+    openai_api_key_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
+    openrouter_api_key_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
+    anthropic_api_key_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
+    openweathermap_api_key_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
+    smtp_host: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    smtp_port: Mapped[int] = mapped_column(Integer, default=587)
+    smtp_username_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
+    smtp_password_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
+    smtp_from_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    smtp_use_tls: Mapped[bool] = mapped_column(Boolean, default=True)
+    smtp_use_ssl: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class NumberRange(UUIDTimeStampedModel):

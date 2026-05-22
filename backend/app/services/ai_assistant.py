@@ -1,15 +1,13 @@
-import os
 import json
 import logging
 from datetime import date
 from typing import Dict, Any, Optional
 import litellm
-import httpx
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.models.administration import LLMConfig
 from app.models.user import User
+from app.services.system_settings import get_effective_api_key, get_llm_config
 
 logger = logging.getLogger("beeboard.ai")
 
@@ -85,26 +83,6 @@ DEFAULT_HONEY_DRAFT_PROMPT = (
     "}"
 )
 
-def get_llm_config(db: Session) -> LLMConfig:
-    """Retrieves or seeds the default LLM prompts and settings from the database."""
-    config = db.query(LLMConfig).first()
-    if not config:
-        config = LLMConfig(
-            chatbot_system_prompt=DEFAULT_CHATBOT_PROMPT,
-            draft_system_prompt=DEFAULT_DRAFT_PROMPT,
-            enable_weather_api=False,
-            ai_insights_cron="0 */12 * * *",
-        )
-        db.add(config)
-        db.commit()
-        db.refresh(config)
-    else:
-        if not config.ai_insights_cron:
-            config.ai_insights_cron = "0 */12 * * *"
-            db.commit()
-            db.refresh(config)
-    return config
-
 async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apiary_id: str, current_user: Optional[User] = None, effective_model: str = "", api_key: str = "") -> str:
     from app.models.location import Location
     from app.models.hive import Hive
@@ -112,8 +90,7 @@ async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apia
     from app.services.calculations import calculate_inspection_totals
     from app.services.weather import fetch_current_weather
     from datetime import datetime, timedelta
-    import json
-    
+
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt}
@@ -253,7 +230,7 @@ async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apia
                     res = []
                     for loc in locations:
                         if loc.latitude and loc.longitude:
-                            w = await fetch_current_weather(loc.latitude, loc.longitude)
+                            w = await fetch_current_weather(loc.latitude, loc.longitude, db)
                             if w:
                                 temp = w.get("temp", 0.0)
                                 humidity = w.get("humidity", 0)
@@ -360,7 +337,7 @@ async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apia
     return "Der Assistent konnte die Anfrage nicht innerhalb der maximalen Anzahl von Schritten beantworten."
 
 
-def get_effective_model_and_key(model: str) -> tuple[str, Optional[str]]:
+def get_effective_model_and_key(model: str, db: Optional[Session] = None) -> tuple[str, Optional[str]]:
     """
     Resolves the effective model name and API key to use.
     If the direct provider API key is missing but OPENROUTER_API_KEY is configured,
@@ -368,26 +345,26 @@ def get_effective_model_and_key(model: str) -> tuple[str, Optional[str]]:
     """
     # 1. If the model explicitly requests openrouter
     if "openrouter" in model:
-        return model, (settings.OPENROUTER_API_KEY or os.getenv("OPENROUTER_API_KEY"))
+        return model, get_effective_api_key_from_name("OPENROUTER_API_KEY", db)
 
     # 2. Check direct provider keys
     if "claude" in model or "anthropic" in model:
-        direct_key = settings.ANTHROPIC_API_KEY or os.getenv("ANTHROPIC_API_KEY")
+        direct_key = get_effective_api_key_from_name("ANTHROPIC_API_KEY", db)
         if direct_key:
             return model, direct_key
     elif "gemini" in model:
-        direct_key = settings.GEMINI_API_KEY or os.getenv("GEMINI_API_KEY")
+        direct_key = get_effective_api_key_from_name("GEMINI_API_KEY", db)
         if direct_key:
             return model, direct_key
     elif "gpt" in model or "openai" in model:
-        direct_key = settings.OPENAI_API_KEY or os.getenv("OPENAI_API_KEY")
+        direct_key = get_effective_api_key_from_name("OPENAI_API_KEY", db)
         if direct_key:
             return model, direct_key
     else:
         direct_key = None
 
     # 3. Fallback to OpenRouter if configured
-    openrouter_key = settings.OPENROUTER_API_KEY or os.getenv("OPENROUTER_API_KEY")
+    openrouter_key = get_effective_api_key_from_name("OPENROUTER_API_KEY", db)
     if openrouter_key:
         effective_model = model
         if not model.startswith("openrouter/"):
@@ -396,32 +373,48 @@ def get_effective_model_and_key(model: str) -> tuple[str, Optional[str]]:
 
     # 4. If no openrouter key, return direct key even if None (to trigger fallback warning)
     if "claude" in model or "anthropic" in model:
-        return model, (settings.ANTHROPIC_API_KEY or os.getenv("ANTHROPIC_API_KEY"))
+        return model, get_effective_api_key_from_name("ANTHROPIC_API_KEY", db)
     if "gemini" in model:
-        return model, (settings.GEMINI_API_KEY or os.getenv("GEMINI_API_KEY"))
+        return model, get_effective_api_key_from_name("GEMINI_API_KEY", db)
     if "gpt" in model or "openai" in model:
-        return model, (settings.OPENAI_API_KEY or os.getenv("OPENAI_API_KEY"))
+        return model, get_effective_api_key_from_name("OPENAI_API_KEY", db)
 
     return model, None
 
-def get_api_key_for_model(model: str) -> Optional[str]:
+def get_api_key_for_model(model: str, db: Optional[Session] = None) -> Optional[str]:
     """Helper to resolve the correct API key from settings or environment."""
-    _, key = get_effective_model_and_key(model)
+    _, key = get_effective_model_and_key(model, db)
     return key
+
+
+def get_effective_api_key_from_name(env_name: str, db: Optional[Session] = None) -> Optional[str]:
+    if db is not None:
+        db_key = get_effective_api_key(db, env_name)
+        if db_key:
+            return db_key
+
+    mapping = {
+        "GEMINI_API_KEY": settings.GEMINI_API_KEY,
+        "OPENAI_API_KEY": settings.OPENAI_API_KEY,
+        "OPENROUTER_API_KEY": settings.OPENROUTER_API_KEY,
+        "ANTHROPIC_API_KEY": settings.ANTHROPIC_API_KEY,
+        "OPENWEATHERMAP_API_KEY": settings.OPENWEATHERMAP_API_KEY,
+    }
+    return mapping.get(env_name)
 
 async def chatbot_completion(query: str, apiary_id: str, current_user: User, db: Session) -> str:
     """
     Sends the user query along with tool access to the LLM
     to generate helpful, context-aware advice for the beekeeper.
     """
-    effective_model, api_key = get_effective_model_and_key(settings.LITELLM_MODEL)
+    effective_model, api_key = get_effective_model_and_key(settings.LITELLM_MODEL, db)
     
     # If no API key is provided, gracefully inform the user or fall back
     if not api_key and not effective_model.startswith("ollama"):
         return (
             "Der KI-Assistent ist bereit, aber es wurde kein API-Schlüssel für "
             f"'{settings.LITELLM_MODEL}' konfiguriert. Bitte hinterlege einen "
-            "passenden API-Schlüssel (z.B. GEMINI_API_KEY, OPENROUTER_API_KEY, ANTHROPIC_API_KEY) in den Umgebungsvariablen."
+            "passenden API-Schlüssel in der Administration oder in den Umgebungsvariablen."
         )
 
     config = get_llm_config(db)
@@ -444,7 +437,7 @@ def draft_entry_from_text(freetext: str, date_str: Optional[str] = None, db: Opt
     if not date_str:
         date_str = date.today().isoformat()
 
-    effective_model, api_key = get_effective_model_and_key(settings.LITELLM_MODEL)
+    effective_model, api_key = get_effective_model_and_key(settings.LITELLM_MODEL, db)
     
     # Graceful fallback if no API key is set, so the app remains usable
     if not api_key and not effective_model.startswith("ollama"):

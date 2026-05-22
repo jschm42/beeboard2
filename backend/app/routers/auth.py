@@ -7,6 +7,7 @@ from app.core.database import get_db
 from app.core.security import get_password_hash, verify_password, create_access_token, get_current_user
 from app.models.user import User
 from app.schemas.user import UserCreate, UserOut, Token
+from app.services.email import send_registration_email
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -44,6 +45,9 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
+    # Optional: Send registration email when SMTP is configured.
+    send_registration_email(db, recipient_email=new_user.email, username=new_user.username)
     return new_user
 
 @router.post("/login", response_model=Token)

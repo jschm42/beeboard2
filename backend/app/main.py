@@ -9,6 +9,7 @@ from app.models import Base
 from app.routers import auth, apiaries, locations, hives, logbook, stats, ai, admin, ai_insights, honey, sales, tasks
 from contextlib import asynccontextmanager
 from app.services.cron import start_scheduler
+from app.core.security import ensure_encrypted_password_hash
 
 # Initialize SQLite tables on startup
 Base.metadata.create_all(bind=engine)
@@ -25,6 +26,42 @@ with engine.connect() as conn:
         if "kleinunternehmer_regelung" not in columns:
             conn.execute(text("ALTER TABLE llm_configs ADD COLUMN kleinunternehmer_regelung BOOLEAN DEFAULT 0"))
             conn.commit()
+        if "gemini_api_key_encrypted" not in columns:
+            conn.execute(text("ALTER TABLE llm_configs ADD COLUMN gemini_api_key_encrypted TEXT"))
+            conn.commit()
+        if "openai_api_key_encrypted" not in columns:
+            conn.execute(text("ALTER TABLE llm_configs ADD COLUMN openai_api_key_encrypted TEXT"))
+            conn.commit()
+        if "openrouter_api_key_encrypted" not in columns:
+            conn.execute(text("ALTER TABLE llm_configs ADD COLUMN openrouter_api_key_encrypted TEXT"))
+            conn.commit()
+        if "anthropic_api_key_encrypted" not in columns:
+            conn.execute(text("ALTER TABLE llm_configs ADD COLUMN anthropic_api_key_encrypted TEXT"))
+            conn.commit()
+        if "openweathermap_api_key_encrypted" not in columns:
+            conn.execute(text("ALTER TABLE llm_configs ADD COLUMN openweathermap_api_key_encrypted TEXT"))
+            conn.commit()
+        if "smtp_host" not in columns:
+            conn.execute(text("ALTER TABLE llm_configs ADD COLUMN smtp_host VARCHAR(255)"))
+            conn.commit()
+        if "smtp_port" not in columns:
+            conn.execute(text("ALTER TABLE llm_configs ADD COLUMN smtp_port INTEGER DEFAULT 587"))
+            conn.commit()
+        if "smtp_username_encrypted" not in columns:
+            conn.execute(text("ALTER TABLE llm_configs ADD COLUMN smtp_username_encrypted TEXT"))
+            conn.commit()
+        if "smtp_password_encrypted" not in columns:
+            conn.execute(text("ALTER TABLE llm_configs ADD COLUMN smtp_password_encrypted TEXT"))
+            conn.commit()
+        if "smtp_from_email" not in columns:
+            conn.execute(text("ALTER TABLE llm_configs ADD COLUMN smtp_from_email VARCHAR(255)"))
+            conn.commit()
+        if "smtp_use_tls" not in columns:
+            conn.execute(text("ALTER TABLE llm_configs ADD COLUMN smtp_use_tls BOOLEAN DEFAULT 1"))
+            conn.commit()
+        if "smtp_use_ssl" not in columns:
+            conn.execute(text("ALTER TABLE llm_configs ADD COLUMN smtp_use_ssl BOOLEAN DEFAULT 0"))
+            conn.commit()
 
         result = conn.execute(text("PRAGMA table_info(ai_insights)"))
         ai_insight_columns = [row[1] for row in result.fetchall()]
@@ -34,11 +71,21 @@ with engine.connect() as conn:
         if "read_at" not in ai_insight_columns:
             conn.execute(text("ALTER TABLE ai_insights ADD COLUMN read_at DATETIME"))
             conn.commit()
+
+        users = conn.execute(text("SELECT id, hashed_password FROM users WHERE hashed_password IS NOT NULL")).fetchall()
+        for user_id, current_hash in users:
+            new_hash = ensure_encrypted_password_hash(current_hash)
+            if new_hash != current_hash:
+                conn.execute(
+                    text("UPDATE users SET hashed_password = :hashed_password WHERE id = :user_id"),
+                    {"hashed_password": new_hash, "user_id": user_id},
+                )
+        conn.commit()
     except Exception as e:
         print(f"Error running database migration: {e}")
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_app: FastAPI):
     start_scheduler()
     yield
 

@@ -9,7 +9,8 @@ from app.models.location import Location
 from app.models.hive import Hive
 from app.models.ai_insight import AIInsight
 from app.services.weather import fetch_current_weather
-from app.services.ai_assistant import get_effective_model_and_key, get_llm_config
+from app.services.ai_assistant import get_effective_model_and_key
+from app.services.system_settings import get_llm_config
 from app.models.administration import LLMConfig
 import litellm
 from app.core.config import settings
@@ -34,7 +35,7 @@ async def generate_ai_insights_job():
 
 async def generate_insight_for_apiary(db: Session, apiary: Apiary):
     # Prompt LLM
-    effective_model, api_key = get_effective_model_and_key(settings.LITELLM_MODEL)
+    effective_model, api_key = get_effective_model_and_key(settings.LITELLM_MODEL, db)
     if not api_key and not effective_model.startswith("ollama"):
         logger.warning("No LLM API key configured. Skipping AI Insight generation.")
         return

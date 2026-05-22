@@ -7,6 +7,7 @@ import bcrypt
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.crypto import decrypt_value, encrypt_value, is_encrypted_value
 from app.core.database import get_db
 from app.models.user import User
 
@@ -14,14 +15,25 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
-        return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
+        stored_hash = decrypt_value(hashed_password)
+        if not stored_hash:
+            return False
+        return bcrypt.checkpw(plain_password.encode("utf-8"), stored_hash.encode("utf-8"))
     except Exception:
         return False
 
 def get_password_hash(password: str) -> str:
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
-    return hashed.decode("utf-8")
+    return encrypt_value(hashed.decode("utf-8")) or hashed.decode("utf-8")
+
+
+def ensure_encrypted_password_hash(password_hash: str) -> str:
+    if not password_hash:
+        return password_hash
+    if is_encrypted_value(password_hash):
+        return password_hash
+    return encrypt_value(password_hash) or password_hash
 
 def create_access_token(subject: Union[str, Any], expires_delta: Optional[timedelta] = None) -> str:
     if expires_delta:
