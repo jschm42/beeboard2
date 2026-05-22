@@ -674,4 +674,8 @@ def draft_honey_batch_from_text(freetext: str, harvest_date_str: Optional[str] =
         return json.loads(content)
     except Exception as e:
         logger.error(f"LiteLLM honey auto-draft error: {str(e)}")
-        return get_fallback_honey_draft(freetext, harvest_date_str, error=str(e))
+        return get_fallback_honey_draft(
+            freetext,
+            harvest_date_str,
+            error="KI-Extraktion fehlgeschlagen. Fallback-Entwurf wurde erstellt."
+        )
