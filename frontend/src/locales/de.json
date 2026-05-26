@@ -1,0 +1,34 @@
+{
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "actions": "Aktionen",
+    "status": "Status",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "loading": "Lade...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "confirm": "Bestätigen",
+    "edit": "Bearbeiten",
+    "back_to_dashboard": "Zurück zum Dashboard"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "locations": "Standorte",
+    "hives": "Bienenvölker",
+    "logbook": "Logbuch",
+    "tasks": "Aufgaben",
+    "honey_batches": "Honig-Chargen",
+    "sales": "Verkäufe",
+    "stats": "Statistiken",
+    "ai_insights": "AI Insights",
+    "admin": "Admin",
+    "active_apiary": "Aktive Imkerei",
+    "theme": "Design",
+    "about": "Über",
+    "logout": "Abmelden",
+    "toggle_language": "Sprache wechseln"
+  }
+}

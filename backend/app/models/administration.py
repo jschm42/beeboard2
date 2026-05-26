@@ -30,6 +30,8 @@ class LLMConfig(UUIDTimeStampedModel):
     enable_weather_api: Mapped[bool] = mapped_column(Boolean, default=False)
     ai_insights_cron: Mapped[str | None] = mapped_column(String(64), nullable=True)
     kleinunternehmer_regelung: Mapped[bool] = mapped_column(Boolean, default=False)
+    currency: Mapped[str] = mapped_column(String(10), default="EUR")
+    tax_rates: Mapped[str] = mapped_column(String(255), default="0.0,7.0,19.0")
 
 
 class NumberRange(UUIDTimeStampedModel):

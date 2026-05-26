@@ -25,6 +25,12 @@ with engine.connect() as conn:
         if "kleinunternehmer_regelung" not in columns:
             conn.execute(text("ALTER TABLE llm_configs ADD COLUMN kleinunternehmer_regelung BOOLEAN DEFAULT 0"))
             conn.commit()
+        if "currency" not in columns:
+            conn.execute(text("ALTER TABLE llm_configs ADD COLUMN currency VARCHAR(10) DEFAULT 'EUR'"))
+            conn.commit()
+        if "tax_rates" not in columns:
+            conn.execute(text("ALTER TABLE llm_configs ADD COLUMN tax_rates VARCHAR(255) DEFAULT '0.0,7.0,19.0'"))
+            conn.commit()
 
         result = conn.execute(text("PRAGMA table_info(ai_insights)"))
         ai_insight_columns = [row[1] for row in result.fetchall()]

@@ -39,6 +39,8 @@ class LLMConfigBase(BaseModel):
     enable_weather_api: bool
     ai_insights_cron: Optional[str] = None
     kleinunternehmer_regelung: bool = False
+    currency: str = "EUR"
+    tax_rates: str = "0.0,7.0,19.0"
 
 class LLMConfigUpdate(BaseModel):
     chatbot_system_prompt: Optional[str] = None
@@ -46,6 +48,8 @@ class LLMConfigUpdate(BaseModel):
     enable_weather_api: Optional[bool] = None
     ai_insights_cron: Optional[str] = None
     kleinunternehmer_regelung: Optional[bool] = None
+    currency: Optional[str] = None
+    tax_rates: Optional[str] = None
 
 class LLMConfigOut(LLMConfigBase):
     id: str

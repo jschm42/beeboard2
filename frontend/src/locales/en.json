@@ -1,0 +1,34 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "actions": "Actions",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "edit": "Edit",
+    "back_to_dashboard": "Back to Dashboard"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "locations": "Locations",
+    "hives": "Hives",
+    "logbook": "Logbook",
+    "tasks": "Tasks",
+    "honey_batches": "Honey Batches",
+    "sales": "Sales",
+    "stats": "Statistics",
+    "ai_insights": "AI Insights",
+    "admin": "Admin",
+    "active_apiary": "Active Apiary",
+    "theme": "Theme",
+    "about": "About",
+    "logout": "Log Out",
+    "toggle_language": "Change Language"
+  }
+}

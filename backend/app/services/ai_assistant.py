@@ -94,13 +94,24 @@ def get_llm_config(db: Session) -> LLMConfig:
             draft_system_prompt=DEFAULT_DRAFT_PROMPT,
             enable_weather_api=False,
             ai_insights_cron="0 */12 * * *",
+            currency="EUR",
+            tax_rates="0.0,7.0,19.0",
         )
         db.add(config)
         db.commit()
         db.refresh(config)
     else:
+        changed = False
         if not config.ai_insights_cron:
             config.ai_insights_cron = "0 */12 * * *"
+            changed = True
+        if not config.currency:
+            config.currency = "EUR"
+            changed = True
+        if not config.tax_rates:
+            config.tax_rates = "0.0,7.0,19.0"
+            changed = True
+        if changed:
             db.commit()
             db.refresh(config)
     return config

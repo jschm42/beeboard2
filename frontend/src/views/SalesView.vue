@@ -536,9 +536,7 @@
                 required
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
               >
-                <option :value="7.0">7.0 % (Honig)</option>
-                <option :value="19.0">19.0 % (z.B. Met / Kerzen)</option>
-                <option :value="0.0">0.0 % (Steuerfrei)</option>
+                <option v-for="rate in settingsStore.taxRates" :key="rate" :value="rate">{{ rate }} %</option>
               </select>
             </div>
             <div v-else class="p-3 bg-gray-50 dark:bg-dark-bg border border-gray-100 dark:border-dark-border rounded-xl">
@@ -594,13 +592,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive, watch } from 'vue'
+import { ref, computed, onMounted, reactive } from 'vue'
 import axios from 'axios'
+import { useI18n } from 'vue-i18n'
 import { useApiaryStore } from '../stores/apiary'
 import { useConfirmStore } from '../stores/confirm'
+import { useSettingsStore } from '../stores/settings'
 
 const apiaryStore = useApiaryStore()
 const confirmStore = useConfirmStore()
+const settingsStore = useSettingsStore()
+const { locale } = useI18n()
 
 const activeTab = ref('sales')
 const sales = ref([])
@@ -687,8 +689,10 @@ function formatDate(val) {
 }
 
 function formatCurrency(val) {
-  if (val === null || val === undefined) return '0,00 €'
-  return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(val)
+  if (val === null || val === undefined) val = 0
+  const activeCurrency = settingsStore.currency || 'EUR'
+  const activeLocale = locale.value === 'de' ? 'de-DE' : 'en-US'
+  return new Intl.NumberFormat(activeLocale, { style: 'currency', currency: activeCurrency }).format(val)
 }
 
 function formatChannel(val) {
@@ -711,6 +715,10 @@ async function fetchTaxSettings() {
   try {
     const res = await axios.get('/api/sales/tax-settings')
     taxSettings.value = res.data
+    // Sync into global settings store so other components can use currency/taxRates
+    settingsStore.currency = res.data.currency ?? settingsStore.currency
+    settingsStore.taxRates = Array.isArray(res.data.tax_rates) ? res.data.tax_rates : settingsStore.taxRates
+    settingsStore.kleinunternehmerRegelung = res.data.kleinunternehmer_regelung ?? settingsStore.kleinunternehmerRegelung
   } catch (err) {
     console.error('Fetch tax settings error:', err)
   }
