@@ -10,6 +10,26 @@
       </p>
     </div>
 
+    <!-- Main Tab Navigation -->
+    <div class="flex border-b border-gray-200 dark:border-dark-border mb-6 space-x-6">
+      <button
+        @click="activeMainTab = 'insights'"
+        class="pb-4 text-sm font-bold tracking-wide border-b-2 transition-all duration-200"
+        :class="activeMainTab === 'insights' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
+      >
+        📊 Insights
+      </button>
+      <button
+        @click="switchToBeeAgent"
+        class="pb-4 text-sm font-bold tracking-wide border-b-2 transition-all duration-200"
+        :class="activeMainTab === 'bee-agent' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
+      >
+        🐝 Bee-Agent
+      </button>
+    </div>
+
+    <!-- Insights Tab -->
+    <div v-if="activeMainTab === 'insights'">
     <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-4 md:p-5 shadow-sm mb-6 space-y-4">
       <div class="flex flex-col xl:flex-row xl:items-end gap-4">
         <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
@@ -257,6 +277,291 @@
       </div>
     </div>
 
+    </div><!-- end Insights Tab -->
+
+    <!-- Bee-Agent Tab -->
+    <div v-if="activeMainTab === 'bee-agent'" class="space-y-6">
+
+      <!-- No apiary selected -->
+      <div v-if="!apiaryStore.activeApiaryId" class="glass rounded-3xl p-12 text-center max-w-lg mx-auto border border-dashed border-gray-300 dark:border-gray-700">
+        <div class="text-4xl mb-4">🐝</div>
+        <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2">Keine aktive Imkerei ausgewählt</h3>
+        <p class="text-gray-500 dark:text-gray-400">Bitte wähle oben eine Imkerei aus.</p>
+      </div>
+
+      <template v-else>
+
+        <!-- Jobs Header -->
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-extrabold text-gray-900 dark:text-white">🐝 Bee-Agent Jobs</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Konfiguriere autonome KI-Analyse-Jobs für deine Imkerei.</p>
+          </div>
+          <button
+            @click="openJobModal(null)"
+            class="px-4 py-2 bg-primary hover:bg-primary-hover text-white text-sm font-bold rounded-xl shadow-sm transition-all flex items-center gap-2"
+          >
+            + Neuer Job
+          </button>
+        </div>
+
+        <!-- Loading jobs -->
+        <div v-if="jobsLoading" class="flex justify-center py-12">
+          <svg class="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        </div>
+
+        <!-- Empty state -->
+        <div v-else-if="beeAgentJobs.length === 0" class="bg-white dark:bg-dark-card border border-dashed border-gray-300 dark:border-gray-700 rounded-3xl p-10 text-center">
+          <div class="text-4xl mb-3">🐝</div>
+          <h3 class="text-base font-bold text-gray-800 dark:text-white mb-1">Noch keine Bee-Agent Jobs</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Erstelle einen neuen Job, um die KI automatisch Aufgaben vorschlagen zu lassen.</p>
+        </div>
+
+        <!-- Jobs List -->
+        <div v-else class="space-y-3">
+          <div
+            v-for="job in beeAgentJobs"
+            :key="job.id"
+            class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-2xl p-4 shadow-sm flex flex-col md:flex-row md:items-center gap-4"
+          >
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap mb-1">
+                <h3 class="font-extrabold text-gray-900 dark:text-white text-sm">{{ job.name }}</h3>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase"
+                  :class="job.is_active ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300' : 'bg-gray-200 dark:bg-gray-700 text-gray-500'">
+                  {{ job.is_active ? 'Aktiv' : 'Inaktiv' }}
+                </span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-blue-500/10 text-blue-700 dark:text-blue-300">
+                  {{ job.execution_mode === 'AUTO_CREATE' ? '🤖 Auto-Pilot' : '💡 Co-Pilot' }}
+                </span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                  {{ scopeLabel(job.scope) }}
+                </span>
+              </div>
+              <p class="text-[11px] text-gray-500 dark:text-gray-400 font-mono">{{ job.cron_expression }}</p>
+              <p v-if="job.custom_prompt" class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-1 italic">
+                "{{ job.custom_prompt }}"
+              </p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <button
+                @click="triggerJob(job)"
+                :disabled="triggeringJobId === job.id"
+                class="px-3 py-1.5 text-xs font-bold rounded-xl border border-amber-400/50 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors disabled:opacity-50"
+                title="Job jetzt ausführen"
+              >
+                <span v-if="triggeringJobId === job.id">⏳ Läuft…</span>
+                <span v-else>▶ Jetzt</span>
+              </button>
+              <button
+                @click="openJobModal(job)"
+                class="px-3 py-1.5 text-xs font-bold rounded-xl border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:border-primary transition-colors"
+              >
+                Bearbeiten
+              </button>
+              <button
+                @click="deleteJob(job)"
+                class="px-3 py-1.5 text-xs font-bold rounded-xl border border-red-300 dark:border-red-900/60 text-red-600 dark:text-red-300 hover:bg-red-500/10 transition-colors"
+              >
+                Löschen
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Proposals Section -->
+        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-5 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-base font-extrabold text-gray-900 dark:text-white">💡 Aufgaben-Vorschläge (Co-Pilot)</h2>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Vom Bee-Agent generierte Vorschläge, die noch nicht akzeptiert wurden.</p>
+            </div>
+            <button @click="fetchProposals" class="text-xs text-primary hover:underline font-bold">Aktualisieren</button>
+          </div>
+
+          <div v-if="proposalsLoading" class="flex justify-center py-8">
+            <svg class="animate-spin h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          </div>
+
+          <div v-else-if="proposals.filter(p => !p.is_accepted).length === 0" class="text-center py-8 text-gray-400 dark:text-gray-600 text-sm font-semibold">
+            Keine offenen Vorschläge
+          </div>
+
+          <div v-else class="space-y-3">
+            <div
+              v-for="proposal in proposals.filter(p => !p.is_accepted)"
+              :key="proposal.id"
+              class="border border-gray-200 dark:border-gray-700 rounded-2xl p-4 flex flex-col md:flex-row md:items-center gap-3"
+            >
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1 flex-wrap">
+                  <span
+                    class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase"
+                    :class="{
+                      'bg-red-500/15 text-red-700 dark:text-red-300': proposal.priority === 'HIGH',
+                      'bg-amber-500/15 text-amber-700 dark:text-amber-300': proposal.priority === 'MEDIUM',
+                      'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400': proposal.priority === 'LOW'
+                    }"
+                  >
+                    {{ priorityLabel(proposal.priority) }}
+                  </span>
+                  <span v-if="proposal.due_date" class="text-[10px] text-gray-500 dark:text-gray-400">
+                    📅 {{ proposal.due_date }}
+                  </span>
+                </div>
+                <h4 class="font-bold text-gray-900 dark:text-white text-sm">{{ proposal.title }}</h4>
+                <p v-if="proposal.description" class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{{ proposal.description }}</p>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <button
+                  @click="acceptProposal(proposal)"
+                  :disabled="acceptingProposalId === proposal.id"
+                  class="px-3 py-1.5 text-xs font-bold rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white transition-colors disabled:opacity-50"
+                >
+                  <span v-if="acceptingProposalId === proposal.id">⏳</span>
+                  <span v-else>✓ Aufgabe anlegen</span>
+                </button>
+                <button
+                  @click="deleteProposal(proposal)"
+                  class="px-3 py-1.5 text-xs font-bold rounded-xl border border-red-300 dark:border-red-900/60 text-red-600 dark:text-red-300 hover:bg-red-500/10 transition-colors"
+                >
+                  Ablehnen
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </template>
+    </div><!-- end Bee-Agent Tab -->
+
+    <!-- Job Create/Edit Modal -->
+    <div v-if="showJobModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div class="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-dark-card shadow-2xl">
+        <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <h3 class="text-lg font-extrabold text-gray-900 dark:text-white">
+            {{ editingJob ? 'Job bearbeiten' : 'Neuer Bee-Agent Job' }}
+          </h3>
+          <button type="button" class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-dark-bg" @click="closeJobModal">
+            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div class="p-5 space-y-4">
+          <!-- Name -->
+          <div>
+            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Job-Name *</label>
+            <input v-model="jobForm.name" type="text" placeholder="z.B. Varroa-Überwachung" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+          </div>
+
+          <!-- Execution Mode -->
+          <div>
+            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Ausführungsmodus</label>
+            <div class="inline-flex w-full rounded-xl p-1 bg-gray-100 dark:bg-dark-bg border border-gray-200 dark:border-gray-700">
+              <button type="button" class="flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors" :class="jobForm.execution_mode === 'SUGGESTION' ? 'bg-primary text-white' : 'text-gray-600 dark:text-gray-300'" @click="jobForm.execution_mode = 'SUGGESTION'">💡 Co-Pilot (Vorschläge)</button>
+              <button type="button" class="flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors" :class="jobForm.execution_mode === 'AUTO_CREATE' ? 'bg-primary text-white' : 'text-gray-600 dark:text-gray-300'" @click="jobForm.execution_mode = 'AUTO_CREATE'">🤖 Auto-Pilot (Automatisch)</button>
+            </div>
+            <p class="text-[10px] text-gray-400 mt-1">
+              <span v-if="jobForm.execution_mode === 'SUGGESTION'">Co-Pilot: KI generiert Vorschläge, du entscheidest.</span>
+              <span v-else>Auto-Pilot: KI erstellt Aufgaben direkt ohne Bestätigung.</span>
+            </p>
+          </div>
+
+          <!-- Scope -->
+          <div>
+            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Geltungsbereich</label>
+            <select v-model="jobForm.scope" @change="onScopeChange" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+              <option value="IMKEREI">🏠 Imkerei (gesamte Imkerei)</option>
+              <option value="STANDORT">📍 Standort (bestimmte Standorte)</option>
+              <option value="VOLK">🐝 Völker (bestimmte Völker)</option>
+            </select>
+          </div>
+
+          <!-- Entity selection for STANDORT -->
+          <div v-if="jobForm.scope === 'STANDORT'">
+            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Standorte auswählen (leer = alle)</label>
+            <div class="space-y-1 max-h-32 overflow-y-auto">
+              <label v-for="loc in availableLocations" :key="loc.id" class="flex items-center gap-2 text-sm">
+                <input type="checkbox" :value="loc.id" v-model="jobForm.entity_ids" class="rounded" />
+                <span class="text-gray-800 dark:text-gray-200">{{ loc.name }}</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Entity selection for VOLK -->
+          <div v-if="jobForm.scope === 'VOLK'">
+            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Völker auswählen (leer = alle)</label>
+            <div class="space-y-1 max-h-32 overflow-y-auto">
+              <label v-for="hive in availableHives" :key="hive.id" class="flex items-center gap-2 text-sm">
+                <input type="checkbox" :value="hive.id" v-model="jobForm.entity_ids" class="rounded" />
+                <span class="text-gray-800 dark:text-gray-200">{{ hive.name }}</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Context Flags -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-primary">
+              <input type="checkbox" v-model="jobForm.include_weather_data" class="rounded" />
+              <div>
+                <div class="text-sm font-bold text-gray-800 dark:text-white">🌦️ Wetterdaten</div>
+                <div class="text-[10px] text-gray-500">Aktuelle Wetterdaten einbeziehen</div>
+              </div>
+            </label>
+            <label class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-primary">
+              <input type="checkbox" v-model="jobForm.include_journal_entries" class="rounded" />
+              <div>
+                <div class="text-sm font-bold text-gray-800 dark:text-white">📋 Stockkarte</div>
+                <div class="text-[10px] text-gray-500">Letzte Einträge einbeziehen</div>
+              </div>
+            </label>
+          </div>
+
+          <!-- Max journal entries -->
+          <div v-if="jobForm.include_journal_entries">
+            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Max. Stockkarten-Einträge</label>
+            <input v-model.number="jobForm.max_journal_entries" type="number" min="1" max="100" placeholder="20" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+          </div>
+
+          <!-- Cron Expression -->
+          <div>
+            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Zeitplan (Cron)</label>
+            <input v-model="jobForm.cron_expression" type="text" placeholder="z.B. 0 8 * * *" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary" />
+            <p class="text-[10px] text-gray-400 mt-1">Format: Minute Stunde Tag Monat Wochentag – z.B. <code>0 8 * * *</code> = täglich 08:00</p>
+          </div>
+
+          <!-- Custom Prompt -->
+          <div>
+            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Spezielle Anweisung (optional)</label>
+            <textarea v-model="jobForm.custom_prompt" rows="3" placeholder="z.B. Strikte Varroa-Kontrolle und sofortige Behandlungsempfehlung bei Überschreitung." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y"></textarea>
+          </div>
+
+          <!-- Is Active -->
+          <div class="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-xl">
+            <div>
+              <div class="text-sm font-bold text-gray-800 dark:text-white">Job aktiv</div>
+              <div class="text-[10px] text-gray-500">Deaktiviert: Job läuft nicht automatisch.</div>
+            </div>
+            <button
+              type="button"
+              @click="jobForm.is_active = !jobForm.is_active"
+              class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors"
+              :class="jobForm.is_active ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-700'"
+            >
+              <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200" :class="jobForm.is_active ? 'translate-x-5' : 'translate-x-0'" />
+            </button>
+          </div>
+        </div>
+
+        <div class="px-5 pb-5 flex justify-end gap-2 border-t border-gray-200 dark:border-gray-700 pt-4">
+          <button type="button" class="px-4 py-2 text-sm font-bold rounded-xl border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:border-primary" @click="closeJobModal">Abbrechen</button>
+          <button type="button" :disabled="savingJob || !jobForm.name.trim()" class="px-4 py-2 text-sm font-bold rounded-xl bg-primary hover:bg-primary-hover text-white disabled:opacity-60" @click="saveJob">
+            {{ savingJob ? 'Speichern...' : (editingJob ? 'Änderungen speichern' : 'Job erstellen') }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div v-if="showInsightModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div class="w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-dark-card shadow-2xl">
         <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between gap-3">
@@ -318,6 +623,10 @@ const apiaryStore = useApiaryStore()
 const errorStore = useErrorStore()
 const confirmStore = useConfirmStore()
 
+// ----- Tab -----
+const activeMainTab = ref('insights')
+
+// ----- Insights -----
 const loading = ref(true)
 const generating = ref(false)
 const insights = ref([])
@@ -565,6 +874,203 @@ function stripMarkdown(text) {
     .replace(/[#*_`>-]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
+}
+
+// ---------------------------------------------------------------------------
+// Bee-Agent
+// ---------------------------------------------------------------------------
+const beeAgentJobs = ref([])
+const jobsLoading = ref(false)
+const proposals = ref([])
+const proposalsLoading = ref(false)
+const triggeringJobId = ref(null)
+const acceptingProposalId = ref(null)
+const availableLocations = ref([])
+const availableHives = ref([])
+
+// Job modal state
+const showJobModal = ref(false)
+const editingJob = ref(null)
+const savingJob = ref(false)
+const defaultJobForm = () => ({
+  name: '',
+  custom_prompt: '',
+  scope: 'IMKEREI',
+  entity_ids: [],
+  include_weather_data: false,
+  include_journal_entries: true,
+  max_journal_entries: 20,
+  cron_expression: '0 8 * * *',
+  is_active: true,
+  execution_mode: 'SUGGESTION',
+})
+const jobForm = ref(defaultJobForm())
+
+function scopeLabel(scope) {
+  const map = { IMKEREI: '🏠 Imkerei', STANDORT: '📍 Standort', VOLK: '🐝 Volk' }
+  return map[scope] || scope
+}
+
+function priorityLabel(priority) {
+  const map = { HIGH: '🔴 Hoch', MEDIUM: '🟡 Mittel', LOW: '🟢 Niedrig' }
+  return map[priority] || priority
+}
+
+async function switchToBeeAgent() {
+  activeMainTab.value = 'bee-agent'
+  if (apiaryStore.activeApiaryId) {
+    await Promise.all([fetchJobs(), fetchProposals(), fetchLocationsAndHives()])
+  }
+}
+
+async function fetchJobs() {
+  if (!apiaryStore.activeApiaryId) return
+  jobsLoading.value = true
+  try {
+    const res = await axios.get('/api/bee-agent/jobs', { params: { apiary_id: apiaryStore.activeApiaryId } })
+    beeAgentJobs.value = res.data
+  } catch (err) {
+    errorStore.showError('Fehler beim Laden der Bee-Agent Jobs.', err)
+  } finally {
+    jobsLoading.value = false
+  }
+}
+
+async function fetchProposals() {
+  if (!apiaryStore.activeApiaryId) return
+  proposalsLoading.value = true
+  try {
+    const res = await axios.get('/api/bee-agent/proposals', { params: { apiary_id: apiaryStore.activeApiaryId } })
+    proposals.value = res.data
+  } catch (err) {
+    errorStore.showError('Fehler beim Laden der Vorschläge.', err)
+  } finally {
+    proposalsLoading.value = false
+  }
+}
+
+async function fetchLocationsAndHives() {
+  if (!apiaryStore.activeApiaryId) return
+  try {
+    const [locRes, hiveRes] = await Promise.all([
+      axios.get('/api/locations', { params: { apiary_id: apiaryStore.activeApiaryId } }),
+      axios.get('/api/hives', { params: { apiary_id: apiaryStore.activeApiaryId } }),
+    ])
+    availableLocations.value = locRes.data
+    availableHives.value = hiveRes.data
+  } catch (err) {
+    console.error('Error loading locations/hives:', err)
+  }
+}
+
+function onScopeChange() {
+  jobForm.value.entity_ids = []
+}
+
+function openJobModal(job) {
+  editingJob.value = job
+  if (job) {
+    jobForm.value = {
+      name: job.name,
+      custom_prompt: job.custom_prompt || '',
+      scope: job.scope,
+      entity_ids: job.entity_ids ? [...job.entity_ids] : [],
+      include_weather_data: job.include_weather_data,
+      include_journal_entries: job.include_journal_entries,
+      max_journal_entries: job.max_journal_entries ?? 20,
+      cron_expression: job.cron_expression,
+      is_active: job.is_active,
+      execution_mode: job.execution_mode,
+    }
+  } else {
+    jobForm.value = defaultJobForm()
+  }
+  showJobModal.value = true
+}
+
+function closeJobModal() {
+  showJobModal.value = false
+  editingJob.value = null
+}
+
+async function saveJob() {
+  if (!jobForm.value.name.trim()) return
+  savingJob.value = true
+  try {
+    const payload = {
+      name: jobForm.value.name.trim(),
+      custom_prompt: jobForm.value.custom_prompt || null,
+      scope: jobForm.value.scope,
+      entity_ids: jobForm.value.entity_ids.length > 0 ? jobForm.value.entity_ids : null,
+      include_weather_data: jobForm.value.include_weather_data,
+      include_journal_entries: jobForm.value.include_journal_entries,
+      max_journal_entries: jobForm.value.include_journal_entries ? (jobForm.value.max_journal_entries || 20) : null,
+      cron_expression: jobForm.value.cron_expression,
+      is_active: jobForm.value.is_active,
+      execution_mode: jobForm.value.execution_mode,
+    }
+    if (editingJob.value) {
+      await axios.put(`/api/bee-agent/jobs/${editingJob.value.id}`, payload)
+    } else {
+      await axios.post('/api/bee-agent/jobs', payload, { params: { apiary_id: apiaryStore.activeApiaryId } })
+    }
+    closeJobModal()
+    await fetchJobs()
+  } catch (err) {
+    errorStore.showError('Fehler beim Speichern des Jobs.', err)
+  } finally {
+    savingJob.value = false
+  }
+}
+
+async function deleteJob(job) {
+  const confirmed = await confirmStore.ask({
+    title: 'Job löschen',
+    message: `Bee-Agent Job "${job.name}" und alle zugehörigen Vorschläge wirklich löschen?`,
+    type: 'danger',
+    confirmText: 'Ja, löschen',
+  })
+  if (!confirmed) return
+  try {
+    await axios.delete(`/api/bee-agent/jobs/${job.id}`)
+    await fetchJobs()
+    await fetchProposals()
+  } catch (err) {
+    errorStore.showError('Fehler beim Löschen des Jobs.', err)
+  }
+}
+
+async function triggerJob(job) {
+  triggeringJobId.value = job.id
+  try {
+    await axios.post(`/api/bee-agent/jobs/${job.id}/trigger`)
+    await fetchProposals()
+  } catch (err) {
+    errorStore.showError(`Fehler beim Ausführen von "${job.name}".`, err)
+  } finally {
+    triggeringJobId.value = null
+  }
+}
+
+async function acceptProposal(proposal) {
+  acceptingProposalId.value = proposal.id
+  try {
+    await axios.post(`/api/bee-agent/proposals/${proposal.id}/accept`)
+    await fetchProposals()
+  } catch (err) {
+    errorStore.showError('Fehler beim Annehmen des Vorschlags.', err)
+  } finally {
+    acceptingProposalId.value = null
+  }
+}
+
+async function deleteProposal(proposal) {
+  try {
+    await axios.delete(`/api/bee-agent/proposals/${proposal.id}`)
+    proposals.value = proposals.value.filter(p => p.id !== proposal.id)
+  } catch (err) {
+    errorStore.showError('Fehler beim Löschen des Vorschlags.', err)
+  }
 }
 </script>
 

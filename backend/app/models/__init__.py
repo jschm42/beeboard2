@@ -17,6 +17,7 @@ from app.models.ai_insight import AIInsight
 from app.models.honey_batch import HoneyBatch
 from app.models.sales import ProductConfig, HoneySale
 from app.models.task import Task
+from app.models.bee_agent import BeeAgentJob, BeeAgentProposal
 
 # Export all models for easier importing
 __all__ = [
@@ -42,5 +43,7 @@ __all__ = [
     "HoneyBatch",
     "ProductConfig",
     "HoneySale",
-    "Task"
+    "Task",
+    "BeeAgentJob",
+    "BeeAgentProposal",
 ]
