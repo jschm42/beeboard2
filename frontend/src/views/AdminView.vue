@@ -229,21 +229,28 @@
           </div>
         </div>
 
-        <!-- Kleinunternehmer-Regelung Switch -->
+        <!-- Finance & Taxes Card -->
         <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm space-y-4">
-          <div class="flex items-start justify-between">
-            <div class="space-y-1">
-              <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center">
-                <span>💼 Kleinunternehmer-Regelung (§ 19 UStG)</span>
-              </h3>
-              <p class="text-xs text-gray-500 dark:text-gray-400 max-w-2xl">
+          <div>
+            <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center">
+              <span>💼 Finanzen & Steuern</span>
+            </h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400 max-w-2xl mt-1">
+              Konfiguriere Währung, Steuersätze und die Kleinunternehmer-Regelung für Verkäufe und Steuerexporte.
+            </p>
+          </div>
+
+          <!-- Kleinunternehmer-Regelung Switch -->
+          <div class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-dark-border/60">
+            <div class="space-y-0.5">
+              <p class="text-sm font-semibold text-gray-700 dark:text-gray-200">Kleinunternehmer-Regelung (§ 19 UStG)</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
                 Wenn aktiviert, wird bei Verkäufen und Steuerexporten keine Umsatzsteuer berechnet oder ausgewiesen.
               </p>
             </div>
-            
             <button 
               @click="llmConfig.kleinunternehmer_regelung = !llmConfig.kleinunternehmer_regelung" 
-              class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+              class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ml-4"
               :class="llmConfig.kleinunternehmer_regelung ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-700'"
             >
               <span class="sr-only">Kleinunternehmer aktivieren</span>
@@ -252,6 +259,44 @@
                 :class="llmConfig.kleinunternehmer_regelung ? 'translate-x-5' : 'translate-x-0'"
               />
             </button>
+          </div>
+
+          <!-- Currency -->
+          <div class="pt-2 border-t border-gray-100 dark:border-dark-border/60">
+            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Währung</label>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Währung für die Darstellung von Verkaufspreisen (z.B. EUR, USD, CHF, GBP).</p>
+            <div class="flex gap-2">
+              <select
+                v-model="llmConfig.currency"
+                class="px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="EUR">EUR – Euro</option>
+                <option value="USD">USD – US Dollar</option>
+                <option value="CHF">CHF – Schweizer Franken</option>
+                <option value="GBP">GBP – Britisches Pfund</option>
+                <option value="custom">Andere...</option>
+              </select>
+              <input
+                v-if="llmConfig.currency === 'custom' || !['EUR','USD','CHF','GBP'].includes(llmConfig.currency)"
+                v-model="llmConfig.currency"
+                type="text"
+                maxlength="10"
+                placeholder="z.B. JPY"
+                class="flex-1 px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+              />
+            </div>
+          </div>
+
+          <!-- Tax Rates -->
+          <div class="pt-2 border-t border-gray-100 dark:border-dark-border/60">
+            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Steuersätze</label>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Kommagetrennte Steuersätze in Prozent (0–100), die im Produktformular zur Auswahl stehen (z.B. <code class="bg-gray-100 dark:bg-dark-bg px-1 rounded font-mono">0.0,7.0,19.0</code>).</p>
+            <input
+              v-model="llmConfig.tax_rates"
+              type="text"
+              placeholder="z.B. 0.0,7.0,19.0"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+            />
           </div>
         </div>
 
@@ -763,7 +808,9 @@ const llmConfig = ref({
   draft_system_prompt: '',
   enable_weather_api: false,
   ai_insights_cron: '',
-  kleinunternehmer_regelung: false
+  kleinunternehmer_regelung: false,
+  currency: 'EUR',
+  tax_rates: '0.0,7.0,19.0'
 })
 const loadingLLM = ref(false)
 const savingLLM = ref(false)
@@ -858,7 +905,9 @@ async function saveLLMConfig() {
       draft_system_prompt: llmConfig.value.draft_system_prompt,
       enable_weather_api: llmConfig.value.enable_weather_api,
       ai_insights_cron: llmConfig.value.ai_insights_cron || null,
-      kleinunternehmer_regelung: llmConfig.value.kleinunternehmer_regelung
+      kleinunternehmer_regelung: llmConfig.value.kleinunternehmer_regelung,
+      currency: llmConfig.value.currency,
+      tax_rates: llmConfig.value.tax_rates
     })
     llmConfig.value = res.data
     showToast('KI- und Wettereinstellungen erfolgreich aktualisiert.')

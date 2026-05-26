@@ -242,10 +242,15 @@ def get_tax_settings(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Retrieves the system-wide tax settings (e.g. Kleinunternehmer-Regelung)."""
+    """Retrieves the system-wide tax settings (e.g. Kleinunternehmer-Regelung, currency, tax rates)."""
     from app.services.ai_assistant import get_llm_config
     config = get_llm_config(db)
-    return {"kleinunternehmer_regelung": config.kleinunternehmer_regelung}
+    tax_rates_list = [float(r.strip()) for r in config.tax_rates.split(",") if r.strip()]
+    return {
+        "kleinunternehmer_regelung": config.kleinunternehmer_regelung,
+        "currency": config.currency,
+        "tax_rates": tax_rates_list,
+    }
 
 
 # --- Tax CSV Export ---

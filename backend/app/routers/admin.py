@@ -97,6 +97,26 @@ def update_llm_config(
         if not success:
             raise HTTPException(status_code=400, detail="Ungültiges UNIX Cron-Format. Bitte 5 durch Leerzeichen getrennte Werte angeben (z.B. '0 */12 * * *').")
         config.ai_insights_cron = payload.ai_insights_cron
+    if payload.currency is not None:
+        stripped = payload.currency.strip()
+        if not stripped:
+            raise HTTPException(status_code=400, detail="Währung darf nicht leer sein.")
+        config.currency = stripped
+    if payload.tax_rates is not None:
+        raw = payload.tax_rates.strip()
+        try:
+            rates = [float(r.strip()) for r in raw.split(",") if r.strip()]
+            if not rates:
+                raise ValueError("empty")
+            for r in rates:
+                if r < 0 or r > 100:
+                    raise ValueError(f"out of range: {r}")
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail="Ungültige Steuersätze. Bitte kommagetrennte positive Zahlen zwischen 0 und 100 angeben (z.B. '0.0,7.0,19.0')."
+            ) from exc
+        config.tax_rates = ",".join(str(r) for r in rates)
 
     db.commit()
     db.refresh(config)

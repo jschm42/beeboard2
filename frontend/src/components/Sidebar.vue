@@ -49,7 +49,7 @@
         <!-- Apiary Switcher -->
         <div class="space-y-1.5">
           <label class="text-[10px] uppercase tracking-wider font-extrabold text-gray-400 dark:text-gray-500 block px-1">
-            Aktive Imkerei
+            {{ $t('sidebar.active_apiary') }}
           </label>
           <div class="relative flex items-center">
             <select 
@@ -90,16 +90,24 @@
           <button 
             @click="toggleDarkMode" 
             class="flex-grow px-3 py-2 rounded-xl text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border transition-colors duration-200 hover-scale flex justify-center items-center gap-1.5"
-            title="Design wechseln"
+            :title="$t('sidebar.theme')"
           >
             <component :is="isDark ? Sun : Moon" class="w-4.5 h-4.5" />
-            <span class="text-xs font-semibold">Design</span>
+            <span class="text-xs font-semibold">{{ $t('sidebar.theme') }}</span>
+          </button>
+
+          <button
+            @click="toggleLanguage"
+            class="p-2 rounded-xl text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border transition-colors duration-200 hover-scale flex justify-center items-center"
+            :title="$t('sidebar.toggle_language')"
+          >
+            <Globe class="w-4.5 h-4.5" />
           </button>
 
           <button
             @click="aboutOpen = true"
             class="p-2 rounded-xl text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border transition-colors duration-200 hover-scale flex justify-center items-center"
-            title="About"
+            :title="$t('sidebar.about')"
           >
             <CircleHelp class="w-4.5 h-4.5" />
           </button>
@@ -107,7 +115,7 @@
           <button 
             @click="logout" 
             class="p-2 rounded-xl text-red-500 hover:text-white hover:bg-red-500 dark:hover:bg-red-600 transition-colors duration-200 hover-scale flex justify-center items-center"
-            title="Abmelden"
+            :title="$t('sidebar.logout')"
           >
             <LogOut class="w-4.5 h-4.5" />
           </button>
@@ -258,16 +266,24 @@
           <button 
             @click="toggleDarkMode" 
             class="flex-grow px-3 py-2 rounded-xl text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border transition-colors duration-200 hover-scale flex justify-center items-center gap-1.5"
-            title="Design wechseln"
+            :title="$t('sidebar.theme')"
           >
             <component :is="isDark ? Sun : Moon" class="w-4.5 h-4.5" />
-            <span class="text-xs font-semibold">Design</span>
+            <span class="text-xs font-semibold">{{ $t('sidebar.theme') }}</span>
+          </button>
+
+          <button
+            @click="toggleLanguage"
+            class="p-2 rounded-xl text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border transition-colors duration-200 hover-scale flex justify-center items-center"
+            :title="$t('sidebar.toggle_language')"
+          >
+            <Globe class="w-4.5 h-4.5" />
           </button>
 
           <button
             @click="aboutOpen = true"
             class="p-2 rounded-xl text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border transition-colors duration-200 hover-scale flex justify-center items-center"
-            title="About"
+            :title="$t('sidebar.about')"
           >
             <CircleHelp class="w-4.5 h-4.5" />
           </button>
@@ -275,7 +291,7 @@
           <button 
             @click="logout" 
             class="p-2 rounded-xl text-red-500 hover:text-white hover:bg-red-500 dark:hover:bg-red-600 transition-colors duration-200 hover-scale flex justify-center items-center"
-            title="Abmelden"
+            :title="$t('sidebar.logout')"
           >
             <LogOut class="w-4.5 h-4.5" />
           </button>
@@ -293,6 +309,7 @@
 import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import { useI18n } from 'vue-i18n'
 import beeboardLogo from '../assets/beeboard-logo.svg'
 import { APP_NAME, APP_VERSION } from '../config/app.js'
 import { useAuthStore } from '../stores/auth'
@@ -314,38 +331,40 @@ import {
   X,
   ShoppingBag,
   ClipboardList,
-  CircleHelp
+  CircleHelp,
+  Globe
 } from 'lucide-vue-next'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const apiaryStore = useApiaryStore()
+const { t, locale } = useI18n()
 
 const mobileMenuOpen = ref(false)
 const isDark = ref(false)
 const unreadInsightsCount = ref(0)
 const aboutOpen = ref(false)
 
-const navItems = [
-  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { name: 'Standorte', path: '/locations', icon: MapPin },
-  { name: 'Bienenvölker', path: '/hives', icon: Hexagon },
-  { name: 'Logbuch', path: '/logbook', icon: BookOpen },
-  { name: 'Aufgaben', path: '/tasks', icon: ClipboardList },
-  { name: 'Honig-Chargen', path: '/honey-batches', icon: Droplets },
-  { name: 'Verkäufe', path: '/sales', icon: ShoppingBag },
-  { name: 'Statistiken', path: '/stats', icon: BarChart3 },
-  { name: 'AI Insights', path: '/ai-insights', icon: Sparkles }
-]
+const navItems = computed(() => [
+  { name: t('sidebar.dashboard'), path: '/dashboard', icon: LayoutDashboard },
+  { name: t('sidebar.locations'), path: '/locations', icon: MapPin },
+  { name: t('sidebar.hives'), path: '/hives', icon: Hexagon },
+  { name: t('sidebar.logbook'), path: '/logbook', icon: BookOpen },
+  { name: t('sidebar.tasks'), path: '/tasks', icon: ClipboardList },
+  { name: t('sidebar.honey_batches'), path: '/honey-batches', icon: Droplets },
+  { name: t('sidebar.sales'), path: '/sales', icon: ShoppingBag },
+  { name: t('sidebar.stats'), path: '/stats', icon: BarChart3 },
+  { name: t('sidebar.ai_insights'), path: '/ai-insights', icon: Sparkles }
+])
 
 const filteredNavItems = computed(() => {
   if (authStore.isAdmin) {
     return [
-      ...navItems,
-      { name: 'Admin', path: '/admin', icon: Shield }
+      ...navItems.value,
+      { name: t('sidebar.admin'), path: '/admin', icon: Shield }
     ]
   }
-  return navItems
+  return navItems.value
 })
 
 onMounted(() => {
@@ -398,6 +417,11 @@ function toggleDarkMode() {
     document.documentElement.classList.remove('dark')
     localStorage.setItem('theme', 'light')
   }
+}
+
+function toggleLanguage() {
+  locale.value = locale.value === 'de' ? 'en' : 'de'
+  localStorage.setItem('locale', locale.value)
 }
 
 function onApiaryChange(event) {

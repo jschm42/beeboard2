@@ -45,6 +45,7 @@ import axios from 'axios'
 import { useAuthStore } from './stores/auth'
 import { useApiaryStore } from './stores/apiary'
 import { useErrorStore } from './stores/error'
+import { useSettingsStore } from './stores/settings'
 import Sidebar from './components/Sidebar.vue'
 import ErrorModal from './components/ErrorModal.vue'
 import ConfirmationModal from './components/ConfirmationModal.vue'
@@ -54,6 +55,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 const apiaryStore = useApiaryStore()
 const errorStore = useErrorStore()
+const settingsStore = useSettingsStore()
 
 // Configure global Axios response interceptors
 axios.interceptors.response.use(
@@ -116,6 +118,7 @@ onMounted(async () => {
   // Re-fetch current user profile if a token exists
   if (authStore.token) {
     await authStore.fetchMe()
+    await settingsStore.fetchSettings()
   }
   // Restore the active apiary header from localStorage
   apiaryStore.initApiaryHeader()
