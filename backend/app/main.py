@@ -7,6 +7,7 @@ from app.core.config import settings, APP_NAME, APP_VERSION, APP_DESCRIPTION
 from app.core.database import engine
 from app.models import Base
 from app.routers import auth, apiaries, locations, hives, logbook, stats, ai, admin, ai_insights, honey, sales, tasks
+from app.routers import bee_agent
 from contextlib import asynccontextmanager
 from app.services.cron import start_scheduler
 
@@ -77,6 +78,7 @@ app.include_router(ai_insights.router, prefix="/api")
 app.include_router(honey.router, prefix="/api")
 app.include_router(sales.router, prefix="/api")
 app.include_router(tasks.router, prefix="/api")
+app.include_router(bee_agent.router, prefix="/api")
 
 @app.get("/api/health")
 def health_check():
