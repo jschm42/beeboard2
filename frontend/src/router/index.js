@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useApiaryStore } from '../stores/apiary'
+import { useSettingsStore } from '../stores/settings'
 
 const routes = [
   {
@@ -79,6 +80,7 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   const apiaryStore = useApiaryStore()
+  const settingsStore = useSettingsStore()
 
   // Initialize Axios Auth Headers on first load
   authStore.initAxiosHeaders()
@@ -87,7 +89,14 @@ router.beforeEach(async (to, from, next) => {
   if (authStore.isAuthenticated && !authStore.user) {
     await authStore.fetchMe()
     if (authStore.isAuthenticated) {
-      await apiaryStore.fetchApiaries()
+      // Parallel fetch apiaries and settings
+      await Promise.all([
+        apiaryStore.fetchApiaries(),
+        settingsStore.fetchSettings()
+      ]).catch(err => {
+        console.error('Failed to load initial session data:', err)
+      })
+      apiaryStore.initApiaryHeader()
     }
   }
 

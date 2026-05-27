@@ -112,16 +112,6 @@ onMounted(async () => {
     : window.matchMedia('(prefers-color-scheme: dark)').matches
 
   document.documentElement.classList.toggle('dark', useDark)
-
-  // Restore Bearer token from localStorage into axios headers on every page load
-  authStore.initAxiosHeaders()
-  // Re-fetch current user profile if a token exists
-  if (authStore.token) {
-    await authStore.fetchMe()
-    await settingsStore.fetchSettings()
-  }
-  // Restore the active apiary header from localStorage
-  apiaryStore.initApiaryHeader()
 })
 </script>
 

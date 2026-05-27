@@ -2,12 +2,18 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 
 export const useApiaryStore = defineStore('apiary', {
-  state: () => ({
-    apiaries: [], // List of memberships/apiaries
-    activeApiaryId: localStorage.getItem('activeApiaryId') || null,
-    loading: false,
-    error: null
-  }),
+  state: () => {
+    const activeApiaryId = localStorage.getItem('activeApiaryId') || null
+    if (activeApiaryId) {
+      axios.defaults.headers.common['X-Apiary-ID'] = activeApiaryId
+    }
+    return {
+      apiaries: [], // List of memberships/apiaries
+      activeApiaryId,
+      loading: false,
+      error: null
+    }
+  },
   getters: {
     activeApiary: (state) => {
       if (!state.activeApiaryId) return null

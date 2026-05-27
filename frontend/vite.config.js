@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath, URL } from 'node:url'
@@ -17,30 +17,38 @@ try {
 }
 
 // https://vite.dev/config/
-export default defineConfig({
-  define: {
-    'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion)
-  },
-  plugins: [
-    vue(),
-    tailwindcss(),
-  ],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    }
-  },
-  server: {
-    port: 3200,
-    strictPort: false,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8001',
-        changeOrigin: true,
-      },
-      '/uploads': {
-        target: 'http://localhost:8001',
-        changeOrigin: true,
+export default defineConfig(({ mode }) => {
+  // Load env file from the repository root (..)
+  const env = loadEnv(mode, path.resolve(process.cwd(), '..'), '')
+  
+  const frontendPort = parseInt(env.BEEBOARD_FRONTEND_PORT || '3200', 10)
+  const backendPort = parseInt(env.BEEBOARD_BACKEND_PORT || '8000', 10)
+
+  return {
+    define: {
+      'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion)
+    },
+    plugins: [
+      vue(),
+      tailwindcss(),
+    ],
+    resolve: {
+      alias: {
+        '@': fileURLToPath(new URL('./src', import.meta.url))
+      }
+    },
+    server: {
+      port: frontendPort,
+      strictPort: false,
+      proxy: {
+        '/api': {
+          target: `http://127.0.0.1:${backendPort}`,
+          changeOrigin: true,
+        },
+        '/uploads': {
+          target: `http://127.0.0.1:${backendPort}`,
+          changeOrigin: true,
+        }
       }
     }
   }

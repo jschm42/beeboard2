@@ -85,12 +85,12 @@ Write-Host ""
 
 # 4. .env Datei anlegen und konfigurieren
 Write-Host "[4] Schritt 4: Umgebungsvariablen konfigurieren..." -ForegroundColor Blue
-$envExamplePath = Join-Path -Path $BackendDir -ChildPath ".env.example"
-$envPath = Join-Path -Path $BackendDir -ChildPath ".env"
+$envExamplePath = Join-Path -Path $RootDir -ChildPath ".env.example"
+$envPath = Join-Path -Path $RootDir -ChildPath ".env"
 
 $generateKey = $true
 if (Test-Path -Path $envPath) {
-    Write-Host "[!] Eine .env Datei existiert bereits in backend/." -ForegroundColor Yellow
+    Write-Host "[!] Eine .env Datei existiert bereits im Hauptverzeichnis." -ForegroundColor Yellow
     $overwrite = Read-Host "Moechten Sie diese mit der .env.example ueberschreiben? (y/N)"
     if ($overwrite -match "^[Yy]$") {
         Copy-Item -Path $envExamplePath -Destination $envPath -Force
@@ -113,7 +113,7 @@ if ($generateKey) {
     $content = [System.IO.File]::ReadAllText($envPath, [System.Text.Encoding]::UTF8)
     $content = $content.Replace('SECRET_KEY="supersecretkeychangeinproduction1234567890"', "SECRET_KEY=""$randomSecret""")
     [System.IO.File]::WriteAllText($envPath, $content, [System.Text.Encoding]::UTF8)
-    Write-Host "[+] Zufaelliger SECRET_KEY wurde in backend/.env eingetragen." -ForegroundColor Green
+    Write-Host "[+] Zufaelliger SECRET_KEY wurde in der zentralen .env eingetragen." -ForegroundColor Green
 }
 
 # Abfrage des Gemini API Keys
@@ -137,12 +137,28 @@ if ($generateKey -or $hasEmptyKey) {
         $content = [System.IO.File]::ReadAllText($envPath, [System.Text.Encoding]::UTF8)
         $content = $content.Replace('GEMINI_API_KEY=""', "GEMINI_API_KEY=""$geminiKey""")
         [System.IO.File]::WriteAllText($envPath, $content, [System.Text.Encoding]::UTF8)
-        Write-Host "[+] GEMINI_API_KEY wurde in backend/.env gespeichert." -ForegroundColor Green
+        Write-Host "[+] GEMINI_API_KEY wurde in der zentralen .env gespeichert." -ForegroundColor Green
     } else {
-        Write-Host "[!] Uebersprungen. Sie koennen den GEMINI_API_KEY spaeter manuell in backend/.env eintragen." -ForegroundColor Yellow
+        Write-Host "[!] Uebersprungen. Sie koennen den GEMINI_API_KEY spaeter manuell in der .env eintragen." -ForegroundColor Yellow
     }
 }
 Write-Host ""
+
+# Ports auslesen fuer die Anleitung am Ende
+$finalBackendPort = 8000
+$finalFrontendPort = 3200
+if (Test-Path -Path $envPath) {
+    $envLines = Get-Content $envPath | Where-Object { $_ -match "^#" -eq $false -and $_ -match "=" }
+    foreach ($line in $envLines) {
+        $parts = $line -split "=", 2
+        if ($parts.Length -eq 2) {
+            $key = $parts[0].Trim().Trim('"')
+            $value = $parts[1].Trim().Trim('"')
+            if ($key -eq "BEEBOARD_BACKEND_PORT") { $finalBackendPort = [int]$value }
+            if ($key -eq "BEEBOARD_FRONTEND_PORT") { $finalFrontendPort = [int]$value }
+        }
+    }
+}
 
 # 5. Abschluss und Anleitung
 Write-Host "====================================================================" -ForegroundColor Green
@@ -158,7 +174,7 @@ Write-Host "   .\.venv\Scripts\Activate.ps1"
 Write-Host "   # Datenbank mit Standard-Daten befuellen:"
 Write-Host "   python -m app.scripts.seed"
 Write-Host "   # Server starten:"
-Write-Host "   uvicorn app.main:app --reload --port 8000"
+Write-Host "   uvicorn app.main:app --reload --port $finalBackendPort"
 Write-Host ""
 Write-Host "2. Frontend installieren & starten:" -ForegroundColor Blue
 Write-Host "   cd frontend"

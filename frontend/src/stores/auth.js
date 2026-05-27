@@ -2,12 +2,18 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 
 export const useAuthStore = defineStore('auth', {
-  state: () => ({
-    token: localStorage.getItem('token') || null,
-    user: null,
-    loading: false,
-    error: null,
-  }),
+  state: () => {
+    const token = localStorage.getItem('token') || null
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+    }
+    return {
+      token,
+      user: null,
+      loading: false,
+      error: null,
+    }
+  },
   getters: {
     isAuthenticated: (state) => !!state.token,
     isAdmin: (state) => state.user?.role === 'SYSTEM_ADMIN' || state.user?.is_superuser,
@@ -75,11 +81,14 @@ export const useAuthStore = defineStore('auth', {
         const response = await axios.get('/api/auth/me')
         this.user = response.data
       } catch (err) {
-        console.error('Fetch user profile failed (stale token?), logging out...', err)
-        this.logout()
-        // Also clear stale apiary selection so components don't fire authenticated
-        // requests with an invalid apiary ID after a fresh DB creation
-        localStorage.removeItem('activeApiaryId')
+        console.error('Fetch user profile failed:', err)
+        if (err.response?.status === 401) {
+          console.warn('Unauthorized token, logging out...')
+          this.logout()
+          // Also clear stale apiary selection so components don't fire authenticated
+          // requests with an invalid apiary ID after a fresh DB creation
+          localStorage.removeItem('activeApiaryId')
+        }
       }
     },
     logout() {

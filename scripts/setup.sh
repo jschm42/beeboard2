@@ -96,41 +96,44 @@ echo ""
 echo -e "🔑 ${BLUE}Schritt 4: Umgebungsvariablen konfigurieren...${NC}"
 GENERATE_KEY=true
 
-if [ -f "$BACKEND_DIR/.env" ]; then
-    echo -e "ℹ️ Eine ${YELLOW}.env${NC} Datei existiert bereits in ${YELLOW}backend/${NC}."
+ENV_PATH="$ROOT_DIR/.env"
+ENV_EXAMPLE_PATH="$ROOT_DIR/.env.example"
+
+if [ -f "$ENV_PATH" ]; then
+    echo -e "ℹ️ Eine ${YELLOW}.env${NC} Datei existiert bereits im Hauptverzeichnis."
     read -p "Möchten Sie diese mit der .env.example überschreiben? (y/N): " OVERWRITE_ENV
     if [[ "$OVERWRITE_ENV" =~ ^[Yy]$ ]]; then
-        cp "$BACKEND_DIR/.env.example" "$BACKEND_DIR/.env"
+        cp "$ENV_EXAMPLE_PATH" "$ENV_PATH"
         GENERATE_KEY=true
     else
         echo "Bestehende .env Datei wird beibehalten."
         GENERATE_KEY=false
     fi
 else
-    cp "$BACKEND_DIR/.env.example" "$BACKEND_DIR/.env"
+    cp "$ENV_EXAMPLE_PATH" "$ENV_PATH"
     echo "✅ .env.example wurde nach .env kopiert."
     GENERATE_KEY=true
 fi
 
 if [ "$GENERATE_KEY" = true ]; then
     echo "Generiere sicheren SECRET_KEY..."
-    RANDOM_SECRET=$(python -c "import secrets; print(secrets.token_hex(32))")
+    RANDOM_SECRET=$("$PYTHON_CMD" -c "import secrets; print(secrets.token_hex(32))")
     
     # Plattformunabhängige Ersetzung mit Python
-    python -c "
+    "$PYTHON_CMD" -c "
 import os
-env_path = os.path.join('$BACKEND_DIR', '.env')
+env_path = '$ENV_PATH'
 with open(env_path, 'r', encoding='utf-8') as f:
     content = f.read()
 content = content.replace('SECRET_KEY=\"supersecretkeychangeinproduction1234567890\"', f'SECRET_KEY=\"$RANDOM_SECRET\"')
 with open(env_path, 'w', encoding='utf-8') as f:
     f.write(content)
 "
-    echo -e "✅ Zufälliger SECRET_KEY wurde in ${GREEN}backend/.env${NC} eingetragen."
+    echo -e "✅ Zufälliger SECRET_KEY wurde in ${GREEN}.env${NC} eingetragen."
 fi
 
 # Abfrage des Gemini API Keys
-if [ "$GENERATE_KEY" = true ] || [ ! -f "$BACKEND_DIR/.env" ] || grep -q 'GEMINI_API_KEY=""' "$BACKEND_DIR/.env" 2>/dev/null; then
+if [ "$GENERATE_KEY" = true ] || [ ! -f "$ENV_PATH" ] || grep -q 'GEMINI_API_KEY=""' "$ENV_PATH" 2>/dev/null; then
     echo -e "\n🤖 ${BLUE}KI-Integration einrichten:${NC}"
     echo "Wenn Sie die KI-Features und den Stockkarten-Entwurf nutzen möchten,"
     echo "können Sie hier Ihren Google Gemini API Key eingeben."
@@ -138,21 +141,35 @@ if [ "$GENERATE_KEY" = true ] || [ ! -f "$BACKEND_DIR/.env" ] || grep -q 'GEMINI
     read -p "Gemini API Key eingeben (oder [Enter] zum Überspringen): " GEMINI_KEY
     
     if [ -n "$GEMINI_KEY" ]; then
-        python -c "
+        "$PYTHON_CMD" -c "
 import os
-env_path = os.path.join('$BACKEND_DIR', '.env')
+env_path = '$ENV_PATH'
 with open(env_path, 'r', encoding='utf-8') as f:
     content = f.read()
 content = content.replace('GEMINI_API_KEY=\"\"', f'GEMINI_API_KEY=\"$GEMINI_KEY\"')
 with open(env_path, 'w', encoding='utf-8') as f:
     f.write(content)
 "
-        echo -e "✅ GEMINI_API_KEY wurde in ${GREEN}backend/.env${NC} gespeichert."
+        echo -e "✅ GEMINI_API_KEY wurde in ${GREEN}.env${NC} gespeichert."
     else
-        echo -e "ℹ️ Übersprungen. Sie können den GEMINI_API_KEY später manuell in ${YELLOW}backend/.env${NC} eintragen."
+        echo -e "ℹ️ Übersprungen. Sie können den GEMINI_API_KEY später manuell in ${YELLOW}.env${NC} eintragen."
     fi
 fi
 echo ""
+
+# Ports auslesen fuer die Anleitung am Ende
+BACKEND_PORT=$("$PYTHON_CMD" -c "
+import os
+env_path = '$ENV_PATH'
+port = 8000
+if os.path.exists(env_path):
+    with open(env_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            if line.startswith('BEEBOARD_BACKEND_PORT='):
+                port = line.split('=')[1].strip().strip('\"').strip(\"'\")
+                break
+print(port)
+")
 
 # 5. Abschluss und Anleitung
 echo -e "${GREEN}====================================================================${NC}"
@@ -171,7 +188,7 @@ fi
 echo "   # Datenbank mit Standard-Daten befüllen:"
 echo "   python -m app.scripts.seed"
 echo "   # Server starten:"
-echo "   uvicorn app.main:app --reload --port 8000"
+echo "   uvicorn app.main:app --reload --port $BACKEND_PORT"
 echo ""
 echo -e "2. ${BLUE}Frontend installieren & starten:${NC}"
 echo "   cd frontend"

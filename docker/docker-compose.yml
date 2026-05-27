@@ -5,7 +5,7 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.unified
     env_file:
-      - ../backend/.env
+      - ../.env
     volumes:
       - ${BEEBOARD_DOCKER_DATA:-./data}:/app/data
       - ./certs:/etc/nginx/certs

@@ -5,8 +5,12 @@ param(
     [string]$DataDir
 )
 
-# Fallback auf Werte aus backend/.env, falls Parameter nicht gesetzt sind
-$backendEnvPath = Join-Path (Split-Path $PSScriptRoot -Parent) "backend\.env"
+# Fallback auf Werte aus .env, falls Parameter nicht gesetzt sind
+$rootDir = Split-Path $PSScriptRoot -Parent
+$backendEnvPath = Join-Path $rootDir ".env"
+if (-not (Test-Path $backendEnvPath)) {
+    $backendEnvPath = Join-Path $rootDir "backend\.env"
+}
 if (Test-Path $backendEnvPath) {
     $envLines = Get-Content $backendEnvPath | Where-Object { $_ -match "^#" -eq $false -and $_ -match "=" }
     foreach ($line in $envLines) {

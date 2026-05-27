@@ -5,13 +5,16 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PARENT_DIR="$(dirname "$SCRIPT_DIR")"
 
-# Fallback auf Werte aus backend/.env
+# Fallback auf Werte aus .env
 HTTP_PORT=""
 HTTPS_PORT=""
 BACKEND_PORT=""
 DATA_DIR=""
 
-ENV_PATH="$PARENT_DIR/backend/.env"
+ENV_PATH="$PARENT_DIR/.env"
+if [ ! -f "$ENV_PATH" ]; then
+    ENV_PATH="$PARENT_DIR/backend/.env"
+fi
 if [ -f "$ENV_PATH" ]; then
     # Werte einlesen (Kommentare und Leerzeilen ignorieren)
     while IFS='=' read -r key value || [ -n "$key" ]; do

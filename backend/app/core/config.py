@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
 
+    # Ports
+    BEEBOARD_BACKEND_PORT: int = 8000
+    BEEBOARD_FRONTEND_PORT: int = 3200
+
     # Database
     DATABASE_URL: str = "sqlite:///./data/beeboard.db"
 
@@ -44,7 +48,7 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = "./data/uploads"
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=[".env", "../.env"],
         env_file_encoding="utf-8",
         extra="ignore"
     )
