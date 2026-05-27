@@ -13,7 +13,7 @@ from app.models.logbook import (
     VarroaTreatmentDetail, 
     LogEntryImage
 )
-from app.models.ai_insight import AIInsight
+from app.models.ai_insight import AIInsight, AIInsightCronJob
 from app.models.honey_batch import HoneyBatch
 from app.models.sales import ProductConfig, HoneySale
 from app.models.task import Task
@@ -40,6 +40,7 @@ __all__ = [
     "VarroaTreatmentDetail",
     "LogEntryImage",
     "AIInsight",
+    "AIInsightCronJob",
     "HoneyBatch",
     "ProductConfig",
     "HoneySale",

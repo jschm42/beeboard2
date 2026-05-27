@@ -47,10 +47,10 @@
       <span>{{ alertMessage }}</span>
     </div>
 
-    <!-- Kleinunternehmer Info Alert -->
-    <div v-if="taxSettings.kleinunternehmer_regelung" class="mb-6 p-4 bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 rounded-2xl text-xs flex items-center space-x-2">
+    <!-- Tax Calculation Info Alert -->
+    <div v-if="!taxSettings.calculate_taxes" class="mb-6 p-4 bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 rounded-2xl text-xs flex items-center space-x-2">
       <span class="text-base">💼</span>
-      <span><strong>Kleinunternehmer-Regelung (§ 19 UStG) ist aktiv:</strong> In Rechnungen und Steuerexporten wird keine Umsatzsteuer ausgewiesen oder berechnet. Die Steuersätze deiner Produkte werden im Buchungs- und Steuersystem ignoriert.</span>
+      <span><strong>Steuerberechnung ist deaktiviert:</strong> In Verkaufstabellen und Steuerexporten wird mit 0% Steuer gerechnet.</span>
     </div>
 
     <!-- Tabs Dock -->
@@ -167,8 +167,8 @@
                 
                 <!-- Tax -->
                 <td class="px-6 py-4 text-center">
-                  <span v-if="taxSettings.kleinunternehmer_regelung" class="text-xs text-gray-400">
-                    0% (§ 19)
+                  <span v-if="!taxSettings.calculate_taxes" class="text-xs text-gray-400">
+                    0%
                   </span>
                   <span v-else class="text-xs text-gray-600 dark:text-gray-400">
                     {{ s.product?.tax_rate || 0 }}% <span class="text-[10px] text-gray-400">({{ formatCurrency(calculateVAT(s.total_price, s.product?.tax_rate)) }})</span>
@@ -272,8 +272,8 @@
                 
                 <!-- Tax Rate -->
                 <td class="px-6 py-4 text-center">
-                  <span v-if="taxSettings.kleinunternehmer_regelung" class="text-xs text-gray-400 italic">
-                    0% (§ 19)
+                  <span v-if="!taxSettings.calculate_taxes" class="text-xs text-gray-400 italic">
+                    0%
                   </span>
                   <span v-else class="text-xs text-gray-600 dark:text-gray-300">
                     {{ p.tax_rate }}%
@@ -529,7 +529,7 @@
             </div>
 
             <!-- Tax Rate -->
-            <div v-if="!taxSettings.kleinunternehmer_regelung">
+            <div v-if="taxSettings.calculate_taxes">
               <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Steuersatz *</label>
               <select 
                 v-model.number="productForm.tax_rate" 
@@ -541,7 +541,7 @@
             </div>
             <div v-else class="p-3 bg-gray-50 dark:bg-dark-bg border border-gray-100 dark:border-dark-border rounded-xl">
               <span class="text-xs text-gray-500 dark:text-gray-400 font-bold block mb-1">Steuersatz:</span>
-              <span class="text-xs text-gray-600 dark:text-gray-300">0.0 % (Kleinunternehmer-Regelung § 19 UStG)</span>
+              <span class="text-xs text-gray-600 dark:text-gray-300">0.0 % (Steuerberechnung deaktiviert)</span>
             </div>
 
             <!-- Requires Batch Selection -->
@@ -608,7 +608,7 @@ const activeTab = ref('sales')
 const sales = ref([])
 const products = ref([])
 const batches = ref([])
-const taxSettings = ref({ kleinunternehmer_regelung: false })
+const taxSettings = ref({ calculate_taxes: true })
 
 const loadingSales = ref(false)
 const loadingProducts = ref(false)
@@ -718,7 +718,7 @@ async function fetchTaxSettings() {
     // Sync into global settings store so other components can use currency/taxRates
     settingsStore.currency = res.data.currency ?? settingsStore.currency
     settingsStore.taxRates = Array.isArray(res.data.tax_rates) ? res.data.tax_rates : settingsStore.taxRates
-    settingsStore.kleinunternehmerRegelung = res.data.kleinunternehmer_regelung ?? settingsStore.kleinunternehmerRegelung
+    settingsStore.calculateTaxes = res.data.calculate_taxes ?? settingsStore.calculateTaxes
   } catch (err) {
     console.error('Fetch tax settings error:', err)
   }
@@ -939,7 +939,7 @@ async function submitProductForm() {
       name: productForm.name.trim(),
       honey_type: productForm.honey_type.trim() || null,
       price: Number(productForm.price),
-      tax_rate: taxSettings.value.kleinunternehmer_regelung ? 0.0 : Number(productForm.tax_rate),
+      tax_rate: taxSettings.value.calculate_taxes ? Number(productForm.tax_rate) : 0.0,
       is_active: productForm.is_active,
       requires_batch_selection: productForm.requires_batch_selection
     }

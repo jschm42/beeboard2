@@ -248,6 +248,7 @@ def get_tax_settings(
     tax_rates_list = [float(r.strip()) for r in config.tax_rates.split(",") if r.strip()]
     return {
         "kleinunternehmer_regelung": config.kleinunternehmer_regelung,
+        "calculate_taxes": config.calculate_taxes,
         "currency": config.currency,
         "tax_rates": tax_rates_list,
     }
@@ -271,7 +272,7 @@ def export_sales_csv(
     
     from app.services.ai_assistant import get_llm_config
     config = get_llm_config(db)
-    is_kleinunternehmer = config.kleinunternehmer_regelung
+    calculate_taxes = config.calculate_taxes
 
     sales = query.order_by(HoneySale.sale_date.asc()).all()
 
@@ -299,10 +300,11 @@ def export_sales_csv(
         product_name = s.product.name if s.product else "Gelöschtes Produkt"
         menge_str = str(s.quantity).replace('.', ',')
         price_str = str(round(s.total_price, 2)).replace('.', ',')
-        if is_kleinunternehmer:
+        if not calculate_taxes:
             tax_str = "0,0"
         else:
             tax_str = str(s.product.tax_rate).replace('.', ',') if s.product else "0,0"
+
         channel_str = s.sales_channel
         # Map channel keys to German readable text
         channel_map = {

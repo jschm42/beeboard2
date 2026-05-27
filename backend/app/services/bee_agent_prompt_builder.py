@@ -9,8 +9,6 @@ Assembles the system prompt for the Bee-Agent by combining:
 """
 import json
 import logging
-from datetime import datetime, timedelta
-from typing import Optional
 
 from sqlalchemy.orm import Session
 
@@ -18,30 +16,33 @@ from app.models.bee_agent import BeeAgentJob
 
 logger = logging.getLogger("beeboard.bee_agent")
 
-MASTER_SYSTEM_PROMPT = (
-    "Du bist der hochkompetente 'BeeBoard Bee-Agent' – ein autonomer Imker-Assistent.\n"
-    "Analysiere die folgenden Imkerei-Daten und erstelle eine Liste konkreter, umsetzbarer Aufgaben.\n\n"
-    "AUSGABEFORMAT (ZWINGEND einhalten):\n"
-    "Gib ausschließlich ein JSON-Objekt zurück. Kein Markdown, kein erklärender Text, nur JSON.\n"
-    "Das Objekt muss folgende Struktur haben:\n"
-    "{\n"
-    "  \"proposals\": [\n"
-    "    {\n"
-    "      \"title\": \"Kurzer, präziser Aufgabentitel\",\n"
-    "      \"description\": \"Detaillierte Begründung/Anweisung auf Deutsch\",\n"
-    "      \"priority\": \"HIGH|MEDIUM|LOW\",\n"
-    "      \"due_date\": \"YYYY-MM-DD oder null\",\n"
-    "      \"location_id\": \"UUID des Standorts oder null\",\n"
-    "      \"hive_id\": \"UUID des Volks oder null\"\n"
-    "    }\n"
-    "  ]\n"
-    "}\n\n"
-    "Regeln:\n"
-    "- Erstelle NUR Aufgaben, die durch die vorliegenden Daten begründet sind.\n"
-    "- Verwende KEINE placeholder-UUIDs; trage nur echte IDs aus den Daten ein, oder null.\n"
-    "- Priorisiere dringende Maßnahmen (z.B. hohe Varroa, Schwarmzeichen) als HIGH.\n"
-    "- Gib 0-10 Aufgaben zurück. Wenn keine Handlung erforderlich ist, gib ein leeres proposals-Array zurück.\n"
-)
+class BeeAgentPromptTemplate:
+    """Canonical Bee-Agent system prompt template (not user-editable)."""
+
+    MASTER_SYSTEM_PROMPT = (
+        "Du bist der hochkompetente 'BeeBoard Bee-Agent' – ein autonomer Imker-Assistent.\n"
+        "Analysiere die folgenden Imkerei-Daten und erstelle eine Liste konkreter, umsetzbarer Aufgaben.\n\n"
+        "AUSGABEFORMAT (ZWINGEND einhalten):\n"
+        "Gib ausschließlich ein JSON-Objekt zurück. Kein Markdown, kein erklärender Text, nur JSON.\n"
+        "Das Objekt muss folgende Struktur haben:\n"
+        "{\n"
+        "  \"proposals\": [\n"
+        "    {\n"
+        "      \"title\": \"Kurzer, präziser Aufgabentitel\",\n"
+        "      \"description\": \"Detaillierte Begründung/Anweisung auf Deutsch\",\n"
+        "      \"priority\": \"HIGH|MEDIUM|LOW\",\n"
+        "      \"due_date\": \"YYYY-MM-DD oder null\",\n"
+        "      \"location_id\": \"UUID des Standorts oder null\",\n"
+        "      \"hive_id\": \"UUID des Volks oder null\"\n"
+        "    }\n"
+        "  ]\n"
+        "}\n\n"
+        "Regeln:\n"
+        "- Erstelle NUR Aufgaben, die durch die vorliegenden Daten begründet sind.\n"
+        "- Verwende KEINE placeholder-UUIDs; trage nur echte IDs aus den Daten ein, oder null.\n"
+        "- Priorisiere dringende Maßnahmen (z.B. hohe Varroa, Schwarmzeichen) als HIGH.\n"
+        "- Gib 0-10 Aufgaben zurück. Wenn keine Handlung erforderlich ist, gib ein leeres proposals-Array zurück.\n"
+    )
 
 
 class BeeAgentPromptBuilder:
@@ -51,22 +52,55 @@ class BeeAgentPromptBuilder:
         self._job = job
         self._db = db
 
-    def build_system_prompt(self) -> str:
+    async def build_system_prompt(self) -> str:
         """Assembles system prompt with scope-filtered context injected."""
         context_parts = [self._build_scope_context()]
 
         if self._job.include_journal_entries:
             context_parts.append(self._build_journal_context())
 
+        if self._job.include_weather_data:
+            weather_ctx = await self._build_weather_context()
+            if weather_ctx:
+                context_parts.append(weather_ctx)
+
         context_str = "\n\n".join(p for p in context_parts if p)
 
-        prompt_parts = [MASTER_SYSTEM_PROMPT]
+        prompt_parts = [BeeAgentPromptTemplate.MASTER_SYSTEM_PROMPT]
         if context_str:
             prompt_parts.append(f"=== AKTUELLE IMKEREI-DATEN ===\n{context_str}")
         if self._job.custom_prompt:
             prompt_parts.append(f"=== SPEZIELLE ANWEISUNG DES IMKERS ===\n{self._job.custom_prompt.strip()}")
 
         return "\n\n".join(prompt_parts)
+
+    async def _build_weather_context(self) -> str:
+        from app.models.location import Location
+        from app.services.weather import fetch_current_weather
+        
+        location_ids = self.get_scoped_location_ids()
+        if not location_ids:
+            return ""
+            
+        locations = self._db.query(Location).filter(Location.id.in_(location_ids)).all()
+        lines = []
+        for loc in locations:
+            if loc.latitude is not None and loc.longitude is not None:
+                try:
+                    w = await fetch_current_weather(loc.latitude, loc.longitude)
+                    if w:
+                        temp = w.get("temp", 0.0)
+                        humidity = w.get("humidity", 0)
+                        wind = w.get("wind_speed", 0.0)
+                        weather_desc = w.get("weather", [{}])[0].get("description", "Unbekannt")
+                        lines.append(f"  - Standort '{loc.name}': {temp}°C, {weather_desc}, Feuchte: {humidity}%, Wind: {wind} m/s")
+                except (RuntimeError, ValueError, TypeError) as exc:
+                    logger.warning("Error fetching weather for location %s: %s", loc.id, exc)
+        
+        if lines:
+            return "Aktuelles Wetter:\n" + "\n".join(lines)
+        return ""
+
 
     def get_scoped_location_ids(self) -> list[str]:
         """Returns location IDs relevant for this job based on its scope."""
@@ -131,7 +165,7 @@ class BeeAgentPromptBuilder:
             loc_ids = list({h.location_id for h in hives if h.location_id})
             locations = self._db.query(Location).filter(Location.id.in_(loc_ids)).all()
 
-        if locations:
+        if locations and self._job.include_locations:
             lines.append("Standorte:")
             for loc in locations:
                 lines.append(
@@ -139,7 +173,7 @@ class BeeAgentPromptBuilder:
                     + (f" Notizen='{loc.notes}'" if loc.notes else "")
                 )
 
-        if hives:
+        if hives and self._job.include_hives:
             lines.append("Völker:")
             for hive in hives:
                 status = "Aktiv" if hive.is_active else "Inaktiv"
@@ -191,7 +225,7 @@ class BeeAgentPromptBuilder:
                         f" Futter={totals.get('food', 0)} Waben,"
                         f" Bienen={totals.get('bees', 0)} Waben"
                     )
-                except Exception:
+                except (RuntimeError, ValueError, TypeError):
                     detail = "Inspektionsdaten nicht auswertbar"
             elif entry.entry_type == "VARROA_COUNT" and entry.varroa_count_detail:
                 detail = (

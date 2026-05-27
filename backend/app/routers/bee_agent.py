@@ -5,7 +5,6 @@ CRUD endpoints for BeeAgentJob configuration and BeeAgentProposal management.
 """
 import json
 import logging
-from datetime import date
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -34,6 +33,8 @@ class BeeAgentJobCreate(BaseModel):
     scope: str = "IMKEREI"
     entity_ids: Optional[List[str]] = None
     include_weather_data: bool = False
+    include_locations: bool = True
+    include_hives: bool = True
     include_journal_entries: bool = True
     max_journal_entries: Optional[int] = None
     cron_expression: str = "0 8 * * *"
@@ -47,6 +48,8 @@ class BeeAgentJobUpdate(BaseModel):
     scope: Optional[str] = None
     entity_ids: Optional[List[str]] = None
     include_weather_data: Optional[bool] = None
+    include_locations: Optional[bool] = None
+    include_hives: Optional[bool] = None
     include_journal_entries: Optional[bool] = None
     max_journal_entries: Optional[int] = None
     cron_expression: Optional[str] = None
@@ -62,6 +65,8 @@ class BeeAgentJobOut(BaseModel):
     scope: str
     entity_ids: Optional[List[str]]
     include_weather_data: bool
+    include_locations: bool
+    include_hives: bool
     include_journal_entries: bool
     max_journal_entries: Optional[int]
     cron_expression: str
@@ -88,6 +93,8 @@ class BeeAgentJobOut(BaseModel):
             scope=job.scope,
             entity_ids=entity_ids_parsed,
             include_weather_data=job.include_weather_data,
+            include_locations=job.include_locations,
+            include_hives=job.include_hives,
             include_journal_entries=job.include_journal_entries,
             max_journal_entries=job.max_journal_entries,
             cron_expression=job.cron_expression,
@@ -166,6 +173,8 @@ def create_job(
         scope=payload.scope,
         entity_ids=json.dumps(payload.entity_ids) if payload.entity_ids is not None else None,
         include_weather_data=payload.include_weather_data,
+        include_locations=payload.include_locations,
+        include_hives=payload.include_hives,
         include_journal_entries=payload.include_journal_entries,
         max_journal_entries=payload.max_journal_entries,
         cron_expression=payload.cron_expression,
@@ -206,6 +215,10 @@ def update_job(
         job.entity_ids = json.dumps(payload.entity_ids)
     if payload.include_weather_data is not None:
         job.include_weather_data = payload.include_weather_data
+    if payload.include_locations is not None:
+        job.include_locations = payload.include_locations
+    if payload.include_hives is not None:
+        job.include_hives = payload.include_hives
     if payload.include_journal_entries is not None:
         job.include_journal_entries = payload.include_journal_entries
     if payload.max_journal_entries is not None:
@@ -371,13 +384,13 @@ def _sync_job_schedule(job: BeeAgentJob) -> None:
             schedule_bee_agent_job(job)
         else:
             remove_bee_agent_job_schedule(job.id)
-    except Exception as e:
-        logger.warning(f"Could not sync schedule for job {job.id}: {e}")
+    except (ImportError, LookupError, RuntimeError, ValueError, TypeError) as exc:
+        logger.warning("Could not sync schedule for job %s: %s", job.id, exc)
 
 
 def _remove_job_schedule(job_id: str) -> None:
     try:
         from app.services.cron import remove_bee_agent_job_schedule
         remove_bee_agent_job_schedule(job_id)
-    except Exception as e:
-        logger.warning(f"Could not remove schedule for job {job_id}: {e}")
+    except (ImportError, LookupError, RuntimeError, ValueError, TypeError) as exc:
+        logger.warning("Could not remove schedule for job %s: %s", job_id, exc)

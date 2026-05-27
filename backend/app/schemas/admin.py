@@ -39,6 +39,7 @@ class LLMConfigBase(BaseModel):
     enable_weather_api: bool
     ai_insights_cron: Optional[str] = None
     kleinunternehmer_regelung: bool = False
+    calculate_taxes: bool = True
     currency: str = "EUR"
     tax_rates: str = "0.0,7.0,19.0"
 
@@ -48,8 +49,10 @@ class LLMConfigUpdate(BaseModel):
     enable_weather_api: Optional[bool] = None
     ai_insights_cron: Optional[str] = None
     kleinunternehmer_regelung: Optional[bool] = None
+    calculate_taxes: Optional[bool] = None
     currency: Optional[str] = None
     tax_rates: Optional[str] = None
+
 
 class LLMConfigOut(LLMConfigBase):
     id: str
@@ -78,6 +81,46 @@ class NumberRangeUpdate(BaseModel):
 class NumberRangeOut(NumberRangeBase):
     id: str
     key: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class AIInsightCronJobBase(BaseModel):
+    name: str
+    prompt: str
+    cron_expression: str
+    inject_weather: bool = False
+    inject_locations: bool = True
+    inject_apiary: bool = True
+    inject_hives: bool = True
+    inject_log_entries: bool = True
+    log_scope: str = "IMKEREI"
+    max_log_entries: int = 20
+    is_active: bool = True
+
+
+class AIInsightCronJobCreate(AIInsightCronJobBase):
+    pass
+
+
+class AIInsightCronJobUpdate(BaseModel):
+    name: Optional[str] = None
+    prompt: Optional[str] = None
+    cron_expression: Optional[str] = None
+    inject_weather: Optional[bool] = None
+    inject_locations: Optional[bool] = None
+    inject_apiary: Optional[bool] = None
+    inject_hives: Optional[bool] = None
+    inject_log_entries: Optional[bool] = None
+    log_scope: Optional[str] = None
+    max_log_entries: Optional[int] = None
+    is_active: Optional[bool] = None
+
+
+class AIInsightCronJobOut(AIInsightCronJobBase):
+    id: str
     created_at: datetime
 
     class Config:

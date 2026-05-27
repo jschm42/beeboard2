@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-def test_sales_lifecycle_and_tax_export(client: TestClient, db: Session):
+def test_sales_lifecycle_and_tax_export(client: TestClient, _db: Session):
     # 1. Register and login
     reg_response = client.post("/api/auth/register", json={
         "username": "salestester",
@@ -142,12 +142,12 @@ def test_sales_lifecycle_and_tax_export(client: TestClient, db: Session):
     assert "Bar gezahlt" in csv_text
 
 
-def test_sales_kleinunternehmer_regelung(client: TestClient, db: Session):
+def test_sales_tax_calculation_disabled(client: TestClient, db: Session):
     from app.services.ai_assistant import get_llm_config
     
-    # Enable kleinunternehmer_regelung in DB
+    # Disable tax calculation in DB
     config = get_llm_config(db)
-    config.kleinunternehmer_regelung = True
+    config.calculate_taxes = False
     db.commit()
 
     # 1. Register and login
@@ -171,9 +171,9 @@ def test_sales_kleinunternehmer_regelung(client: TestClient, db: Session):
     # 2. Get tax-settings
     settings_resp = client.get("/api/sales/tax-settings", headers=headers)
     assert settings_resp.status_code == 200
-    assert settings_resp.json()["kleinunternehmer_regelung"] is True
+    assert settings_resp.json()["calculate_taxes"] is False
 
-    # 3. Create product (tax_rate is ignored or overridden in CSV/accounting)
+    # 3. Create product (tax_rate is ignored in CSV when tax calculation is disabled)
     prod_resp = client.post("/api/sales/products", json={
         "name": "Kleinunternehmer Honig",
         "honey_type": "Blütenhonig",
@@ -208,7 +208,7 @@ def test_sales_kleinunternehmer_regelung(client: TestClient, db: Session):
 
 
 
-def test_requires_batch_selection_enforcement(client, db):
+def test_requires_batch_selection_enforcement(client, _db):
     """requires_batch_selection flag is stored and enforced at sale creation."""
     client.post('/api/auth/register', json={
         'username': 'batchtester', 'email': 'batchtester@example.com',

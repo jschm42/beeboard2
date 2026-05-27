@@ -337,6 +337,10 @@
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                   {{ scopeLabel(job.scope) }}
                 </span>
+                <span v-if="job.include_locations" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">Standorte</span>
+                <span v-if="job.include_hives" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">Völker</span>
+                <span v-if="job.include_journal_entries" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">Stockkarte</span>
+                <span v-if="job.include_weather_data" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">Wetter</span>
               </div>
               <p class="text-[11px] text-gray-500 dark:text-gray-400 font-mono">{{ job.cron_expression }}</p>
               <p v-if="job.custom_prompt" class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-1 italic">
@@ -501,6 +505,20 @@
 
           <!-- Context Flags -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-primary">
+              <input type="checkbox" v-model="jobForm.include_locations" class="rounded" />
+              <div>
+                <div class="text-sm font-bold text-gray-800 dark:text-white">📍 Standorte</div>
+                <div class="text-[10px] text-gray-500">Standortdaten in Prompt einbeziehen</div>
+              </div>
+            </label>
+            <label class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-primary">
+              <input type="checkbox" v-model="jobForm.include_hives" class="rounded" />
+              <div>
+                <div class="text-sm font-bold text-gray-800 dark:text-white">🐝 Völker</div>
+                <div class="text-[10px] text-gray-500">Volksdaten in Prompt einbeziehen</div>
+              </div>
+            </label>
             <label class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-primary">
               <input type="checkbox" v-model="jobForm.include_weather_data" class="rounded" />
               <div>
@@ -898,6 +916,8 @@ const defaultJobForm = () => ({
   scope: 'IMKEREI',
   entity_ids: [],
   include_weather_data: false,
+  include_locations: true,
+  include_hives: true,
   include_journal_entries: true,
   max_journal_entries: 20,
   cron_expression: '0 8 * * *',
@@ -976,6 +996,8 @@ function openJobModal(job) {
       scope: job.scope,
       entity_ids: job.entity_ids ? [...job.entity_ids] : [],
       include_weather_data: job.include_weather_data,
+      include_locations: job.include_locations ?? true,
+      include_hives: job.include_hives ?? true,
       include_journal_entries: job.include_journal_entries,
       max_journal_entries: job.max_journal_entries ?? 20,
       cron_expression: job.cron_expression,
@@ -1003,6 +1025,8 @@ async function saveJob() {
       scope: jobForm.value.scope,
       entity_ids: jobForm.value.entity_ids.length > 0 ? jobForm.value.entity_ids : null,
       include_weather_data: jobForm.value.include_weather_data,
+      include_locations: jobForm.value.include_locations,
+      include_hives: jobForm.value.include_hives,
       include_journal_entries: jobForm.value.include_journal_entries,
       max_journal_entries: jobForm.value.include_journal_entries ? (jobForm.value.max_journal_entries || 20) : null,
       cron_expression: jobForm.value.cron_expression,

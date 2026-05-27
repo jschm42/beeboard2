@@ -32,6 +32,10 @@ with engine.connect() as conn:
         if "tax_rates" not in columns:
             conn.execute(text("ALTER TABLE llm_configs ADD COLUMN tax_rates VARCHAR(255) DEFAULT '0.0,7.0,19.0'"))
             conn.commit()
+        if "calculate_taxes" not in columns:
+            conn.execute(text("ALTER TABLE llm_configs ADD COLUMN calculate_taxes BOOLEAN DEFAULT 1"))
+            conn.commit()
+
 
         result = conn.execute(text("PRAGMA table_info(ai_insights)"))
         ai_insight_columns = [row[1] for row in result.fetchall()]
@@ -41,11 +45,47 @@ with engine.connect() as conn:
         if "read_at" not in ai_insight_columns:
             conn.execute(text("ALTER TABLE ai_insights ADD COLUMN read_at DATETIME"))
             conn.commit()
-    except Exception as e:
+
+        result = conn.execute(text("PRAGMA table_info(bee_agent_jobs)"))
+        bee_agent_job_columns = [row[1] for row in result.fetchall()]
+        if "include_locations" not in bee_agent_job_columns:
+            conn.execute(text("ALTER TABLE bee_agent_jobs ADD COLUMN include_locations BOOLEAN DEFAULT 1"))
+            conn.commit()
+        if "include_hives" not in bee_agent_job_columns:
+            conn.execute(text("ALTER TABLE bee_agent_jobs ADD COLUMN include_hives BOOLEAN DEFAULT 1"))
+            conn.commit()
+
+        result = conn.execute(text("PRAGMA table_info(ai_insight_cron_jobs)"))
+        ai_insight_cron_job_columns = [row[1] for row in result.fetchall()]
+        if "prompt" not in ai_insight_cron_job_columns:
+            conn.execute(text("ALTER TABLE ai_insight_cron_jobs ADD COLUMN prompt TEXT DEFAULT 'Erstelle einen praezisen KI-Insight-Bericht fuer Imker.'"))
+            conn.commit()
+        if "inject_weather" not in ai_insight_cron_job_columns:
+            conn.execute(text("ALTER TABLE ai_insight_cron_jobs ADD COLUMN inject_weather BOOLEAN DEFAULT 0"))
+            conn.commit()
+        if "inject_locations" not in ai_insight_cron_job_columns:
+            conn.execute(text("ALTER TABLE ai_insight_cron_jobs ADD COLUMN inject_locations BOOLEAN DEFAULT 1"))
+            conn.commit()
+        if "inject_apiary" not in ai_insight_cron_job_columns:
+            conn.execute(text("ALTER TABLE ai_insight_cron_jobs ADD COLUMN inject_apiary BOOLEAN DEFAULT 1"))
+            conn.commit()
+        if "inject_hives" not in ai_insight_cron_job_columns:
+            conn.execute(text("ALTER TABLE ai_insight_cron_jobs ADD COLUMN inject_hives BOOLEAN DEFAULT 1"))
+            conn.commit()
+        if "inject_log_entries" not in ai_insight_cron_job_columns:
+            conn.execute(text("ALTER TABLE ai_insight_cron_jobs ADD COLUMN inject_log_entries BOOLEAN DEFAULT 1"))
+            conn.commit()
+        if "log_scope" not in ai_insight_cron_job_columns:
+            conn.execute(text("ALTER TABLE ai_insight_cron_jobs ADD COLUMN log_scope VARCHAR(20) DEFAULT 'IMKEREI'"))
+            conn.commit()
+        if "max_log_entries" not in ai_insight_cron_job_columns:
+            conn.execute(text("ALTER TABLE ai_insight_cron_jobs ADD COLUMN max_log_entries INTEGER DEFAULT 20"))
+            conn.commit()
+    except (RuntimeError, ValueError, TypeError) as e:
         print(f"Error running database migration: {e}")
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_app: FastAPI):
     start_scheduler()
     yield
 

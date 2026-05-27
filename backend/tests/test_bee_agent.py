@@ -1,5 +1,5 @@
 """Tests for the Bee-Agent job CRUD and proposal acceptance."""
-import json
+import pytest
 from unittest.mock import AsyncMock, patch
 
 from fastapi.testclient import TestClient
@@ -25,7 +25,7 @@ def _register_and_login(client: TestClient, username: str) -> tuple[str, str]:
     return token, apiary_id
 
 
-def test_bee_agent_job_crud(client: TestClient, db: Session):
+def test_bee_agent_job_crud(client: TestClient, _db: Session):
     token, apiary_id = _register_and_login(client, "beejobuser")
     headers = {"Authorization": f"Bearer {token}"}
 
@@ -37,6 +37,8 @@ def test_bee_agent_job_crud(client: TestClient, db: Session):
             "custom_prompt": "Strenge Varroa-Kontrolle bitte.",
             "scope": "IMKEREI",
             "include_weather_data": False,
+            "include_locations": True,
+            "include_hives": True,
             "include_journal_entries": True,
             "max_journal_entries": 10,
             "cron_expression": "0 8 * * *",
@@ -49,6 +51,8 @@ def test_bee_agent_job_crud(client: TestClient, db: Session):
     job = create_resp.json()
     assert job["name"] == "Varroa-Überwachung"
     assert job["scope"] == "IMKEREI"
+    assert job["include_locations"] is True
+    assert job["include_hives"] is True
     assert job["execution_mode"] == "SUGGESTION"
     assert job["is_active"] is True
     job_id = job["id"]
@@ -150,11 +154,12 @@ def test_bee_agent_proposal_accept(client: TestClient, db: Session):
     assert second_accept.status_code == 400
 
 
-def test_bee_agent_invalid_scope(client: TestClient, db: Session):
+def test_bee_agent_invalid_scope(client: TestClient, _db: Session):
     """Creating a job with an invalid scope must return 400."""
     token, apiary_id = _register_and_login(client, "beeinvalidscope")
     headers = {"Authorization": f"Bearer {token}"}
 
+    # Scope validation should raise bad request
     resp = client.post(
         f"/api/bee-agent/jobs?apiary_id={apiary_id}",
         json={
@@ -167,7 +172,8 @@ def test_bee_agent_invalid_scope(client: TestClient, db: Session):
     assert resp.status_code == 400
 
 
-def test_bee_agent_prompt_builder(db: Session):
+@pytest.mark.asyncio
+async def test_bee_agent_prompt_builder(db: Session):
     """BeeAgentPromptBuilder should produce a non-empty system prompt."""
     from app.models.bee_agent import BeeAgentJob
     from app.services.bee_agent_prompt_builder import BeeAgentPromptBuilder
@@ -184,12 +190,13 @@ def test_bee_agent_prompt_builder(db: Session):
     )
 
     builder = BeeAgentPromptBuilder(job, db)
-    prompt = builder.build_system_prompt()
+    prompt = await builder.build_system_prompt()
     assert "proposals" in prompt
     assert "JSON" in prompt
 
 
-def test_bee_agent_prompt_builder_with_custom_prompt(db: Session):
+@pytest.mark.asyncio
+async def test_bee_agent_prompt_builder_with_custom_prompt(db: Session):
     """Custom prompt suffix must be present in the assembled system prompt."""
     from app.models.bee_agent import BeeAgentJob
     from app.services.bee_agent_prompt_builder import BeeAgentPromptBuilder
@@ -206,5 +213,58 @@ def test_bee_agent_prompt_builder_with_custom_prompt(db: Session):
     )
 
     builder = BeeAgentPromptBuilder(job, db)
-    prompt = builder.build_system_prompt()
+    prompt = await builder.build_system_prompt()
     assert "Achte besonders auf Varroa." in prompt
+
+
+@pytest.mark.asyncio
+async def test_bee_agent_prompt_builder_with_weather(db: Session):
+    """If include_weather_data is True, weather data context must be appended."""
+    from app.models.bee_agent import BeeAgentJob
+    from app.models.location import Location
+    from app.services.bee_agent_prompt_builder import BeeAgentPromptBuilder
+
+    # Setup location with coordinates
+    loc = Location(
+        name="Test Stand",
+        address="Test Address",
+        apiary_id="fake-apiary-id",
+        latitude=48.208,
+        longitude=16.373,
+    )
+    db.add(loc)
+
+    db.commit()
+    db.refresh(loc)
+
+    job = BeeAgentJob(
+        name="Weather Job",
+        apiary_id="fake-apiary-id",
+        scope="IMKEREI",
+        include_weather_data=True,
+        include_journal_entries=False,
+        execution_mode="SUGGESTION",
+        cron_expression="0 8 * * *",
+    )
+
+    mock_weather = {
+        "temp": 18.5,
+        "humidity": 65,
+        "wind_speed": 3.2,
+        "weather": [{"description": "leicht bewölkt"}]
+    }
+
+    with patch("app.services.weather.fetch_current_weather", new_callable=AsyncMock, return_value=mock_weather):
+        builder = BeeAgentPromptBuilder(job, db)
+        prompt = await builder.build_system_prompt()
+        assert "Test Stand" in prompt
+        assert "18.5" in prompt
+        assert "leicht bewölkt" in prompt
+
+    # Cleanup
+    db.delete(loc)
+    db.commit()
+
+
+
+

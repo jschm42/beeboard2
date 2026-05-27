@@ -3,14 +3,23 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.core.database import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user, get_password_hash
 from app.models.user import User
-from app.models.administration import LLMConfig
-from app.schemas.user import UserOut
-from app.schemas.admin import LLMConfigOut, LLMConfigUpdate, UserAdminUpdate
+from app.schemas.user import UserOut, UserCreate
+from app.schemas.admin import (
+    LLMConfigOut,
+    LLMConfigUpdate,
+    UserAdminUpdate,
+    AIInsightCronJobCreate,
+    AIInsightCronJobUpdate,
+    AIInsightCronJobOut,
+)
 from app.services.ai_assistant import get_llm_config
+from app.models.ai_insight import AIInsightCronJob
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+VALID_AI_INSIGHT_LOG_SCOPES = {"IMKEREI", "STANDORT", "VOLK"}
 
 def get_current_admin(current_user: User = Depends(get_current_user)) -> User:
     """Dependency to check if the current user is a SYSTEM_ADMIN."""
@@ -21,13 +30,52 @@ def get_current_admin(current_user: User = Depends(get_current_user)) -> User:
         )
     return current_user
 
+@router.post("/users", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+def create_user_admin(
+    payload: UserCreate,
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_admin)
+):
+    """Creates a new user (admin only)."""
+    # Check uniqueness
+    existing_username = db.query(User).filter(User.username == payload.username).first()
+    if existing_username:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Benutzername bereits vergeben."
+        )
+    existing_email = db.query(User).filter(User.email == payload.email).first()
+    if existing_email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="E-Mail-Adresse bereits registriert."
+        )
+
+    # Hash password
+    hashed_password = get_password_hash(payload.password)
+
+    new_user = User(
+        username=payload.username,
+        email=payload.email,
+        hashed_password=hashed_password,
+        first_name=payload.first_name,
+        last_name=payload.last_name,
+        role=payload.role,
+        is_active=True,
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
+
 @router.get("/users", response_model=List[UserOut])
 def list_users(
     db: Session = Depends(get_db),
-    current_admin: User = Depends(get_current_admin)
+    _current_admin: User = Depends(get_current_admin)
 ):
     """Lists all users in the system."""
     return db.query(User).order_by(User.username).all()
+
 
 @router.put("/users/{user_id}", response_model=UserOut)
 def update_user_admin(
@@ -69,7 +117,7 @@ def update_user_admin(
 @router.get("/llm-config", response_model=LLMConfigOut)
 def read_llm_config(
     db: Session = Depends(get_db),
-    current_admin: User = Depends(get_current_admin)
+    _current_admin: User = Depends(get_current_admin)
 ):
     """Retrieves the system-wide LLM prompts and configurations."""
     return get_llm_config(db)
@@ -78,7 +126,7 @@ def read_llm_config(
 def update_llm_config(
     payload: LLMConfigUpdate,
     db: Session = Depends(get_db),
-    current_admin: User = Depends(get_current_admin)
+    _current_admin: User = Depends(get_current_admin)
 ):
     """Updates the system-wide LLM prompts and weather API settings."""
     config = get_llm_config(db)
@@ -89,8 +137,13 @@ def update_llm_config(
         config.draft_system_prompt = payload.draft_system_prompt
     if payload.enable_weather_api is not None:
         config.enable_weather_api = payload.enable_weather_api
-    if payload.kleinunternehmer_regelung is not None:
+    if payload.calculate_taxes is not None:
+        config.calculate_taxes = payload.calculate_taxes
+        config.kleinunternehmer_regelung = not payload.calculate_taxes
+    elif payload.kleinunternehmer_regelung is not None:
         config.kleinunternehmer_regelung = payload.kleinunternehmer_regelung
+        config.calculate_taxes = not payload.kleinunternehmer_regelung
+
     if payload.ai_insights_cron is not None:
         from app.services.cron import reschedule_insights_job
         success = reschedule_insights_job(payload.ai_insights_cron)
@@ -122,6 +175,163 @@ def update_llm_config(
     db.refresh(config)
     return config
 
+
+@router.get("/ai-insight-jobs", response_model=List[AIInsightCronJobOut])
+def list_ai_insight_jobs(
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_admin),
+):
+    """List all configured AI-Insights cron jobs."""
+    return db.query(AIInsightCronJob).order_by(AIInsightCronJob.created_at.desc()).all()
+
+
+@router.post("/ai-insight-jobs", response_model=AIInsightCronJobOut, status_code=status.HTTP_201_CREATED)
+def create_ai_insight_job(
+    payload: AIInsightCronJobCreate,
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_admin),
+):
+    """Create a new AI-Insights cron job entry."""
+    from app.services.cron import schedule_ai_insight_job
+
+    _validate_ai_insight_log_scope(payload.log_scope)
+    _validate_max_log_entries(payload.max_log_entries)
+
+    stripped_name = payload.name.strip()
+    stripped_prompt = payload.prompt.strip()
+    stripped_cron = payload.cron_expression.strip()
+    if not stripped_name:
+        raise HTTPException(status_code=400, detail="Name darf nicht leer sein.")
+    if not stripped_prompt:
+        raise HTTPException(status_code=400, detail="Prompt darf nicht leer sein.")
+    if not stripped_cron:
+        raise HTTPException(status_code=400, detail="Cron-Ausdruck darf nicht leer sein.")
+
+    job = AIInsightCronJob(
+        name=stripped_name,
+        prompt=stripped_prompt,
+        cron_expression=stripped_cron,
+        inject_weather=payload.inject_weather,
+        inject_locations=payload.inject_locations,
+        inject_apiary=payload.inject_apiary,
+        inject_hives=payload.inject_hives,
+        inject_log_entries=payload.inject_log_entries,
+        log_scope=payload.log_scope,
+        max_log_entries=payload.max_log_entries,
+        is_active=payload.is_active,
+    )
+    db.add(job)
+    db.commit()
+    db.refresh(job)
+
+    if job.is_active and not schedule_ai_insight_job(job):
+        db.delete(job)
+        db.commit()
+        raise HTTPException(
+            status_code=400,
+            detail="Ungültiges UNIX Cron-Format. Bitte 5 durch Leerzeichen getrennte Werte angeben (z.B. '0 */12 * * *').",
+        )
+
+    return job
+
+
+@router.put("/ai-insight-jobs/{job_id}", response_model=AIInsightCronJobOut)
+def update_ai_insight_job(
+    job_id: str,
+    payload: AIInsightCronJobUpdate,
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_admin),
+):
+    """Update an existing AI-Insights cron job entry."""
+    from app.services.cron import schedule_ai_insight_job, remove_ai_insight_job_schedule
+
+    job = db.query(AIInsightCronJob).filter(AIInsightCronJob.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="AI-Insights Job nicht gefunden.")
+
+    if payload.name is not None:
+        stripped_name = payload.name.strip()
+        if not stripped_name:
+            raise HTTPException(status_code=400, detail="Name darf nicht leer sein.")
+        job.name = stripped_name
+    if payload.prompt is not None:
+        stripped_prompt = payload.prompt.strip()
+        if not stripped_prompt:
+            raise HTTPException(status_code=400, detail="Prompt darf nicht leer sein.")
+        job.prompt = stripped_prompt
+    if payload.cron_expression is not None:
+        stripped_cron = payload.cron_expression.strip()
+        if not stripped_cron:
+            raise HTTPException(status_code=400, detail="Cron-Ausdruck darf nicht leer sein.")
+        job.cron_expression = stripped_cron
+    if payload.inject_weather is not None:
+        job.inject_weather = payload.inject_weather
+    if payload.inject_locations is not None:
+        job.inject_locations = payload.inject_locations
+    if payload.inject_apiary is not None:
+        job.inject_apiary = payload.inject_apiary
+    if payload.inject_hives is not None:
+        job.inject_hives = payload.inject_hives
+    if payload.inject_log_entries is not None:
+        job.inject_log_entries = payload.inject_log_entries
+    if payload.log_scope is not None:
+        _validate_ai_insight_log_scope(payload.log_scope)
+        job.log_scope = payload.log_scope
+    if payload.max_log_entries is not None:
+        _validate_max_log_entries(payload.max_log_entries)
+        job.max_log_entries = payload.max_log_entries
+    if payload.is_active is not None:
+        job.is_active = payload.is_active
+
+    db.commit()
+    db.refresh(job)
+
+    if not job.is_active:
+        remove_ai_insight_job_schedule(job.id)
+    else:
+        if not schedule_ai_insight_job(job):
+            raise HTTPException(
+                status_code=400,
+                detail="Ungültiges UNIX Cron-Format. Bitte 5 durch Leerzeichen getrennte Werte angeben (z.B. '0 */12 * * *').",
+            )
+
+    return job
+
+
+@router.delete("/ai-insight-jobs/{job_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_ai_insight_job(
+    job_id: str,
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_admin),
+):
+    """Delete an AI-Insights cron job entry."""
+    from app.services.cron import remove_ai_insight_job_schedule
+
+    job = db.query(AIInsightCronJob).filter(AIInsightCronJob.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="AI-Insights Job nicht gefunden.")
+
+    remove_ai_insight_job_schedule(job.id)
+    db.delete(job)
+    db.commit()
+    return
+
+
+def _validate_ai_insight_log_scope(scope: str) -> None:
+    if scope not in VALID_AI_INSIGHT_LOG_SCOPES:
+        raise HTTPException(
+            status_code=400,
+            detail="Ungültiger Log-Scope. Erlaubt: IMKEREI, STANDORT, VOLK.",
+        )
+
+
+def _validate_max_log_entries(value: int) -> None:
+    if value < 1 or value > 500:
+        raise HTTPException(
+            status_code=400,
+            detail="Maximale Anzahl Logeinträge muss zwischen 1 und 500 liegen.",
+        )
+
 # --------------------
 # FRAME TYPE ENDPOINTS
 # --------------------
@@ -132,7 +342,7 @@ from app.models.hive import Hive, HiveBox
 @router.get("/frame-types", response_model=List[FrameTypeOut])
 def admin_list_frame_types(
     db: Session = Depends(get_db),
-    current_admin: User = Depends(get_current_admin)
+    _current_admin: User = Depends(get_current_admin)
 ):
     """Lists all frame types."""
     return db.query(FrameType).order_by(FrameType.name).all()
@@ -141,7 +351,7 @@ def admin_list_frame_types(
 def admin_create_frame_type(
     payload: FrameTypeCreate,
     db: Session = Depends(get_db),
-    current_admin: User = Depends(get_current_admin)
+    _current_admin: User = Depends(get_current_admin)
 ):
     """Creates a new frame type."""
     # Check duplicate
@@ -175,7 +385,7 @@ def admin_update_frame_type(
     frame_type_id: str,
     payload: FrameTypeCreate,
     db: Session = Depends(get_db),
-    current_admin: User = Depends(get_current_admin)
+    _current_admin: User = Depends(get_current_admin)
 ):
     """Updates multipliers and default status of a frame type."""
     ft = db.query(FrameType).filter(FrameType.id == frame_type_id).first()
@@ -214,7 +424,7 @@ def admin_update_frame_type(
 def admin_delete_frame_type(
     frame_type_id: str,
     db: Session = Depends(get_db),
-    current_admin: User = Depends(get_current_admin)
+    _current_admin: User = Depends(get_current_admin)
 ):
     """Deletes a frame type if not referenced by any hive or box."""
     ft = db.query(FrameType).filter(FrameType.id == frame_type_id).first()
@@ -247,7 +457,7 @@ from app.schemas.admin import NumberRangeOut, NumberRangeUpdate
 @router.get("/number-ranges", response_model=List[NumberRangeOut])
 def admin_list_number_ranges(
     db: Session = Depends(get_db),
-    current_admin: User = Depends(get_current_admin)
+    _current_admin: User = Depends(get_current_admin)
 ):
     """Lists all number ranges."""
     return db.query(NumberRange).order_by(NumberRange.name).all()
@@ -257,7 +467,7 @@ def admin_update_number_range(
     range_id: str,
     payload: NumberRangeUpdate,
     db: Session = Depends(get_db),
-    current_admin: User = Depends(get_current_admin)
+    _current_admin: User = Depends(get_current_admin)
 ):
     """Updates a number range configuration."""
     nr = db.query(NumberRange).filter(NumberRange.id == range_id).first()

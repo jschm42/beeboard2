@@ -56,7 +56,18 @@
             : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
         ]"
       >
-        🤖 KI-Assistent & Wetter
+        🐝 Bee-Agent & KI
+      </button>
+      <button 
+        @click="activeTab = 'finance'"
+        class="pb-4 text-sm font-bold tracking-wide border-b-2 transition-all duration-200"
+        :class="[
+          activeTab === 'finance' 
+            ? 'border-primary text-primary' 
+            : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+        ]"
+      >
+        💼 Finanzen & Steuern
       </button>
       <button 
         @click="activeTab = 'frame-types'"
@@ -84,6 +95,46 @@
 
     <!-- Tab Content: User Management -->
     <div v-if="activeTab === 'users'" class="space-y-6">
+      <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white">Neuen Benutzer anlegen</h2>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Als Administrator kannst du hier neue Benutzerkonten erstellen.</p>
+
+        <form @submit.prevent="createUser" class="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Benutzername *</label>
+            <input v-model="newUserForm.username" type="text" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">E-Mail *</label>
+            <input v-model="newUserForm.email" type="email" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Vorname</label>
+            <input v-model="newUserForm.first_name" type="text" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Nachname</label>
+            <input v-model="newUserForm.last_name" type="text" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Passwort *</label>
+            <input v-model="newUserForm.password" type="password" minlength="8" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Rolle *</label>
+            <select v-model="newUserForm.role" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+              <option value="USER">USER</option>
+              <option value="SYSTEM_ADMIN">SYSTEM_ADMIN</option>
+            </select>
+          </div>
+          <div class="md:col-span-2 flex justify-end">
+            <button type="submit" :disabled="creatingUser" class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white text-sm font-bold rounded-xl transition duration-200 disabled:opacity-60">
+              {{ creatingUser ? 'Erstelle...' : 'Benutzer erstellen' }}
+            </button>
+          </div>
+        </form>
+      </div>
+
       <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl overflow-hidden shadow-sm">
         <div class="px-6 py-5 border-b border-gray-100 dark:border-dark-border">
           <h2 class="text-lg font-bold text-gray-900 dark:text-white">Registrierte Benutzer</h2>
@@ -229,180 +280,138 @@
           </div>
         </div>
 
-        <!-- Finance & Taxes Card -->
+        <!-- AI Insights Cron Jobs -->
         <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm space-y-4">
-          <div>
-            <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center">
-              <span>💼 Finanzen & Steuern</span>
-            </h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400 max-w-2xl mt-1">
-              Konfiguriere Währung, Steuersätze und die Kleinunternehmer-Regelung für Verkäufe und Steuerexporte.
-            </p>
-          </div>
-
-          <!-- Kleinunternehmer-Regelung Switch -->
-          <div class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-dark-border/60">
-            <div class="space-y-0.5">
-              <p class="text-sm font-semibold text-gray-700 dark:text-gray-200">Kleinunternehmer-Regelung (§ 19 UStG)</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">
-                Wenn aktiviert, wird bei Verkäufen und Steuerexporten keine Umsatzsteuer berechnet oder ausgewiesen.
-              </p>
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-base font-bold text-gray-900 dark:text-white">🕒 KI-Insights Cron-Aufträge</h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Lege mehrere Zeitpläne an. Jeder aktive Auftrag erzeugt automatisch Insights für alle Imkereien.</p>
             </div>
-            <button 
-              @click="llmConfig.kleinunternehmer_regelung = !llmConfig.kleinunternehmer_regelung" 
-              class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ml-4"
-              :class="llmConfig.kleinunternehmer_regelung ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-700'"
+            <button
+              @click="openCreateAIInsightJob"
+              class="px-3 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold"
             >
-              <span class="sr-only">Kleinunternehmer aktivieren</span>
-              <span 
-                class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-                :class="llmConfig.kleinunternehmer_regelung ? 'translate-x-5' : 'translate-x-0'"
-              />
+              + Neuer Auftrag
             </button>
           </div>
 
-          <!-- Currency -->
-          <div class="pt-2 border-t border-gray-100 dark:border-dark-border/60">
-            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Währung</label>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Währung für die Darstellung von Verkaufspreisen (z.B. EUR, USD, CHF, GBP).</p>
-            <div class="flex gap-2">
-              <select
-                v-model="llmConfig.currency"
-                class="px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="EUR">EUR – Euro</option>
-                <option value="USD">USD – US Dollar</option>
-                <option value="CHF">CHF – Schweizer Franken</option>
-                <option value="GBP">GBP – Britisches Pfund</option>
-                <option value="custom">Andere...</option>
-              </select>
-              <input
-                v-if="llmConfig.currency === 'custom' || !['EUR','USD','CHF','GBP'].includes(llmConfig.currency)"
-                v-model="llmConfig.currency"
-                type="text"
-                maxlength="10"
-                placeholder="z.B. JPY"
-                class="flex-1 px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+          <div v-if="loadingAIInsightJobs" class="text-xs text-gray-400 font-bold">Lade Cron-Aufträge...</div>
+          <div v-else-if="aiInsightJobs.length === 0" class="text-xs text-gray-500 dark:text-gray-400">Noch keine Aufträge vorhanden.</div>
+          <div v-else class="space-y-2">
+            <div
+              v-for="job in aiInsightJobs"
+              :key="job.id"
+              class="border border-gray-200 dark:border-dark-border rounded-xl p-3 flex items-center justify-between gap-3"
+            >
+              <div class="min-w-0">
+                <div class="text-sm font-bold text-gray-900 dark:text-white truncate">{{ job.name }}</div>
+                <div class="text-xs font-mono text-gray-500 dark:text-gray-400">{{ job.cron_expression }}</div>
+                <div class="mt-1 flex flex-wrap gap-1">
+                  <span v-if="job.inject_weather" class="px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-700 dark:text-sky-300 text-[10px] font-bold">Weather</span>
+                  <span v-if="job.inject_apiary" class="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-700 dark:text-amber-300 text-[10px] font-bold">Imkerei</span>
+                  <span v-if="job.inject_locations" class="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">Standorte</span>
+                  <span v-if="job.inject_hives" class="px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold">Voelker</span>
+                  <span v-if="job.inject_log_entries" class="px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-700 dark:text-rose-300 text-[10px] font-bold">Logs: {{ job.log_scope }} ({{ job.max_log_entries }})</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span
+                  class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                  :class="job.is_active ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-gray-200 dark:bg-gray-700 text-gray-500'"
+                >
+                  {{ job.is_active ? 'Aktiv' : 'Inaktiv' }}
+                </span>
+                <button @click="openEditAIInsightJob(job)" class="px-2 py-1 text-xs font-bold border border-gray-300 dark:border-gray-700 rounded-lg">Bearbeiten</button>
+                <button @click="deleteAIInsightJob(job)" class="px-2 py-1 text-xs font-bold border border-red-300 dark:border-red-900/60 text-red-600 dark:text-red-300 rounded-lg">Löschen</button>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="showAIInsightJobForm" class="border border-gray-200 dark:border-dark-border rounded-2xl p-4 space-y-3">
+            <div class="text-sm font-bold text-gray-900 dark:text-white">{{ editingAIInsightJobId ? 'Auftrag bearbeiten' : 'Neuen Auftrag erstellen' }}</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Name</label>
+                <input v-model="aiInsightJobForm.name" type="text" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Cron</label>
+                <input v-model="aiInsightJobForm.cron_expression" type="text" placeholder="0 */12 * * *" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm font-mono" />
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1">Format: MINUTE STUNDE TAG MONAT WOCHENTAG</p>
+                <p v-if="aiInsightJobForm.cron_expression.trim() && !isAIInsightCronValid" class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">
+                  Ungültiges Cron-Format. Erwartet werden 5 durch Leerzeichen getrennte Felder.
+                </p>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Prompt</label>
+              <textarea
+                v-model="aiInsightJobForm.prompt"
+                rows="4"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm"
+                placeholder="Beschreibe, welche Analyse dieser Cron-Auftrag erstellen soll..."
               />
             </div>
-          </div>
-
-          <!-- Tax Rates -->
-          <div class="pt-2 border-t border-gray-100 dark:border-dark-border/60">
-            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Steuersätze</label>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Kommagetrennte Steuersätze in Prozent (0–100), die im Produktformular zur Auswahl stehen (z.B. <code class="bg-gray-100 dark:bg-dark-bg px-1 rounded font-mono">0.0,7.0,19.0</code>).</p>
-            <input
-              v-model="llmConfig.tax_rates"
-              type="text"
-              placeholder="z.B. 0.0,7.0,19.0"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-mono"
-            />
-          </div>
-        </div>
-
-        <!-- AI Insights Cron Config -->
-        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
-          <div class="flex items-start justify-between">
-            <div class="space-y-1">
-              <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center">
-                <span>🕒 AI-Insights Zeitplan</span>
-                <span class="ml-2 text-[10px] bg-blue-500/10 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded uppercase font-black">
-                  Cron-Format
-                </span>
-              </h3>
-              <p class="text-xs text-gray-500 dark:text-gray-400 max-w-2xl">
-                Lege fest, wann automatisch neue AI-Insights für deine Stände generiert werden.
-                Verwende eine Cron-Expression im Format
-                <code class="bg-gray-100 dark:bg-dark-bg px-1 py-0.5 rounded font-mono">MINUTE STUNDE TAG MONAT WOCHENTAG</code>.
-                Beispiel: <code class="bg-gray-100 dark:bg-dark-bg px-1 py-0.5 rounded font-mono">0 */12 * * *</code> für alle 12 Stunden.
-              </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <label class="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
+                <input v-model="aiInsightJobForm.inject_weather" type="checkbox" class="rounded" />
+                Wetter injizieren
+              </label>
+              <label class="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
+                <input v-model="aiInsightJobForm.inject_apiary" type="checkbox" class="rounded" />
+                Imkerei injizieren
+              </label>
+              <label class="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
+                <input v-model="aiInsightJobForm.inject_locations" type="checkbox" class="rounded" />
+                Standorte injizieren
+              </label>
+              <label class="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
+                <input v-model="aiInsightJobForm.inject_hives" type="checkbox" class="rounded" />
+                Voelker injizieren
+              </label>
             </div>
-          </div>
-
-          <div class="mt-4 grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-4 items-center">
-            <input
-              v-model="llmConfig.ai_insights_cron"
-              type="text"
-              placeholder="z.B. 0 6 * * * (täglich um 06:00)"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-mono"
-            />
-            <div class="text-[11px] text-gray-500 dark:text-gray-400">
-              <div class="font-semibold mb-1">Beispiele:</div>
-              <ul class="space-y-0.5">
-                <li><code class="bg-gray-100 dark:bg-dark-bg px-1 py-0.5 rounded font-mono">0 */12 * * *</code> – alle 12 Stunden</li>
-                <li><code class="bg-gray-100 dark:bg-dark-bg px-1 py-0.5 rounded font-mono">0 6 * * *</code> – täglich um 06:00</li>
-                <li><code class="bg-gray-100 dark:bg-dark-bg px-1 py-0.5 rounded font-mono">0 6,18 * * *</code> – 06:00 und 18:00</li>
-              </ul>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <label class="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300 md:col-span-1">
+                <input v-model="aiInsightJobForm.inject_log_entries" type="checkbox" class="rounded" />
+                Logeintraege injizieren
+              </label>
+              <div class="md:col-span-1" v-if="aiInsightJobForm.inject_log_entries">
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Log-Scope</label>
+                <select v-model="aiInsightJobForm.log_scope" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm">
+                  <option value="IMKEREI">Imkerei</option>
+                  <option value="STANDORT">Standort</option>
+                  <option value="VOLK">Volk</option>
+                </select>
+              </div>
+              <div class="md:col-span-1" v-if="aiInsightJobForm.inject_log_entries">
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Max Logs</label>
+                <input v-model.number="aiInsightJobForm.max_log_entries" type="number" min="1" max="500" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm" />
+              </div>
+            </div>
+            <label class="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
+              <input v-model="aiInsightJobForm.is_active" type="checkbox" class="rounded" />
+              Auftrag aktiv
+            </label>
+            <div class="flex justify-end gap-2">
+              <button @click="cancelAIInsightJobForm" class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-semibold">Abbrechen</button>
+              <button @click="saveAIInsightJob" :disabled="savingAIInsightJob || !isAIInsightCronValid || !aiInsightJobForm.prompt.trim() || aiInsightJobForm.max_log_entries < 1 || aiInsightJobForm.max_log_entries > 500" class="px-3 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold disabled:opacity-60">
+                {{ savingAIInsightJob ? 'Speichere...' : 'Speichern' }}
+              </button>
             </div>
           </div>
         </div>
 
-        <!-- Chatbot System Prompt Card -->
-        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm space-y-4">
-          <div>
-            <h3 class="text-base font-bold text-gray-900 dark:text-white">💬 Beekeeper Chatbot System-Prompt</h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Definiert den Kerncharakter und das Verhalten des Beekeeper-Bots.
-            </p>
-          </div>
-
-          <div class="relative">
-            <textarea 
-              v-model="llmConfig.chatbot_system_prompt" 
-              rows="6"
-              class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white font-mono"
-              placeholder="System-Prompt für den Chatbot eingeben..."
-            ></textarea>
-          </div>
-
-          <!-- Helper Variables Info -->
-          <div class="bg-amber-500/5 border border-amber-500/10 rounded-2xl p-4 flex items-start space-x-3 text-xs">
-            <span class="text-base">💡</span>
-            <div class="space-y-1 text-gray-600 dark:text-gray-300">
-              <span class="font-bold text-gray-800 dark:text-white">Verfügbare Platzhaltervariablen:</span>
-              <p class="mt-1">
-                Du kannst die Variable <code class="bg-gray-100 dark:bg-dark-bg px-1 py-0.5 rounded font-mono font-bold">{context_str}</code> im Prompt einbinden. 
-                Sie wird beim Aufruf durch die echten Bestandsdaten der Völker und die letzten Logbucheinträge ersetzt.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Draft extraction System Prompt Card -->
-        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm space-y-4">
-          <div>
-            <h3 class="text-base font-bold text-gray-900 dark:text-white">📝 Notizen-Extraktor System-Prompt</h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Definiert die Anweisungen, um unstrukturierte Freitexte in strukturierte JSON-Formularentwürfe zu extrahieren.
-            </p>
-          </div>
-
-          <div class="relative">
-            <textarea 
-              v-model="llmConfig.draft_system_prompt" 
-              rows="12"
-              class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white font-mono"
-              placeholder="System-Prompt für den Entwurfsextraktor eingeben..."
-            ></textarea>
-          </div>
-
-          <!-- Helper Variables Info -->
-          <div class="bg-amber-500/5 border border-amber-500/10 rounded-2xl p-4 flex items-start space-x-3 text-xs">
-            <span class="text-base">💡</span>
-            <div class="space-y-1 text-gray-600 dark:text-gray-300">
-              <span class="font-bold text-gray-800 dark:text-white">Verfügbare Platzhaltervariablen:</span>
-              <p class="mt-1">
-                Du kannst die Variable <code class="bg-gray-100 dark:bg-dark-bg px-1 py-0.5 rounded font-mono font-bold">{date_str}</code> im Prompt einbinden. 
-                Sie wird automatisch durch das aktuelle Erstelldatum im ISO-Format (YYYY-MM-DD) ersetzt.
-              </p>
-            </div>
-          </div>
+        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm space-y-2">
+          <h3 class="text-base font-bold text-gray-900 dark:text-white">🧠 Bee-Agent Prompt-Template</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 max-w-2xl">
+            Das Basis-Template wird zentral im Backend gepflegt und ist hier bewusst nicht editierbar. Für job-spezifische Anpassungen verwende in der Bee-Agent Job-Konfiguration das Feld "Spezielle Anweisung", das zusätzlich in den Prompt injiziert wird.
+          </p>
         </div>
 
         <!-- Save Button Section -->
         <div class="flex items-center justify-end space-x-4">
           <button 
-            @click="resetConfigToDefault"
+            @click="resetBeeAgentConfigToDefault"
             class="px-5 py-3 border border-gray-300 dark:border-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-100 dark:hover:bg-dark-border text-gray-700 dark:text-gray-300 transition duration-200"
             :disabled="savingLLM"
           >
@@ -410,7 +419,7 @@
           </button>
           
           <button 
-            @click="saveLLMConfig"
+            @click="saveBeeAgentConfig"
             class="px-6 py-3 bg-primary hover:bg-primary-hover text-white rounded-xl text-sm font-bold transition duration-200 flex items-center space-x-2 shadow-lg shadow-primary/20 hover-scale disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="savingLLM"
           >
@@ -419,6 +428,100 @@
           </button>
         </div>
 
+      </div>
+    </div>
+
+    <!-- Tab Content: Finance & Taxes -->
+    <div v-if="activeTab === 'finance'" class="space-y-6">
+      <div v-if="loadingLLM" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-16 flex flex-col items-center justify-center shadow-sm">
+        <svg class="animate-spin h-10 w-10 text-primary mb-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        <span class="text-sm text-gray-400 font-bold">Lade Finanzkonfiguration...</span>
+      </div>
+
+      <div v-else class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm space-y-4">
+        <div>
+          <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center">
+            <span>💼 Finanzen & Steuern</span>
+          </h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 max-w-2xl mt-1">
+            Konfiguriere Währung, Steuersätze und ob in Verkäufen sowie Steuerexporten Steuern berechnet werden.
+          </p>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-dark-border/60">
+          <div class="space-y-0.5">
+            <p class="text-sm font-semibold text-gray-700 dark:text-gray-200">Steuern berechnen</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              Wenn deaktiviert, wird in Verkäufen und im Steuerexport stets mit 0% Steuer gearbeitet.
+            </p>
+          </div>
+          <button
+            @click="llmConfig.calculate_taxes = !llmConfig.calculate_taxes"
+            class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ml-4"
+            :class="llmConfig.calculate_taxes ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-700'"
+          >
+            <span class="sr-only">Steuerberechnung umschalten</span>
+            <span
+              class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+              :class="llmConfig.calculate_taxes ? 'translate-x-5' : 'translate-x-0'"
+            />
+          </button>
+        </div>
+
+        <div class="pt-2 border-t border-gray-100 dark:border-dark-border/60">
+          <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Währung</label>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Währung für die Darstellung von Verkaufspreisen (z.B. EUR, USD, CHF, GBP).</p>
+          <div class="flex gap-2">
+            <select
+              v-model="llmConfig.currency"
+              class="px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="EUR">EUR – Euro</option>
+              <option value="USD">USD – US Dollar</option>
+              <option value="CHF">CHF – Schweizer Franken</option>
+              <option value="GBP">GBP – Britisches Pfund</option>
+              <option value="custom">Andere...</option>
+            </select>
+            <input
+              v-if="llmConfig.currency === 'custom' || !['EUR','USD','CHF','GBP'].includes(llmConfig.currency)"
+              v-model="llmConfig.currency"
+              type="text"
+              maxlength="10"
+              placeholder="z.B. JPY"
+              class="flex-1 px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+            />
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-gray-100 dark:border-dark-border/60">
+          <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Steuersätze</label>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Kommagetrennte Steuersätze in Prozent (0–100), die im Produktformular zur Auswahl stehen (z.B. <code class="bg-gray-100 dark:bg-dark-bg px-1 rounded font-mono">0.0,7.0,19.0</code>).</p>
+          <input
+            v-model="llmConfig.tax_rates"
+            type="text"
+            placeholder="z.B. 0.0,7.0,19.0"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+          />
+        </div>
+
+        <div class="flex items-center justify-end space-x-4 pt-2">
+          <button
+            @click="resetConfigToDefault"
+            class="px-5 py-3 border border-gray-300 dark:border-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-100 dark:hover:bg-dark-border text-gray-700 dark:text-gray-300 transition duration-200"
+            :disabled="savingLLM"
+          >
+            Zurücksetzen auf Defaults
+          </button>
+
+          <button
+            @click="saveLLMConfig"
+            class="px-6 py-3 bg-primary hover:bg-primary-hover text-white rounded-xl text-sm font-bold transition duration-200 flex items-center space-x-2 shadow-lg shadow-primary/20 hover-scale disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="savingLLM"
+          >
+            <svg v-if="savingLLM" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            <span>{{ savingLLM ? 'Speichere...' : 'Änderungen speichern' }}</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -801,19 +904,51 @@ const activeTab = ref('users')
 const users = ref([])
 const loadingUsers = ref(false)
 const togglingUser = ref(null)
+const creatingUser = ref(false)
+const newUserForm = reactive({
+  username: '',
+  email: '',
+  password: '',
+  first_name: '',
+  last_name: '',
+  role: 'USER'
+})
 
 // LLM States
 const llmConfig = ref({
-  chatbot_system_prompt: '',
-  draft_system_prompt: '',
   enable_weather_api: false,
-  ai_insights_cron: '',
-  kleinunternehmer_regelung: false,
+  calculate_taxes: true,
   currency: 'EUR',
   tax_rates: '0.0,7.0,19.0'
 })
 const loadingLLM = ref(false)
 const savingLLM = ref(false)
+
+const aiInsightJobs = ref([])
+const loadingAIInsightJobs = ref(false)
+const savingAIInsightJob = ref(false)
+const showAIInsightJobForm = ref(false)
+const editingAIInsightJobId = ref(null)
+const aiInsightJobForm = reactive({
+  name: '',
+  prompt: '',
+  cron_expression: '0 */12 * * *',
+  inject_weather: false,
+  inject_locations: true,
+  inject_apiary: true,
+  inject_hives: true,
+  inject_log_entries: true,
+  log_scope: 'IMKEREI',
+  max_log_entries: 20,
+  is_active: true
+})
+
+function validateCronExpression(value) {
+  const parts = value.trim().split(/\s+/)
+  return parts.length === 5 && parts.every(p => p.length > 0)
+}
+
+const isAIInsightCronValid = computed(() => validateCronExpression(aiInsightJobForm.cron_expression || ''))
 
 // Toast Notifications System
 const toasts = ref([])
@@ -841,6 +976,34 @@ async function fetchUsers() {
   }
 }
 
+async function createUser() {
+  creatingUser.value = true
+  try {
+    await axios.post('/api/admin/users', {
+      username: newUserForm.username.trim(),
+      email: newUserForm.email.trim(),
+      password: newUserForm.password,
+      first_name: newUserForm.first_name?.trim() || null,
+      last_name: newUserForm.last_name?.trim() || null,
+      role: newUserForm.role
+    })
+    showToast(`Benutzer '${newUserForm.username}' wurde erstellt.`)
+    newUserForm.username = ''
+    newUserForm.email = ''
+    newUserForm.password = ''
+    newUserForm.first_name = ''
+    newUserForm.last_name = ''
+    newUserForm.role = 'USER'
+    await fetchUsers()
+  } catch (err) {
+    console.error('Create user error:', err)
+    const errDetail = err.response?.data?.detail || 'Fehler beim Erstellen des Benutzers.'
+    showToast(errDetail, 'error')
+  } finally {
+    creatingUser.value = false
+  }
+}
+
 // Fetch LLM and Weather configs
 async function fetchLLMConfig() {
   loadingLLM.value = true
@@ -852,6 +1015,131 @@ async function fetchLLMConfig() {
     showToast('Fehler beim Laden der System-Prompts', 'error')
   } finally {
     loadingLLM.value = false
+  }
+}
+
+async function fetchAIInsightJobs() {
+  loadingAIInsightJobs.value = true
+  try {
+    const res = await axios.get('/api/admin/ai-insight-jobs')
+    aiInsightJobs.value = res.data
+  } catch (err) {
+    console.error('Fetch AI insight jobs error:', err)
+    showToast('Fehler beim Laden der KI-Insights-Cron-Aufträge', 'error')
+  } finally {
+    loadingAIInsightJobs.value = false
+  }
+}
+
+function openCreateAIInsightJob() {
+  editingAIInsightJobId.value = null
+  aiInsightJobForm.name = ''
+  aiInsightJobForm.prompt = ''
+  aiInsightJobForm.cron_expression = '0 */12 * * *'
+  aiInsightJobForm.inject_weather = false
+  aiInsightJobForm.inject_locations = true
+  aiInsightJobForm.inject_apiary = true
+  aiInsightJobForm.inject_hives = true
+  aiInsightJobForm.inject_log_entries = true
+  aiInsightJobForm.log_scope = 'IMKEREI'
+  aiInsightJobForm.max_log_entries = 20
+  aiInsightJobForm.is_active = true
+  showAIInsightJobForm.value = true
+}
+
+function openEditAIInsightJob(job) {
+  editingAIInsightJobId.value = job.id
+  aiInsightJobForm.name = job.name
+  aiInsightJobForm.prompt = job.prompt || ''
+  aiInsightJobForm.cron_expression = job.cron_expression
+  aiInsightJobForm.inject_weather = !!job.inject_weather
+  aiInsightJobForm.inject_locations = !!job.inject_locations
+  aiInsightJobForm.inject_apiary = !!job.inject_apiary
+  aiInsightJobForm.inject_hives = !!job.inject_hives
+  aiInsightJobForm.inject_log_entries = !!job.inject_log_entries
+  aiInsightJobForm.log_scope = job.log_scope || 'IMKEREI'
+  aiInsightJobForm.max_log_entries = Number(job.max_log_entries || 20)
+  aiInsightJobForm.is_active = job.is_active
+  showAIInsightJobForm.value = true
+}
+
+function cancelAIInsightJobForm() {
+  showAIInsightJobForm.value = false
+  editingAIInsightJobId.value = null
+}
+
+async function saveAIInsightJob() {
+  if (!aiInsightJobForm.name.trim()) {
+    showToast('Name darf nicht leer sein.', 'error')
+    return
+  }
+  if (!aiInsightJobForm.cron_expression.trim()) {
+    showToast('Cron-Ausdruck darf nicht leer sein.', 'error')
+    return
+  }
+  if (!aiInsightJobForm.prompt.trim()) {
+    showToast('Prompt darf nicht leer sein.', 'error')
+    return
+  }
+  if (!validateCronExpression(aiInsightJobForm.cron_expression)) {
+    showToast('Ungültiges Cron-Format. Bitte 5 Felder angeben.', 'error')
+    return
+  }
+  if (aiInsightJobForm.max_log_entries < 1 || aiInsightJobForm.max_log_entries > 500) {
+    showToast('Maximale Anzahl Logeintraege muss zwischen 1 und 500 liegen.', 'error')
+    return
+  }
+
+  savingAIInsightJob.value = true
+  try {
+    const payload = {
+      name: aiInsightJobForm.name.trim(),
+      prompt: aiInsightJobForm.prompt.trim(),
+      cron_expression: aiInsightJobForm.cron_expression.trim(),
+      inject_weather: aiInsightJobForm.inject_weather,
+      inject_locations: aiInsightJobForm.inject_locations,
+      inject_apiary: aiInsightJobForm.inject_apiary,
+      inject_hives: aiInsightJobForm.inject_hives,
+      inject_log_entries: aiInsightJobForm.inject_log_entries,
+      log_scope: aiInsightJobForm.log_scope,
+      max_log_entries: aiInsightJobForm.max_log_entries,
+      is_active: aiInsightJobForm.is_active
+    }
+    if (editingAIInsightJobId.value) {
+      await axios.put(`/api/admin/ai-insight-jobs/${editingAIInsightJobId.value}`, payload)
+      showToast('KI-Insights-Cron-Auftrag aktualisiert.')
+    } else {
+      await axios.post('/api/admin/ai-insight-jobs', payload)
+      showToast('KI-Insights-Cron-Auftrag erstellt.')
+    }
+    cancelAIInsightJobForm()
+    await fetchAIInsightJobs()
+  } catch (err) {
+    console.error('Save AI insight job error:', err)
+    const msg = err.response?.data?.detail || 'Fehler beim Speichern des KI-Insights-Cron-Auftrags.'
+    showToast(msg, 'error')
+  } finally {
+    savingAIInsightJob.value = false
+  }
+}
+
+async function deleteAIInsightJob(job) {
+  const confirmed = await confirmStore.ask({
+    title: 'KI-Insights-Cron-Auftrag löschen',
+    message: `Möchtest du den Auftrag '${job.name}' wirklich löschen?`,
+    type: 'danger',
+    confirmText: 'Ja, löschen'
+  })
+  if (!confirmed) return
+
+  try {
+    await axios.delete(`/api/admin/ai-insight-jobs/${job.id}`)
+    showToast('KI-Insights-Cron-Auftrag gelöscht.')
+    await fetchAIInsightJobs()
+  } catch (err) {
+    console.error('Delete AI insight job error:', err)
+    const msg = err.response?.data?.detail || 'Fehler beim Löschen des KI-Insights-Cron-Auftrags.'
+    showToast(msg, 'error')
   }
 }
 
@@ -901,11 +1189,8 @@ async function saveLLMConfig() {
   savingLLM.value = true
   try {
     const res = await axios.put('/api/admin/llm-config', {
-      chatbot_system_prompt: llmConfig.value.chatbot_system_prompt,
-      draft_system_prompt: llmConfig.value.draft_system_prompt,
       enable_weather_api: llmConfig.value.enable_weather_api,
-      ai_insights_cron: llmConfig.value.ai_insights_cron || null,
-      kleinunternehmer_regelung: llmConfig.value.kleinunternehmer_regelung,
+      calculate_taxes: llmConfig.value.calculate_taxes,
       currency: llmConfig.value.currency,
       tax_rates: llmConfig.value.tax_rates
     })
@@ -920,46 +1205,35 @@ async function saveLLMConfig() {
   }
 }
 
-// Seed / Restore prompts to default constants hardcoded in the codebase
-function resetConfigToDefault() {
-  llmConfig.value.chatbot_system_prompt = 
-    "Du bist der hochkompetente 'BeeBoard KI-Assistent' für Imker.\n" +
-    "Deine Aufgabe ist es, dem Imker basierend auf seinen Daten präzise Auskunft " +
-    "zu geben. Antworte immer freundlich, sachlich und auf Deutsch. Halte dich kurz " +
-    "und hebe wichtige Warnungen (wie hohe Varroazahlen) hervor.\n\n" +
-    "Hier ist der aktuelle Zustand der Imkerei (Völker, Standorte, letzte Messungen):\n" +
-    "{context_str}"
+async function saveBeeAgentConfig() {
+  savingLLM.value = true
+  try {
+    const res = await axios.put('/api/admin/llm-config', {
+      enable_weather_api: llmConfig.value.enable_weather_api
+    })
+    llmConfig.value = res.data
+    showToast('Bee-Agent Einstellungen erfolgreich aktualisiert.')
+  } catch (err) {
+    console.error('Save bee-agent config error:', err)
+    const msg = err.response?.data?.detail || 'Fehler beim Aktualisieren der Bee-Agent Einstellungen.'
+    showToast(msg, 'error')
+  } finally {
+    savingLLM.value = false
+  }
+}
 
-  llmConfig.value.draft_system_prompt = 
-    "Du bist ein intelligentere Daten-Extraktor für Imker.\n" +
-    "Lies die folgende Freitext-Notiz des Imkers durch und wandle sie in ein valides JSON-Objekt um.\n" +
-    "Das JSON-Objekt MUSS exakt der folgenden Struktur entsprechen. Gib NUR das reine JSON zurück. Keine Markdowns wie ```json.\n\n" +
-    "STRUKTUR:\n" +
-    "{\n" +
-    "  \"hive_name\": \"Name des Volks (z.B. Volk 3) oder null wenn nicht genannt\",\n" +
-    "  \"entry_type\": \"Einer der Werte: 'INSPECTION', 'VARROA_COUNT', 'VARROA_TREATMENT', 'GENERAL'\",\n" +
-    "  \"notes\": \"Zusammenfassung der Notiz als Fließtext\",\n" +
-    "  \"date\": \"Datum im Format YYYY-MM-DD (Standard: '{date_str}')\",\n" +
-    "  \"inspection_detail\": {\n" +
-    "    \"frames\": [\n" +
-    "      {\n" +
-    "        \"frame_number\": 1, // Nummer der Wabe (1-basiert)\n" +
-    "        \"side\": 1,         // Waben-Seite (1 oder 2)\n" +
-    "        \"brood_eighths\": 0, // Brut in Achteln (0-8)\n" +
-    "        \"food_eighths\": 0,  // Futter in Achteln (0-8)\n" +
-    "        \"bee_eighths\": 0    // Bienenmasse in Achteln (0-8)\n" +
-    "      }\n" +
-    "    ]\n" +
-    "  }, // Nur vorhanden bei entry_type = 'INSPECTION', sonst null\n" +
-    "  \"varroa_count_detail\": {\n" +
-    "    \"raw_count\": 0 // Rohwert Varroamilben (Zahl)\n" +
-    "  }, // Nur vorhanden bei entry_type = 'VARROA_COUNT', sonst null\n" +
-    "  \"varroa_treatment_detail\": {\n" +
-    "    \"product\": \"Name des Präparats\",\n" +
-    "    \"dosage\": \"Dosis (z.B. 50ml)\"\n" +
-    "  } // Nur vorhanden bei entry_type = 'VARROA_TREATMENT', sonst null\n" +
-    "}"
-  
+function resetBeeAgentConfigToDefault() {
+  llmConfig.value.enable_weather_api = false
+  showToast('Bee-Agent Standardwerte temporär geladen. Zum Übernehmen "Änderungen speichern" klicken.', 'success')
+}
+
+// Restore editable admin settings to defaults
+function resetConfigToDefault() {
+  llmConfig.value.enable_weather_api = false
+  llmConfig.value.calculate_taxes = true
+  llmConfig.value.currency = 'EUR'
+  llmConfig.value.tax_rates = '0.0,7.0,19.0'
+
   showToast('Standardwerte temporär geladen. Zum Übernehmen "Änderungen speichern" klicken.', 'success')
 }
 
@@ -1154,6 +1428,7 @@ async function submitNumberRangeForm() {
 onMounted(() => {
   fetchUsers()
   fetchLLMConfig()
+  fetchAIInsightJobs()
   fetchFrameTypes()
   fetchNumberRanges()
 })

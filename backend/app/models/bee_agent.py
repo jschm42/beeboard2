@@ -1,5 +1,5 @@
 from __future__ import annotations
-from datetime import date, datetime
+from datetime import date
 from typing import Optional
 from sqlalchemy import String, ForeignKey, Text, Boolean, Integer, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -21,6 +21,8 @@ class BeeAgentJob(UUIDTimeStampedModel, CreatedByModel, ApiaryScopedModel):
     entity_ids: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     include_weather_data: Mapped[bool] = mapped_column(Boolean, default=False)
+    include_locations: Mapped[bool] = mapped_column(Boolean, default=True)
+    include_hives: Mapped[bool] = mapped_column(Boolean, default=True)
     include_journal_entries: Mapped[bool] = mapped_column(Boolean, default=True)
     max_journal_entries: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
 
