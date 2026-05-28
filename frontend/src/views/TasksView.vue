@@ -10,8 +10,14 @@
     <!-- Header -->
     <div class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
       <div>
-        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">📋 Aufgaben & To-Dos</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Verwalte anstehende Arbeiten, Zyklen und wiederkehrende Aufgaben an deinen Ständen.</p>
+        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+          {{ viewMode === 'calendar' ? '📅 Kalender' : '📋 Aufgaben & To-Dos' }}
+        </h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">
+          {{ viewMode === 'calendar' 
+            ? 'Verwalte deine Termine und anstehenden Aufgaben in der Kalenderansicht.' 
+            : 'Verwalte anstehende Arbeiten, Zyklen und wiederkehrende Aufgaben an deinen Ständen.' }}
+        </p>
       </div>
       <button 
         @click="openCreateTaskModal" 
@@ -163,6 +169,13 @@
             >
               📊 Liste
             </button>
+            <button 
+              @click="viewMode = 'calendar'" 
+              class="px-4 py-1.5 rounded-lg text-xs font-extrabold tracking-wide transition-all"
+              :class="viewMode === 'calendar' ? 'bg-white dark:bg-dark-card text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
+            >
+              🗓️ Kalender
+            </button>
           </div>
         </div>
         
@@ -177,7 +190,7 @@
       </div>
 
       <!-- No Tasks Found -->
-      <div v-else-if="filteredTasks.length === 0" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-12 text-center text-gray-400 italic text-sm">
+      <div v-else-if="viewMode !== 'calendar' && filteredTasks.length === 0" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-12 text-center text-gray-400 italic text-sm">
         Keine Aufgaben für diese Filterkriterien vorhanden. Lege eine neue Aufgabe an, um zu starten!
       </div>
 
@@ -383,6 +396,141 @@
         </div>
       </div>
 
+      <!-- VIEW 3: CALENDAR -->
+      <div v-else class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div class="xl:col-span-2 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-4 shadow-sm">
+          <VCalendar
+            expanded
+            borderless
+            locale="de-DE"
+            :attributes="calendarAttributes"
+            @dayclick="onCalendarDayClick"
+          />
+        </div>
+
+        <div class="space-y-4">
+          <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-5 shadow-sm">
+            <h4 class="text-sm font-extrabold text-gray-900 dark:text-white mb-3">📌 Fällig am {{ formatDate(selectedDateString) }}</h4>
+
+            <div v-if="!selectedDateTaskItems.length && !selectedDateCustomItems.length" class="text-xs text-gray-500 dark:text-gray-400 italic">
+              Keine Aufgaben oder Termine für diesen Tag.
+            </div>
+
+            <div v-else class="space-y-2">
+              <div
+                v-for="item in selectedDateTaskItems"
+                :key="`task-day-${item.id}`"
+                class="p-2.5 rounded-xl border text-xs"
+                :class="item.is_completed ? 'border-green-200 bg-green-50/70 dark:border-green-900/30 dark:bg-green-950/10' : 'border-gray-200 bg-gray-50 dark:border-dark-border dark:bg-dark-bg/60'"
+              >
+                <div class="font-bold text-gray-900 dark:text-white">{{ item.title }}</div>
+                <div class="text-gray-500 dark:text-gray-400 mt-0.5">Aufgabe</div>
+              </div>
+
+              <div
+                v-for="item in selectedDateCustomItems"
+                :key="`custom-day-${item.id}`"
+                class="p-2.5 rounded-xl border text-xs"
+                :style="{ borderColor: item.color + '55' }"
+              >
+                <div class="font-bold text-gray-900 dark:text-white">{{ item.title }}</div>
+                <div class="text-gray-500 dark:text-gray-400 mt-0.5">
+                  Termin: {{ formatDate(item.start_date) }}<span v-if="item.end_date !== item.start_date"> - {{ formatDate(item.end_date) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="text-sm font-extrabold text-gray-900 dark:text-white">🗂️ Eigener Termin</h4>
+              <button
+                v-if="customEventForm.id"
+                @click="resetCustomEventForm"
+                class="text-[11px] font-bold text-primary hover:underline"
+              >
+                Neu
+              </button>
+            </div>
+
+            <form class="space-y-3" @submit.prevent="saveCustomEvent">
+              <input
+                v-model="customEventForm.title"
+                type="text"
+                required
+                placeholder="z.B. Wanderung Rapsfeld"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+
+              <div class="grid grid-cols-2 gap-2">
+                <input
+                  v-model="customEventForm.start_date"
+                  type="date"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <input
+                  v-model="customEventForm.end_date"
+                  type="date"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
+                <input
+                  v-model="customEventForm.notes"
+                  type="text"
+                  placeholder="Notiz (optional)"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <input
+                  v-model="customEventForm.color"
+                  type="color"
+                  class="h-9 w-11 p-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-dark-bg cursor-pointer"
+                />
+              </div>
+
+              <button
+                type="submit"
+                class="w-full px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-extrabold uppercase tracking-wider rounded-xl"
+              >
+                {{ customEventForm.id ? 'Termin speichern' : 'Termin anlegen' }}
+              </button>
+            </form>
+
+            <div class="mt-4 pt-4 border-t border-gray-100 dark:border-dark-border space-y-2 max-h-56 overflow-y-auto">
+              <div
+                v-for="event in customEvents"
+                :key="event.id"
+                class="p-2.5 rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-bg/60"
+              >
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                      <span class="inline-block w-2.5 h-2.5 rounded-full" :style="{ backgroundColor: event.color }"></span>
+                      <span>{{ event.title }}</span>
+                    </div>
+                    <div class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                      {{ formatDate(event.start_date) }}<span v-if="event.end_date !== event.start_date"> - {{ formatDate(event.end_date) }}</span>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-1">
+                    <button @click="editCustomEvent(event)" class="text-[11px] text-primary font-bold hover:underline">Bearbeiten</button>
+                    <button @click="removeCustomEvent(event.id)" class="text-[11px] text-red-500 font-bold hover:underline">Löschen</button>
+                  </div>
+                </div>
+              </div>
+
+              <p v-if="customEvents.length === 0" class="text-xs text-gray-500 dark:text-gray-400 italic">
+                Noch keine eigenen Termine vorhanden.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- CREATE/EDIT TASK DIALOG MODAL -->
@@ -547,6 +695,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useApiaryStore } from '../stores/apiary'
 import { useErrorStore } from '../stores/error'
 import { useConfirmStore } from '../stores/confirm'
+import { getCustomCalendarEvents, upsertCustomCalendarEvent, deleteCustomCalendarEvent, isDateInRange } from '../utils/calendarEvents'
 import axios from 'axios'
 
 const apiaryStore = useApiaryStore()
@@ -561,6 +710,16 @@ const tasks = ref([])
 const locations = ref([])
 const hives = ref([])
 const viewMode = ref('tiles')
+const customEvents = ref([])
+const selectedDateString = ref(todayStr())
+const customEventForm = ref({
+  id: null,
+  title: '',
+  notes: '',
+  start_date: todayStr(),
+  end_date: todayStr(),
+  color: '#2563eb'
+})
 
 // Filter state
 const filters = ref({
@@ -650,6 +809,7 @@ async function fetchData() {
     locations.value = locRes.data
     hives.value = hivesRes.data
     tasks.value = tasksRes.data
+    customEvents.value = getCustomCalendarEvents(apiaryId)
   } catch (err) {
     errorStore.showError('Fehler beim Laden der Aufgabendaten.', err, 'Aufgaben')
   } finally {
@@ -658,6 +818,11 @@ async function fetchData() {
 }
 
 onMounted(async () => {
+  if (route.query.view === 'calendar' || route.path === '/calendar') {
+    viewMode.value = 'calendar'
+    setQuickFilter('ALL')
+  }
+
   await fetchData()
   if (route.query.hiveId) {
     filters.value.hiveId = route.query.hiveId
@@ -672,6 +837,48 @@ onMounted(async () => {
 
 watch(() => apiaryStore.activeApiaryId, () => {
   fetchData()
+  resetCustomEventForm()
+})
+
+watch(viewMode, (newMode) => {
+  if (newMode === 'calendar') {
+    if (quickFilter.value !== 'ALL') {
+      setQuickFilter('ALL')
+    }
+    if (route.path !== '/calendar' && route.query.view !== 'calendar') {
+      router.push({ path: '/calendar' })
+    }
+  } else {
+    if (route.path === '/calendar') {
+      router.push({ path: '/tasks' })
+    } else if (route.query.view === 'calendar') {
+      router.push({ path: '/tasks' })
+    }
+  }
+})
+
+watch(() => route.path, (newPath) => {
+  if (newPath === '/calendar') {
+    viewMode.value = 'calendar'
+  } else if (newPath === '/tasks') {
+    if (route.query.view === 'calendar') {
+      viewMode.value = 'calendar'
+    } else {
+      if (viewMode.value === 'calendar') {
+        viewMode.value = 'tiles'
+      }
+    }
+  }
+})
+
+watch(() => route.query.view, (newView) => {
+  if (newView === 'calendar') {
+    viewMode.value = 'calendar'
+  } else if (route.path === '/tasks') {
+    if (viewMode.value === 'calendar') {
+      viewMode.value = 'tiles'
+    }
+  }
 })
 
 watch(() => route.query.hiveId, (newHiveId) => {
@@ -746,6 +953,102 @@ const filteredTasks = computed(() => {
     return true
   })
 })
+
+const calendarAttributes = computed(() => {
+  const taskAttributes = filteredTasks.value
+    .filter(task => task.due_date)
+    .map(task => {
+      const isDone = task.is_completed
+      const overdue = !isDone && isOverdue(task.due_date)
+      return {
+        key: `task-${task.id}`,
+        dates: new Date(`${task.due_date}T12:00:00`),
+        dot: { color: isDone ? '#16a34a' : overdue ? '#dc2626' : '#f59e0b' },
+        popover: { label: `Aufgabe: ${task.title}` }
+      }
+    })
+
+  const customAttributes = customEvents.value.map(event => ({
+    key: `custom-${event.id}`,
+    dates: {
+      start: new Date(`${event.start_date}T12:00:00`),
+      end: new Date(`${event.end_date}T12:00:00`)
+    },
+    highlight: { color: event.color, fillMode: 'outline' },
+    popover: { label: `Termin: ${event.title}` }
+  }))
+
+  return [
+    {
+      key: 'today',
+      dates: new Date(),
+      highlight: { color: '#f59e0b', fillMode: 'light' }
+    },
+    ...taskAttributes,
+    ...customAttributes
+  ]
+})
+
+const selectedDateTaskItems = computed(() => {
+  return filteredTasks.value.filter(task => task.due_date === selectedDateString.value)
+})
+
+const selectedDateCustomItems = computed(() => {
+  return customEvents.value.filter(event => isDateInRange(selectedDateString.value, event.start_date, event.end_date))
+})
+
+function onCalendarDayClick(dayInfo) {
+  const dateValue = dayInfo?.id || dayInfo?.date || dayInfo
+  selectedDateString.value = toDateString(dateValue)
+}
+
+function toDateString(value) {
+  const dateValue = value instanceof Date ? value : new Date(value)
+  if (Number.isNaN(dateValue.getTime())) return todayStr()
+  return dateValue.toISOString().slice(0, 10)
+}
+
+function resetCustomEventForm() {
+  customEventForm.value = {
+    id: null,
+    title: '',
+    notes: '',
+    start_date: selectedDateString.value || todayStr(),
+    end_date: selectedDateString.value || todayStr(),
+    color: '#2563eb'
+  }
+}
+
+async function saveCustomEvent() {
+  if (!apiaryStore.activeApiaryId) return
+  try {
+    upsertCustomCalendarEvent(apiaryStore.activeApiaryId, customEventForm.value)
+    customEvents.value = getCustomCalendarEvents(apiaryStore.activeApiaryId)
+    resetCustomEventForm()
+  } catch (err) {
+    errorStore.showError('Fehler beim Speichern des Kalendereintrags.', err, 'Kalender')
+  }
+}
+
+function editCustomEvent(event) {
+  customEventForm.value = { ...event }
+}
+
+async function removeCustomEvent(eventId) {
+  const confirmed = await confirmStore.ask({
+    title: 'Termin löschen',
+    message: 'Möchtest du diesen eigenen Termin wirklich löschen?',
+    type: 'danger',
+    confirmText: 'Ja, löschen'
+  })
+  if (!confirmed) return
+
+  deleteCustomCalendarEvent(apiaryStore.activeApiaryId, eventId)
+  customEvents.value = getCustomCalendarEvents(apiaryStore.activeApiaryId)
+  if (customEventForm.value.id === eventId) {
+    resetCustomEventForm()
+  }
+}
 
 function resetFilters() {
   filters.value = {

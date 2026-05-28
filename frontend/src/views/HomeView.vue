@@ -94,51 +94,49 @@
         </div>
       </div>
 
-      <!-- Quick Metrics Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        
-        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border p-6 rounded-2xl shadow-sm hover-scale flex items-center space-x-4">
-          <div class="p-3.5 bg-blue-500/10 rounded-xl text-blue-500">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-          </div>
-          <div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">Standorte</p>
-            <p class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{{ locations.length }}</p>
-          </div>
+
+      <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white">🗓️ Fällige Termine (14 Tage)</h3>
+          <router-link to="/tasks?view=calendar" class="text-xs font-extrabold text-primary hover:underline uppercase tracking-wider">
+            Kalender öffnen
+          </router-link>
         </div>
 
-        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border p-6 rounded-2xl shadow-sm hover-scale flex items-center space-x-4">
-          <div class="p-3.5 bg-primary/10 rounded-xl text-primary">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-          </div>
-          <div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">Aktive Völker</p>
-            <p class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{{ activeHivesCount }}</p>
-          </div>
+        <div v-if="dueScheduleItems.length === 0" class="text-sm text-gray-500 dark:text-gray-400 italic">
+          Keine fälligen Aufgaben oder Termine in den nächsten 14 Tagen.
         </div>
 
-        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border p-6 rounded-2xl shadow-sm hover-scale flex items-center space-x-4">
-          <div class="p-3.5 bg-green-500/10 rounded-xl text-green-500">
-            <!-- Insect / Bee Icon -->
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12a3 3 0 100-6 3 3 0 000 6zm5-1.5a3.5 3.5 0 11.04 0zM4 18c0-3 6-4 6-4s5.5 1 6 4m3-2c0-2.2-4-3-4-3s2.5.8 2.5 3"/></svg>
-          </div>
-          <div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">Est. Bienenmasse</p>
-            <p class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{{ formatNumber(estimatedTotalBees) }}</p>
+        <div v-else class="space-y-2">
+          <div
+            v-for="item in dueScheduleItems"
+            :key="item.id"
+            class="p-3 rounded-2xl border flex items-start justify-between gap-3"
+            :class="item.status === 'overdue'
+              ? 'border-red-200 bg-red-50/70 dark:border-red-900/40 dark:bg-red-950/15'
+              : item.status === 'today'
+                ? 'border-amber-200 bg-amber-50/80 dark:border-amber-900/40 dark:bg-amber-950/15'
+                : 'border-gray-200 bg-gray-50 dark:border-dark-border dark:bg-dark-bg/60'"
+          >
+            <div>
+              <div class="text-sm font-bold text-gray-900 dark:text-white">{{ item.title }}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ item.subtitle }}</div>
+            </div>
+
+            <div class="shrink-0 flex flex-col items-end gap-1">
+              <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-full"
+                :class="item.kind === 'task' ? 'bg-primary/15 text-primary' : 'bg-blue-500/15 text-blue-600 dark:text-blue-400'"
+              >
+                {{ item.kind === 'task' ? 'Aufgabe' : 'Termin' }}
+              </span>
+              <span class="text-[10px] font-bold uppercase"
+                :class="item.status === 'overdue' ? 'text-red-500' : item.status === 'today' ? 'text-amber-600 dark:text-amber-400' : 'text-gray-500 dark:text-gray-400'"
+              >
+                {{ item.statusLabel }}
+              </span>
+            </div>
           </div>
         </div>
-
-        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border p-6 rounded-2xl shadow-sm hover-scale flex items-center space-x-4">
-          <div class="p-3.5 bg-yellow-500/10 rounded-xl text-yellow-500">
-            <!-- Feed Jar / Honey Icon -->
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
-          </div>
-          <div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">Est. Futterwaben</p>
-            <p class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{{ estimatedTotalFood.toFixed(1) }} Waben</p>
-          </div>
-        </div>
-
       </div>
 
       <!-- Main Layout: Tasks left, Activity Stream right -->
@@ -304,6 +302,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useApiaryStore } from '../stores/apiary'
 import { useErrorStore } from '../stores/error'
+import { getCustomCalendarEvents, classifyDueStatus } from '../utils/calendarEvents'
 import axios from 'axios'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
@@ -319,6 +318,7 @@ const recentEntries = ref([])
 const tasks = ref([])
 const newTaskTitle = ref('')
 const latestInsight = ref(null)
+const dueScheduleItems = ref([])
 
 const newApiaryName = ref('')
 const newApiaryNotes = ref('')
@@ -360,6 +360,9 @@ async function fetchDashboardData() {
     
     // Generate intelligent system-driven tasks
     generateIntelligentTasks(logRes.data, tasksRes.data)
+
+    const customEvents = getCustomCalendarEvents(apiaryId)
+    dueScheduleItems.value = buildDueScheduleOverview(tasksRes.data, customEvents)
 
   } catch (err) {
     console.error('Fetch dashboard data failed:', err)
@@ -451,6 +454,60 @@ function generateIntelligentTasks(entries, dbTasks = []) {
   tasks.value = generated
 }
 
+function buildDueScheduleOverview(dbTasks, customEvents) {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const todayStr = toLocalDateString(today)
+
+  const horizon = new Date(today)
+  horizon.setDate(horizon.getDate() + 14)
+
+  const output = []
+
+  dbTasks
+    .filter(task => !task.is_completed && task.due_date)
+    .forEach(task => {
+      const due = new Date(`${task.due_date}T12:00:00`)
+      if (Number.isNaN(due.getTime())) return
+      if (due > horizon && task.due_date >= todayStr) return
+
+      const status = classifyDueStatus(task.due_date, todayStr)
+      output.push({
+        id: `task-${task.id}`,
+        kind: 'task',
+        title: task.title,
+        subtitle: `Fällig am ${formatDate(task.due_date)}`,
+        sortDate: task.due_date,
+        status,
+        statusLabel: status === 'overdue' ? 'überfällig' : status === 'today' ? 'heute' : 'anstehend'
+      })
+    })
+
+  customEvents.forEach(event => {
+    const end = event.end_date || event.start_date
+    const isFutureRelevant = event.start_date <= toLocalDateString(horizon) && end >= todayStr
+    const isOverdue = end < todayStr
+    if (!isFutureRelevant && !isOverdue) return
+
+    const dueDate = event.start_date >= todayStr ? event.start_date : end
+    const status = classifyDueStatus(dueDate, todayStr)
+
+    output.push({
+      id: `custom-${event.id}`,
+      kind: 'custom',
+      title: event.title,
+      subtitle: `Zeitraum ${formatDate(event.start_date)}${end !== event.start_date ? ` - ${formatDate(end)}` : ''}`,
+      sortDate: dueDate,
+      status,
+      statusLabel: status === 'overdue' ? 'abgelaufen' : status === 'today' ? 'heute' : 'anstehend'
+    })
+  })
+
+  return output
+    .sort((a, b) => a.sortDate.localeCompare(b.sortDate))
+    .slice(0, 8)
+}
+
 async function completeTask(id) {
   const task = tasks.value.find(t => t.id === id)
   if (task && task.isDbTask) {
@@ -525,6 +582,13 @@ function formatDateTime(dateStr) {
 
 function formatNumber(num) {
   return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(num)
+}
+
+function toLocalDateString(dateObj) {
+  const year = dateObj.getFullYear()
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0')
+  const day = String(dateObj.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 function renderMarkdown(text) {

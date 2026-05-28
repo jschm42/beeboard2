@@ -332,7 +332,8 @@ import {
   ShoppingBag,
   ClipboardList,
   CircleHelp,
-  Globe
+  Globe,
+  Calendar
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -351,6 +352,7 @@ const navItems = computed(() => [
   { name: t('sidebar.hives'), path: '/hives', icon: Hexagon },
   { name: t('sidebar.logbook'), path: '/logbook', icon: BookOpen },
   { name: t('sidebar.tasks'), path: '/tasks', icon: ClipboardList },
+  { name: t('sidebar.calendar'), path: '/calendar', icon: Calendar },
   { name: t('sidebar.honey_batches'), path: '/honey-batches', icon: Droplets },
   { name: t('sidebar.sales'), path: '/sales', icon: ShoppingBag },
   { name: t('sidebar.stats'), path: '/stats', icon: BarChart3 },
