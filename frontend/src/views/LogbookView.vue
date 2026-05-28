@@ -4,28 +4,28 @@
     <!-- Back to Dashboard Link -->
     <router-link to="/dashboard" class="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-hover mb-4 transition-colors duration-200">
       <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-      Zurück zum Dashboard
+      {{ $t('common.back_to_dashboard') }}
     </router-link>
 
     <!-- Header -->
     <div class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
       <div>
-        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">📓 Imker-Logbuch</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Erfasse Beutenkontrollen, Varroamessungen und Behandlungen.</p>
+        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">📓 {{ $t('logbook.title') }}</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">{{ $t('logbook.subtitle') }}</p>
       </div>
       <button 
         @click="openCreateSessionModal" 
         class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-2"
       >
-        <span>+ Neue Arbeitssitzung</span>
+        <span>{{ $t('logbook.new_session') }}</span>
       </button>
     </div>
 
     <!-- Active Apiary check -->
     <div v-if="!apiaryStore.activeApiaryId" class="glass rounded-3xl p-12 text-center max-w-lg mx-auto border border-dashed border-gray-300 dark:border-gray-700">
       <div class="text-4xl mb-4">📓</div>
-      <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2">Keine aktive Imkerei ausgewählt</h3>
-      <p class="text-gray-500 dark:text-gray-400">Bitte wähle oben eine Imkerei aus, um auf das Logbuch zuzugreifen.</p>
+      <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2">{{ $t('logbook.no_active_apiary') }}</h3>
+      <p class="text-gray-500 dark:text-gray-400">{{ $t('logbook.select_apiary_desc') }}</p>
     </div>
 
     <div v-else class="space-y-6">
@@ -33,21 +33,21 @@
       <!-- View Mode Switcher -->
       <div class="flex justify-between items-center bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border p-4 rounded-2xl shadow-sm">
         <div class="flex items-center space-x-2">
-          <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ansicht:</span>
+          <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ $t('logbook.view_label') }}</span>
           <div class="inline-flex rounded-xl p-0.5 bg-gray-100 dark:bg-dark-bg border border-gray-200 dark:border-dark-border">
             <button 
               @click="viewMode = 'tiles'" 
               class="px-4 py-1.5 rounded-lg text-xs font-extrabold tracking-wide transition-all"
               :class="viewMode === 'tiles' ? 'bg-white dark:bg-dark-card text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
             >
-              🗂️ Arbeitssitzungen (Kacheln)
+              {{ $t('logbook.view_tiles') }}
             </button>
             <button 
               @click="viewMode = 'table'" 
               class="px-4 py-1.5 rounded-lg text-xs font-extrabold tracking-wide transition-all"
               :class="viewMode === 'table' ? 'bg-white dark:bg-dark-card text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
             >
-              📊 Tabellarische Übersicht (Alle Einträge)
+              {{ $t('logbook.view_table') }}
             </button>
           </div>
         </div>
@@ -60,7 +60,7 @@
         <div v-if="showSessionModal" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-md max-w-xl mx-auto space-y-4 animate-scale mb-6">
           <div class="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-dark-border">
             <h4 class="font-extrabold text-sm text-gray-900 dark:text-white">
-              {{ isEditSessionMode ? 'Arbeitssitzung bearbeiten' : 'Neue Arbeitssitzung' }}
+              {{ isEditSessionMode ? $t('logbook.edit_session') : $t('logbook.new_session_title') }}
             </h4>
             <button @click="showSessionModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
               <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -69,7 +69,7 @@
           <form @submit.prevent="submitSessionForm" class="space-y-4">
             <div>
               <div class="flex justify-between items-center mb-1">
-                <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Bezeichnung *</label>
+                <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ $t('logbook.session_title_label') }}</label>
                 <span 
                   class="text-[9px] font-mono font-bold"
                   :class="sessionForm.title.length >= 30 ? 'text-red-500 font-extrabold animate-pulse' : sessionForm.title.length > 25 ? 'text-amber-500' : 'text-gray-400'"
@@ -82,26 +82,26 @@
                 type="text" 
                 required
                 maxlength="30"
-                placeholder="z.B. Honigraum aufsetzen & Varroakontrolle"
+                :placeholder="$t('logbook.session_title_placeholder')"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs"
               />
             </div>
             <div>
-              <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Bienenvolk (Optional)</label>
+              <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('logbook.session_hive') }}</label>
               <select 
                 v-model="sessionForm.hiveId" 
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs"
               >
-                <option value="">Keines (Global für Imkerei)</option>
+                <option value="">{{ $t('logbook.no_hive_global') }}</option>
                 <option v-for="hive in hives" :key="hive.id" :value="hive.id">
                   {{ hive.name }}
                 </option>
               </select>
             </div>
             <div class="flex justify-end space-x-2 pt-2">
-              <button type="button" @click="showSessionModal = false" class="px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">Abbrechen</button>
+              <button type="button" @click="showSessionModal = false" class="px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">{{ $t('common.cancel') }}</button>
               <button type="submit" class="px-4 py-1.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs rounded-xl shadow-md">
-                {{ isEditSessionMode ? 'Speichern' : 'Erstellen' }}
+                {{ isEditSessionMode ? $t('common.save') : $t('logbook.create') }}
               </button>
             </div>
           </form>
@@ -115,7 +115,7 @@
           </div>
 
           <div v-else-if="sessions.length === 0" class="bg-white dark:bg-dark-card border rounded-3xl p-12 text-center text-gray-400 italic text-sm">
-            Keine Arbeitssitzungen angelegt. Beginne mit "+ Neue Arbeitssitzung" oben rechts.
+            {{ $t('logbook.no_sessions_yet') }}
           </div>
 
           <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -127,19 +127,19 @@
             >
               <div>
                 <div class="flex justify-between items-start">
-                  <span class="text-[9px] font-black uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded">Sitzung</span>
+                  <span class="text-[9px] font-black uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded">{{ $t('logbook.session_badge') }}</span>
                   <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
                       @click.stop="openEditSessionModal(session)"
                       class="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-xl transition-all"
-                      title="Sitzung umbenennen"
+                      :title="$t('logbook.rename_session')"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                     </button>
                     <button 
                       @click.stop="deleteSession(session)"
                       class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
-                      title="Sitzung löschen"
+                      :title="$t('logbook.delete_session')"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     </button>
@@ -152,11 +152,11 @@
                   v-if="session.hive" 
                   class="inline-block mt-2 px-2 py-0.5 bg-amber-500/10 text-primary text-[10px] font-bold rounded"
                 >
-                  Volk: {{ session.hive.name }}
+                  {{ $t('logbook.hive_label', { name: session.hive.name }) }}
                 </span>
               </div>
               <div class="text-[10px] text-gray-400 font-mono mt-4">
-                Zuletzt aktiv: {{ formatDateTime(session.updated_at) }}
+                {{ $t('logbook.last_active', { time: formatDateTime(session.updated_at) }) }}
               </div>
             </div>
           </div>
@@ -169,7 +169,7 @@
             class="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-hover transition-colors duration-200"
           >
             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-            Zurück zur Kachelübersicht
+            {{ $t('logbook.back_to_tiles') }}
           </button>
 
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -179,25 +179,25 @@
               <!-- Session title & quick details card -->
               <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm flex justify-between items-center">
                 <div>
-                  <span class="text-[10px] font-black uppercase text-gray-400">Aktive Arbeitssitzung</span>
+                  <span class="text-[10px] font-black uppercase text-gray-400">{{ $t('logbook.active_session') }}</span>
                   <div class="flex items-center space-x-2 mt-1">
                     <h2 class="text-xl font-extrabold text-gray-900 dark:text-white">{{ selectedSession.title }}</h2>
                     <button 
                       @click="openEditSessionModal(selectedSession)"
                       class="p-1 text-gray-400 hover:text-primary rounded-lg hover:bg-gray-100 dark:hover:bg-dark-border transition-colors inline-flex items-center"
-                      title="Sitzung umbenennen"
+                      :title="$t('logbook.rename_session')"
                     >
                       <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                     </button>
                   </div>
-                  <p v-if="selectedSession.hive" class="text-xs text-gray-500 mt-1">Gekoppeltes Volk: <span class="font-bold text-primary">{{ selectedSession.hive.name }}</span></p>
+                  <p v-if="selectedSession.hive" class="text-xs text-gray-500 mt-1">{{ $t('hives.table_hive') }}: <span class="font-bold text-primary">{{ selectedSession.hive.name }}</span></p>
                 </div>
                 
                 <button 
                   @click="openCreateEntryModal" 
                   class="px-4 py-2 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md hover-scale"
                 >
-                  + Neuer Eintrag
+                  {{ $t('logbook.new_entry') }}
                 </button>
               </div>
 
@@ -205,7 +205,7 @@
               <div v-if="showEntryModal" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl shadow-md p-6 mb-6 animate-scale">
                 <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100 dark:border-dark-border">
                   <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-                    {{ isEditEntryMode ? '📝 Protokolleintrag bearbeiten' : '📝 Neuer Protokolleintrag' }}
+                    {{ isEditEntryMode ? $t('logbook.edit_entry_title') : $t('logbook.new_entry_title') }}
                   </h3>
                   <button @click="showEntryModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -215,21 +215,21 @@
                 <form @submit.prevent="submitEntryForm" class="space-y-4">
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Bienenvolk *</label>
+                      <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('logbook.hive_required') }}</label>
                       <select 
                         v-model="entryForm.hiveId" 
                         required
                         @change="onHiveSelected"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer"
                       >
-                        <option value="" disabled>Bitte Volk wählen...</option>
+                        <option value="" disabled>{{ $t('logbook.select_hive_placeholder') }}</option>
                         <option v-for="hive in hives" :key="hive.id" :value="hive.id">
                           {{ hive.name }}
                         </option>
                       </select>
                     </div>
                     <div>
-                      <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Datum *</label>
+                      <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('logbook.date_required') }}</label>
                       <input 
                         v-model="entryForm.date" 
                         type="date" 
@@ -241,26 +241,26 @@
 
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Eintrags-Typ *</label>
+                      <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('logbook.entry_type_required') }}</label>
                       <select 
                         v-model="entryForm.entryType" 
                         required
                         :disabled="isEditEntryMode"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer"
                       >
-                        <option value="INSPECTION">🔎 Beuteninspektion</option>
-                        <option value="VARROA_COUNT">🕷️ Varroazählung (Windel)</option>
-                        <option value="VARROA_TREATMENT">🧪 Varroabehandlung</option>
-                        <option value="GENERAL">📝 Allgemeine Notiz</option>
+                        <option value="INSPECTION">{{ $t('logbook.type_inspection') }}</option>
+                        <option value="VARROA_COUNT">{{ $t('logbook.type_varroa_count') }}</option>
+                        <option value="VARROA_TREATMENT">{{ $t('logbook.type_varroa_treatment') }}</option>
+                        <option value="GENERAL">{{ $t('logbook.type_general') }}</option>
                       </select>
                     </div>
                   </div>
 
                   <div>
-                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Notizen (Zustand, Brutwaben etc.)</label>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('logbook.notes_label') }}</label>
                     <textarea 
                       v-model="entryForm.notes" 
-                      placeholder="Sanftmütiges Verhalten, Stifte vorhanden, Königin gesichtet..."
+                      :placeholder="$t('logbook.notes_placeholder')"
                       rows="2"
                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                     ></textarea>
@@ -270,7 +270,7 @@
                   <div v-if="entryForm.entryType === 'INSPECTION'" class="space-y-4 border-t border-gray-100 dark:border-dark-border pt-4">
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                       <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">
-                        Erfassungs-Variante: 📦 Zargen-weise (vereinfacht)
+                        {{ $t('logbook.assessment_variant') }}
                       </h4>
                     </div>
 
@@ -278,7 +278,7 @@
                     <div class="space-y-4 animate-scale">
                       <!-- Box Mode Switcher: Exact vs Eighths -->
                       <div class="flex justify-between items-center bg-gray-50 dark:bg-dark-bg p-3 rounded-2xl border">
-                        <span class="text-[10px] font-bold text-gray-500 uppercase">Zargen-Modus:</span>
+                        <span class="text-[10px] font-bold text-gray-500 uppercase">{{ $t('logbook.box_mode_label') }}</span>
                         <div class="inline-flex rounded-lg p-0.5 bg-gray-200 dark:bg-dark-border">
                           <button 
                             type="button"
@@ -286,7 +286,7 @@
                             class="px-2.5 py-1 rounded text-[10px] font-bold transition-all"
                             :class="entryForm.inspectionDetail.boxMode === 'exact' ? 'bg-white dark:bg-dark-card text-primary shadow-sm' : 'text-gray-500'"
                           >
-                            🔢 Geschätzte Gesamtmenge (Stk./g)
+                            {{ $t('logbook.mode_exact') }}
                           </button>
                           <button 
                             type="button"
@@ -294,7 +294,7 @@
                             class="px-2.5 py-1 rounded text-[10px] font-bold transition-all"
                             :class="entryForm.inspectionDetail.boxMode === 'eighths' ? 'bg-white dark:bg-dark-card text-primary shadow-sm' : 'text-gray-500'"
                           >
-                            🍕 Belegung in Achteln
+                            {{ $t('logbook.mode_eighths') }}
                           </button>
                         </div>
                       </div>
@@ -308,17 +308,17 @@
                         >
                           <div class="flex justify-between items-center pb-2 border-b border-gray-50 dark:border-dark-border">
                             <span class="text-xs font-extrabold text-gray-800 dark:text-gray-200 flex items-center">
-                              📦 Zarge #{{ box.order }} ({{ box.box_type === 'BROOD' ? 'Brutraum' : 'Honigraum' }})
+                              {{ $t('logbook.box_label', { order: box.order, type: box.box_type === 'BROOD' ? $t('logbook.brood_chamber') : $t('logbook.honey_chamber') }) }}
                             </span>
                             <span class="text-[9px] font-bold text-gray-400 font-mono">
-                              {{ box.frame_count }} Waben · {{ box.frame_type_name }} (x{{ box.multiplier }})
+                              {{ $t('logbook.box_detail_hint', { count: box.frame_count, name: box.frame_type_name, multiplier: box.multiplier }) }}
                             </span>
                           </div>
 
                           <div class="grid grid-cols-2 sm:grid-cols-6 gap-3 text-center">
                             <!-- Brood -->
                             <div class="space-y-1">
-                              <span class="text-[9px] text-amber-500 font-bold uppercase">Brut</span>
+                              <span class="text-[9px] text-amber-500 font-bold uppercase">{{ $t('logbook.brood') }}</span>
                               <input 
                                 v-model.number="box.brood" 
                                 type="number" 
@@ -326,13 +326,13 @@
                                 min="0" 
                                 :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 8 : undefined" 
                                 class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                                :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? '0 Stk.' : '0/8 Waben'"
+                                :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
                               />
                             </div>
 
                             <!-- Bees -->
                             <div class="space-y-1">
-                              <span class="text-[9px] text-green-500 font-bold uppercase">Bienen</span>
+                              <span class="text-[9px] text-green-500 font-bold uppercase">{{ $t('logbook.bees') }}</span>
                               <input 
                                 v-model.number="box.bees" 
                                 type="number" 
@@ -340,13 +340,13 @@
                                 min="0" 
                                 :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 8 : undefined" 
                                 class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                                :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? '0 Stk.' : '0/8 Waben'"
+                                :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
                               />
                             </div>
 
                             <!-- Drones -->
                             <div class="space-y-1">
-                              <span class="text-[9px] text-sky-500 font-bold uppercase">Drohnen</span>
+                              <span class="text-[9px] text-sky-500 font-bold uppercase">{{ $t('logbook.drones') }}</span>
                               <input 
                                 v-model.number="box.drones" 
                                 type="number" 
@@ -354,13 +354,13 @@
                                 min="0" 
                                 :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 8 : undefined" 
                                 class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                                :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? '0 Stk.' : '0/8 Waben'"
+                                :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
                               />
                             </div>
 
                             <!-- Drone Brood -->
                             <div class="space-y-1">
-                              <span class="text-[9px] text-orange-500 font-bold uppercase">Drohnenbrut</span>
+                              <span class="text-[9px] text-orange-500 font-bold uppercase">{{ $t('logbook.drone_brood') }}</span>
                               <input 
                                 v-model.number="box.drone_brood" 
                                 type="number" 
@@ -368,13 +368,13 @@
                                 min="0" 
                                 :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 8 : undefined" 
                                 class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                                :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? '0 Stk.' : '0/8 Waben'"
+                                :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
                               />
                             </div>
 
                             <!-- Pollen -->
                             <div class="space-y-1">
-                              <span class="text-[9px] text-purple-500 font-bold uppercase">Pollen</span>
+                              <span class="text-[9px] text-purple-500 font-bold uppercase">{{ $t('logbook.pollen') }}</span>
                               <input 
                                 v-model.number="box.pollen" 
                                 type="number" 
@@ -382,13 +382,13 @@
                                 min="0" 
                                 :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 8 : undefined" 
                                 class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                                :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? '0 g' : '0/8 Waben'"
+                                :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_g') : $t('logbook.eighths_placeholder')"
                               />
                             </div>
 
                             <!-- Food -->
                             <div class="space-y-1">
-                              <span class="text-[9px] text-yellow-500 font-bold uppercase">Futter</span>
+                              <span class="text-[9px] text-yellow-500 font-bold uppercase">{{ $t('logbook.food') }}</span>
                               <input 
                                 v-model.number="box.food" 
                                 type="number" 
@@ -396,7 +396,7 @@
                                 min="0" 
                                 :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 8 : undefined" 
                                 class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                                :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? '0 g' : '0/8 Waben'"
+                                :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_g') : $t('logbook.eighths_placeholder')"
                               />
                             </div>
                           </div>
@@ -407,9 +407,9 @@
 
                   <!-- SUB-FORM: VARROA COUNT DETAILS -->
                   <div v-if="entryForm.entryType === 'VARROA_COUNT'" class="space-y-3 border-t border-gray-100 dark:border-dark-border pt-4">
-                    <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">Windel-Messergebnis</h4>
+                    <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">{{ $t('logbook.varroa_windel_result') }}</h4>
                     <div>
-                      <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Gezählte Milben (Rohwert auf der Windel) *</label>
+                      <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('logbook.varroa_raw_count_label') }}</label>
                       <input 
                         v-model.number="entryForm.varroaCountDetail.rawCount" 
                         type="number" 
@@ -417,40 +417,40 @@
                         min="0"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                       />
-                      <p class="text-[10px] text-gray-400 mt-1 italic">Unser Berechnungs-Service korrigiert den Milbenfall automatisch anhand saisonaler Multiplikatoren.</p>
+                      <p class="text-[10px] text-gray-400 mt-1 italic">{{ $t('logbook.varroa_calc_hint') }}</p>
                     </div>
                   </div>
 
                   <!-- SUB-FORM: VARROA TREATMENT DETAILS -->
                   <div v-if="entryForm.entryType === 'VARROA_TREATMENT'" class="space-y-3 border-t border-gray-100 dark:border-dark-border pt-4">
-                    <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">Behandlungsmethode</h4>
+                    <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">{{ $t('logbook.treatment_method') }}</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Produkt (z.B. Ameisensäure, Oxalsäure) *</label>
+                        <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('logbook.treatment_product_label') }}</label>
                         <input 
                           v-model="entryForm.varroaTreatmentDetail.product" 
                           type="text" 
                           required
-                          placeholder="z.B. Ameisensäure 60%"
+                          :placeholder="$t('logbook.treatment_product_placeholder')"
                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                         />
                       </div>
                       <div>
-                        <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Dosierung (z.B. 50ml, 1 Streifen) *</label>
+                        <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('logbook.treatment_dosage_label') }}</label>
                         <input 
                           v-model="entryForm.varroaTreatmentDetail.dosage" 
                           type="text" 
                           required
-                          placeholder="z.B. 50 ml"
+                          :placeholder="$t('logbook.treatment_dosage_placeholder')"
                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                         />
                       </div>
                     </div>
                     <div>
-                      <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Behandlungshinweise</label>
+                      <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('logbook.treatment_notes_label') }}</label>
                       <textarea 
                         v-model="entryForm.varroaTreatmentDetail.treatmentNotes" 
-                        placeholder="Zusätzliche Behandlungsdetails..."
+                        :placeholder="$t('logbook.treatment_notes_placeholder')"
                         rows="2"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                       ></textarea>
@@ -458,9 +458,9 @@
                   </div>
 
                   <div class="flex justify-end space-x-2 pt-4 border-t border-gray-100 dark:border-dark-border">
-                    <button type="button" @click="showEntryModal = false" class="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">Abbrechen</button>
+                    <button type="button" @click="showEntryModal = false" class="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">{{ $t('common.cancel') }}</button>
                     <button type="submit" class="px-5 py-2 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md">
-                      Speichern
+                      {{ $t('common.save') }}
                     </button>
                   </div>
                 </form>
@@ -472,7 +472,7 @@
               </div>
 
               <div v-else-if="entries.length === 0" class="bg-white dark:bg-dark-card border rounded-3xl p-12 text-center text-gray-400 italic text-sm">
-                Noch keine Protokolleinträge in dieser Sitzung erfasst. Klicke oben rechts auf "+ Neuer Eintrag" um zu starten!
+                {{ $t('logbook.no_entries_yet') }}
               </div>
 
               <div v-else class="space-y-4">
@@ -486,7 +486,7 @@
                       <span class="text-[10px] font-black uppercase rounded tracking-wider bg-gray-100 dark:bg-dark-bg text-gray-500 px-2 py-0.5">
                         {{ getEntryTypeName(entry.entry_type) }}
                       </span>
-                      <span class="text-xs font-bold text-primary">Volk: {{ entry.hive?.name || 'Unbekannt' }}</span>
+                      <span class="text-xs font-bold text-primary">{{ $t('logbook.hive_label', { name: entry.hive?.name || $t('logbook.unknown') }) }}</span>
                       <span class="text-[10px] text-gray-400 font-mono">{{ formatDate(entry.date) }}</span>
                     </div>
 
@@ -494,25 +494,25 @@
                       <button 
                         @click="openEditEntryModal(entry)"
                         class="p-1 text-gray-400 hover:text-primary rounded-xl hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors"
-                        title="Eintrag bearbeiten"
+                        :title="$t('common.edit')"
                       >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                       </button>
                       <button 
                         @click="deleteEntry(entry)"
                         class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
-                        title="Eintrag löschen"
+                        :title="$t('common.delete')"
                       >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                       </button>
                     </div>
                   </div>
 
-                  <p class="text-sm text-gray-700 dark:text-gray-300 font-medium italic">"{{ entry.notes || 'Keine Anmerkungen erfasst.' }}"</p>
+                  <p class="text-sm text-gray-700 dark:text-gray-300 font-medium italic">"{{ entry.notes || $t('logbook.no_notes_recorded') }}"</p>
 
                   <!-- Nested Inspections -->
                   <div v-if="entry.entry_type === 'INSPECTION' && entry.inspection_detail" class="space-y-3">
-                    <span class="text-[10px] font-black uppercase text-gray-400">🔎 Brut- & Raumbelegung (Zargen- & Volkssummen):</span>
+                    <span class="text-[10px] font-black uppercase text-gray-400">{{ $t('logbook.inspection_details_header') }}</span>
                     
                     <div v-if="getBoxTotalsForEntry(entry)" class="space-y-3">
                       <!-- Box Grid (Waben-Äquivalente) -->
@@ -523,33 +523,33 @@
                           class="p-4 bg-gray-50 dark:bg-dark-bg/60 border border-gray-100 dark:border-dark-border rounded-2xl flex flex-col justify-between"
                         >
                           <div class="flex justify-between items-center mb-2 pb-1.5 border-b border-gray-200/50 dark:border-dark-border">
-                            <span class="text-[10px] font-black text-gray-500">Zarge {{ box.order }}: {{ box.box_type === 'BROOD' ? 'Brutraum' : 'Honigraum' }}</span>
-                            <span class="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{{ box.frame_count }} Waben ({{ box.frame_type_name }})</span>
+                            <span class="text-[10px] font-black text-gray-500">{{ $t('logbook.box_title_order', { order: box.order, type: box.box_type === 'BROOD' ? $t('logbook.brood_chamber') : $t('logbook.honey_chamber') }) }}</span>
+                            <span class="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{{ $t('logbook.box_frame_info', { count: box.frame_count, name: box.frame_type_name }) }}</span>
                           </div>
                           <!-- Box values (Summen, ohne Nachkommastellen) -->
                           <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono font-bold">
                             <div class="flex justify-between items-center text-amber-500">
-                              <span>Brut:</span>
+                              <span>{{ $t('logbook.brood') }}:</span>
                               <span>{{ box.brood.toFixed(0) }}</span>
                             </div>
                             <div class="flex justify-between items-center text-green-500">
-                              <span>Bienen:</span>
+                              <span>{{ $t('logbook.bees') }}:</span>
                               <span>{{ box.bees.toFixed(0) }}</span>
                             </div>
                             <div class="flex justify-between items-center text-sky-500">
-                              <span>Drohnen:</span>
+                              <span>{{ $t('logbook.drones') }}:</span>
                               <span>{{ box.drones.toFixed(0) }}</span>
                             </div>
                             <div class="flex justify-between items-center text-orange-500">
-                              <span>Dr.Brut:</span>
+                              <span>{{ $t('logbook.drone_brood') }}:</span>
                               <span>{{ box.drone_brood.toFixed(0) }}</span>
                             </div>
                             <div class="flex justify-between items-center text-purple-500">
-                              <span>Pollen:</span>
+                              <span>{{ $t('logbook.pollen') }}:</span>
                               <span>{{ box.pollen.toFixed(0) }} g</span>
                             </div>
                             <div class="flex justify-between items-center text-yellow-500">
-                              <span>Futter:</span>
+                              <span>{{ $t('logbook.food') }}:</span>
                               <span>{{ box.food.toFixed(0) }} g</span>
                             </div>
                           </div>
@@ -559,32 +559,32 @@
                       <!-- Hive Total Summary (Summen, ohne Nachkommastellen) -->
                       <div class="p-4 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0 shadow-sm">
                         <div>
-                          <span class="text-[9px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider">🐝 Volk Gesamt (Beute):</span>
-                          <h4 class="text-sm font-extrabold text-gray-900 dark:text-white">Summe über alle Zargen</h4>
+                          <span class="text-[9px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider">{{ $t('logbook.hive_total_header') }}</span>
+                          <h4 class="text-sm font-extrabold text-gray-900 dark:text-white">{{ $t('logbook.sum_all_boxes') }}</h4>
                         </div>
                         <div class="flex flex-wrap gap-2 font-mono font-black text-[10px]">
                           <div class="flex items-center space-x-1 text-amber-500 bg-amber-500/10 px-2 py-1 rounded-xl">
-                            <span>Brut:</span>
+                            <span>{{ $t('logbook.brood') }}:</span>
                             <span>{{ getBoxTotalsForEntry(entry).hive.brood.toFixed(0) }}</span>
                           </div>
                           <div class="flex items-center space-x-1 text-green-500 bg-green-500/10 px-2 py-1 rounded-xl">
-                            <span>Bienen:</span>
+                            <span>{{ $t('logbook.bees') }}:</span>
                             <span>{{ getBoxTotalsForEntry(entry).hive.bees.toFixed(0) }}</span>
                           </div>
                           <div class="flex items-center space-x-1 text-sky-500 bg-sky-500/10 px-2 py-1 rounded-xl">
-                            <span>Drohnen:</span>
+                            <span>{{ $t('logbook.drones') }}:</span>
                             <span>{{ getBoxTotalsForEntry(entry).hive.drones.toFixed(0) }}</span>
                           </div>
                           <div class="flex items-center space-x-1 text-orange-500 bg-orange-500/10 px-2 py-1 rounded-xl">
-                            <span>Dr.Brut:</span>
+                            <span>{{ $t('logbook.drone_brood') }}:</span>
                             <span>{{ getBoxTotalsForEntry(entry).hive.drone_brood.toFixed(0) }}</span>
                           </div>
                           <div class="flex items-center space-x-1 text-purple-500 bg-purple-500/10 px-2 py-1 rounded-xl">
-                            <span>Pollen:</span>
+                            <span>{{ $t('logbook.pollen') }}:</span>
                             <span>{{ getBoxTotalsForEntry(entry).hive.pollen.toFixed(0) }} g</span>
                           </div>
                           <div class="flex items-center space-x-1 text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded-xl">
-                            <span>Futter:</span>
+                            <span>{{ $t('logbook.food') }}:</span>
                             <span>{{ getBoxTotalsForEntry(entry).hive.food.toFixed(0) }} g</span>
                           </div>
                         </div>
@@ -593,34 +593,34 @@
                     
                     <!-- Fallback if getBoxTotalsForEntry returns null -->
                     <div v-else class="text-xs text-gray-400 italic">
-                      Zargen- und Volksdaten konnten nicht berechnet werden.
+                      {{ $t('logbook.box_calc_error') }}
                     </div>
                   </div>
 
                   <!-- Nested Varroa counts -->
                   <div v-if="entry.entry_type === 'VARROA_COUNT' && entry.varroa_count_detail" class="grid grid-cols-2 gap-4 p-4 bg-red-500/5 dark:bg-red-500/10 border border-red-500/10 rounded-2xl">
                     <div>
-                      <span class="text-[9px] font-bold text-gray-400 uppercase">Gemessene Milben (Rohwert)</span>
-                      <p class="text-xl font-black text-gray-800 dark:text-gray-100 mt-1">{{ entry.varroa_count_detail.raw_count }} Milben</p>
+                      <span class="text-[9px] font-bold text-gray-400 uppercase">{{ $t('logbook.measured_mites_raw') }}</span>
+                      <p class="text-xl font-black text-gray-800 dark:text-gray-100 mt-1">{{ $t('logbook.measured_mites_raw_val', { count: entry.varroa_count_detail.raw_count }) }}</p>
                     </div>
                     <div>
-                      <span class="text-[9px] font-bold text-gray-400 uppercase">Saisonbereinigter Milbenfall / Tag</span>
-                      <p class="text-xl font-black text-red-500 mt-1">~{{ entry.varroa_count_detail.estimated_total.toFixed(1) }} / Tag</p>
+                      <span class="text-[9px] font-bold text-gray-400 uppercase">{{ $t('logbook.estimated_mites_day') }}</span>
+                      <p class="text-xl font-black text-red-500 mt-1">{{ $t('logbook.estimated_mites_day_val', { count: entry.varroa_count_detail.estimated_total.toFixed(1) }) }}</p>
                     </div>
                   </div>
 
                   <!-- Nested Varroa treatments -->
                   <div v-if="entry.entry_type === 'VARROA_TREATMENT' && entry.varroa_treatment_detail" class="p-4 bg-green-500/5 dark:bg-green-500/10 border border-green-500/10 rounded-2xl space-y-1">
-                    <span class="text-[9px] font-bold text-gray-400 uppercase">Varroabehandlung eingetragen</span>
-                    <p class="text-sm font-bold text-green-600 dark:text-green-400">Produkt: {{ entry.varroa_treatment_detail.product }}</p>
-                    <p class="text-xs font-bold mt-1 text-gray-600 dark:text-gray-400">Dosierung: {{ entry.varroa_treatment_detail.dosage }}</p>
+                    <span class="text-[9px] font-bold text-gray-400 uppercase">{{ $t('logbook.treatment_recorded') }}</span>
+                    <p class="text-sm font-bold text-green-600 dark:text-green-400">{{ $t('logbook.treatment_product', { product: entry.varroa_treatment_detail.product }) }}</p>
+                    <p class="text-xs font-bold mt-1 text-gray-600 dark:text-gray-400">{{ $t('logbook.treatment_dosage', { dosage: entry.varroa_treatment_detail.dosage }) }}</p>
                     <p v-if="entry.varroa_treatment_detail.treatment_notes" class="text-xs text-gray-400 italic mt-1">"{{ entry.varroa_treatment_detail.treatment_notes }}"</p>
                   </div>
 
                   <!-- Images stream & upload gallery -->
                   <div class="space-y-2 border-t border-gray-100 dark:border-dark-border pt-4">
                     <div class="flex justify-between items-center">
-                      <span class="text-[10px] font-black uppercase text-gray-400">🖼️ Bilder-Galerie ({{ entry.images?.length || 0 }} / 5)</span>
+                      <span class="text-[10px] font-black uppercase text-gray-400">{{ $t('logbook.image_gallery', { count: entry.images?.length || 0 }) }}</span>
                       
                       <input 
                         v-if="entry.images?.length < 5"
@@ -635,7 +635,7 @@
                         :for="`file-upload-${entry.id}`"
                         class="text-[10px] font-bold text-primary hover:text-primary-hover hover:underline cursor-pointer uppercase font-sans"
                       >
-                        + Bild hinzufügen
+                        {{ $t('logbook.add_image') }}
                       </label>
                     </div>
 
@@ -655,7 +655,7 @@
                         <button 
                           @click="deleteEntryImage(img.id)"
                           class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-lg shadow opacity-0 group-hover:opacity-100 transition-opacity duration-150"
-                          title="Bild löschen"
+                          :title="$t('logbook.delete_image')"
                         >
                           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                         </button>
@@ -684,19 +684,19 @@
         <!-- Filter Panel Card -->
         <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
           <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-            <span>🔍 Filter-Optionen</span>
+            <span>🔍 {{ $t('logbook.filter_options') }}</span>
             <button 
               @click="resetTableFilters" 
               class="ml-auto text-xs text-primary hover:underline font-bold"
             >
-              Filter zurücksetzen
+              {{ $t('hives.reset_filters') }}
             </button>
           </h3>
           
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <!-- Zeitraum Start -->
             <div>
-              <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Von Datum</label>
+              <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('logbook.filter_from_date') }}</label>
               <input 
                 v-model="tableFilters.startDate" 
                 type="date" 
@@ -706,7 +706,7 @@
             
             <!-- Zeitraum Ende -->
             <div>
-              <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Bis Datum</label>
+              <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('logbook.filter_to_date') }}</label>
               <input 
                 v-model="tableFilters.endDate" 
                 type="date" 
@@ -716,12 +716,12 @@
             
             <!-- Imkerei -->
             <div>
-              <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Imkerei</label>
+              <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('sidebar.active_apiary') }}</label>
               <select 
                 v-model="tableFilters.apiaryId" 
                 class="w-full px-3 py-2 border border-gray-200 dark:border-gray-800 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
               >
-                <option value="">Alle Imkereien</option>
+                <option value="">{{ $t('logbook.filter_all_apiaries') }}</option>
                 <option v-for="a in apiaryStore.apiaries" :key="a.id" :value="a.id">
                   {{ a.name }}
                 </option>
@@ -730,12 +730,12 @@
             
             <!-- Standort -->
             <div>
-              <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Standort</label>
+              <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('hives.location_label') }}</label>
               <select 
                 v-model="tableFilters.locationId" 
                 class="w-full px-3 py-2 border border-gray-200 dark:border-gray-800 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
               >
-                <option value="">Alle Standorte</option>
+                <option value="">{{ $t('logbook.filter_all_locations') }}</option>
                 <option v-for="loc in uniqueLocations" :key="loc.id" :value="loc.id">
                   {{ loc.name }}
                 </option>
@@ -744,12 +744,12 @@
             
             <!-- Volk -->
             <div>
-              <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Volk</label>
+              <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('hives.table_hive') }}</label>
               <select 
                 v-model="tableFilters.hiveId" 
                 class="w-full px-3 py-2 border border-gray-200 dark:border-gray-800 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
               >
-                <option value="">Alle Völker</option>
+                <option value="">{{ $t('logbook.filter_all_hives') }}</option>
                 <option v-for="h in uniqueHives" :key="h.id" :value="h.id">
                   {{ h.name }}
                 </option>
@@ -758,12 +758,12 @@
             
             <!-- Erfasser -->
             <div>
-              <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Erfasser (User)</label>
+              <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('logbook.table_creator') }}</label>
               <select 
                 v-model="tableFilters.userId" 
                 class="w-full px-3 py-2 border border-gray-200 dark:border-gray-800 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
               >
-                <option value="">Alle Erfasser</option>
+                <option value="">{{ $t('logbook.filter_all_creators') }}</option>
                 <option v-for="u in uniqueCreators" :key="u.id" :value="u.id">
                   {{ u.username }}
                 </option>
@@ -776,7 +776,7 @@
         <div v-if="showEntryModal" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl shadow-md p-6 max-w-3xl mx-auto mb-6 animate-scale">
           <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100 dark:border-dark-border">
             <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-              {{ isEditEntryMode ? '📝 Protokolleintrag bearbeiten' : '📝 Neuer Protokolleintrag' }}
+              {{ isEditEntryMode ? $t('logbook.edit_entry_title') : $t('logbook.new_entry_title') }}
             </h3>
             <button @click="showEntryModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -786,21 +786,21 @@
           <form @submit.prevent="submitEntryForm" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Bienenvolk *</label>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('logbook.hive_required') }}</label>
                 <select 
                   v-model="entryForm.hiveId" 
                   required
                   @change="onHiveSelected"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer"
                 >
-                  <option value="" disabled>Bitte Volk wählen...</option>
+                  <option value="" disabled>{{ $t('logbook.select_hive_placeholder') }}</option>
                   <option v-for="hive in hives" :key="hive.id" :value="hive.id">
                     {{ hive.name }}
                   </option>
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Datum *</label>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('logbook.date_required') }}</label>
                 <input 
                   v-model="entryForm.date" 
                   type="date" 
@@ -812,26 +812,26 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Eintrags-Typ *</label>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('logbook.entry_type_required') }}</label>
                 <select 
                   v-model="entryForm.entryType" 
                   required
                   :disabled="isEditEntryMode"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer"
                 >
-                  <option value="INSPECTION">🔎 Beuteninspektion</option>
-                  <option value="VARROA_COUNT">🕷️ Varroazählung (Windel)</option>
-                  <option value="VARROA_TREATMENT">🧪 Varroabehandlung</option>
-                  <option value="GENERAL">📝 Allgemeine Notiz</option>
+                  <option value="INSPECTION">{{ $t('logbook.type_inspection') }}</option>
+                  <option value="VARROA_COUNT">{{ $t('logbook.type_varroa_count') }}</option>
+                  <option value="VARROA_TREATMENT">{{ $t('logbook.type_varroa_treatment') }}</option>
+                  <option value="GENERAL">{{ $t('logbook.type_general') }}</option>
                 </select>
               </div>
             </div>
 
             <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Notizen (Zustand, Brutwaben etc.)</label>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('logbook.notes_label') }}</label>
               <textarea 
                 v-model="entryForm.notes" 
-                placeholder="Sanftmütiges Verhalten, Stifte vorhanden, Königin gesichtet..."
+                :placeholder="$t('logbook.notes_placeholder')"
                 rows="2"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
               ></textarea>
@@ -843,13 +843,13 @@
               <!-- Warning card when hive has no boxes -->
               <div v-if="activeHive && (!activeHive.boxes || activeHive.boxes.length === 0)" class="p-3.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/60 rounded-xl text-xs font-bold text-amber-700 dark:text-amber-400 flex items-start space-x-2">
                 <span class="mt-0.5 text-base shrink-0">⚠️</span>
-                <span>Dieses Volk hat noch keine Zargen konfiguriert. Eingaben sind nur Waben-weise möglich. Füge in der Völker-Ansicht Zargen hinzu, um die vereinfachte Zargen-weise Erfassung freizuschalten.</span>
+                <span>{{ $t('logbook.no_boxes_warning') }}</span>
               </div>
 
               <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">Erfassungs-Variante</h4>
+                <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">{{ $t('logbook.assessment_variant_simple') }}</h4>
                 <span class="inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black bg-white dark:bg-dark-card text-primary border border-gray-200 dark:border-dark-border">
-                  📦 Zargen-weise (Vereinfacht)
+                  {{ $t('logbook.assessment_variant_badge') }}
                 </span>
               </div>
 
@@ -857,7 +857,7 @@
               <div class="space-y-4 animate-scale">
                 <!-- Box Mode Switcher: Exact vs Eighths -->
                 <div class="flex justify-between items-center bg-gray-50 dark:bg-dark-bg p-3 rounded-2xl border">
-                  <span class="text-[10px] font-bold text-gray-500 uppercase">Zargen-Modus:</span>
+                  <span class="text-[10px] font-bold text-gray-500 uppercase">{{ $t('logbook.box_mode_label') }}</span>
                   <div class="inline-flex rounded-lg p-0.5 bg-gray-200 dark:bg-dark-border">
                     <button 
                       type="button"
@@ -865,7 +865,7 @@
                       class="px-2.5 py-1 rounded text-[10px] font-bold transition-all"
                       :class="entryForm.inspectionDetail.boxMode === 'exact' ? 'bg-white dark:bg-dark-card text-primary shadow-sm' : 'text-gray-500'"
                     >
-                      🔢 Geschätzte Gesamtmenge (Stk./g)
+                      {{ $t('logbook.mode_exact') }}
                     </button>
                     <button 
                       type="button"
@@ -873,7 +873,7 @@
                       class="px-2.5 py-1 rounded text-[10px] font-bold transition-all"
                       :class="entryForm.inspectionDetail.boxMode === 'eighths' ? 'bg-white dark:bg-dark-card text-primary shadow-sm' : 'text-gray-500'"
                     >
-                      🍕 Belegung in Achteln
+                      {{ $t('logbook.mode_eighths') }}
                     </button>
                   </div>
                 </div>
@@ -887,17 +887,17 @@
                   >
                     <div class="flex justify-between items-center pb-2 border-b border-gray-50 dark:border-dark-border">
                       <span class="text-xs font-extrabold text-gray-800 dark:text-gray-200 flex items-center">
-                        📦 Zarge #{{ box.order }} ({{ box.box_type === 'BROOD' ? 'Brutraum' : 'Honigraum' }})
+                        {{ $t('logbook.box_label', { order: box.order, type: box.box_type === 'BROOD' ? $t('logbook.brood_chamber') : $t('logbook.honey_chamber') }) }}
                       </span>
                       <span class="text-[9px] font-bold text-gray-400 font-mono">
-                        {{ box.frame_count }} Waben · {{ box.frame_type_name }} (x{{ box.multiplier }})
+                        {{ $t('logbook.box_detail_hint', { count: box.frame_count, name: box.frame_type_name, multiplier: box.multiplier }) }}
                       </span>
                     </div>
 
                     <div class="grid grid-cols-2 sm:grid-cols-6 gap-3 text-center">
                       <!-- Brood -->
                       <div class="space-y-1">
-                        <span class="text-[9px] text-amber-500 font-bold uppercase">Brut</span>
+                        <span class="text-[9px] text-amber-500 font-bold uppercase">{{ $t('logbook.brood') }}</span>
                         <input 
                           v-model.number="box.brood" 
                           type="number" 
@@ -905,7 +905,7 @@
                           min="0" 
                           :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 8" 
                           class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                          :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? '0 Stk.' : '0/8 Waben'"
+                          :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
                         />
                         <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[9px] text-gray-400 font-mono">
                           ≙ {{ calculatedBoxTotals[idx].brood }}
@@ -914,7 +914,7 @@
 
                       <!-- Bees -->
                       <div class="space-y-1">
-                        <span class="text-[9px] text-green-500 font-bold uppercase">Bienen</span>
+                        <span class="text-[9px] text-green-500 font-bold uppercase">{{ $t('logbook.bees') }}</span>
                         <input 
                           v-model.number="box.bees" 
                           type="number" 
@@ -922,7 +922,7 @@
                           min="0" 
                           :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 8" 
                           class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                          :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? '0 Stk.' : '0/8 Waben'"
+                          :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
                         />
                         <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[9px] text-gray-400 font-mono">
                           ≙ {{ calculatedBoxTotals[idx].bees }}
@@ -931,7 +931,7 @@
 
                       <!-- Drones -->
                       <div class="space-y-1">
-                        <span class="text-[9px] text-sky-500 font-bold uppercase">Drohnen</span>
+                        <span class="text-[9px] text-sky-500 font-bold uppercase">{{ $t('logbook.drones') }}</span>
                         <input 
                           v-model.number="box.drones" 
                           type="number" 
@@ -939,7 +939,7 @@
                           min="0" 
                           :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 8" 
                           class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                          :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? '0 Stk.' : '0/8 Waben'"
+                          :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
                         />
                         <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[9px] text-gray-400 font-mono">
                           ≙ {{ calculatedBoxTotals[idx].drones }}
@@ -948,7 +948,7 @@
 
                       <!-- Drone Brood -->
                       <div class="space-y-1">
-                        <span class="text-[9px] text-orange-500 font-bold uppercase">Drohnenbrut</span>
+                        <span class="text-[9px] text-orange-500 font-bold uppercase">{{ $t('logbook.drone_brood') }}</span>
                         <input 
                           v-model.number="box.drone_brood" 
                           type="number" 
@@ -956,7 +956,7 @@
                           min="0" 
                           :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 8" 
                           class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                          :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? '0 Stk.' : '0/8 Waben'"
+                          :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
                         />
                         <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[9px] text-gray-400 font-mono">
                           ≙ {{ calculatedBoxTotals[idx].drone_brood }}
@@ -965,7 +965,7 @@
 
                       <!-- Pollen -->
                       <div class="space-y-1">
-                        <span class="text-[9px] text-purple-500 font-bold uppercase">Pollen</span>
+                        <span class="text-[9px] text-purple-500 font-bold uppercase">{{ $t('logbook.pollen') }}</span>
                         <input 
                           v-model.number="box.pollen" 
                           type="number" 
@@ -973,7 +973,7 @@
                           min="0" 
                           :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 8" 
                           class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                          :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? '0 g' : '0/8 Waben'"
+                          :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_g') : $t('logbook.eighths_placeholder')"
                         />
                         <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[9px] text-gray-400 font-mono">
                           ≙ {{ calculatedBoxTotals[idx].pollen }}
@@ -982,7 +982,7 @@
 
                       <!-- Food -->
                       <div class="space-y-1">
-                        <span class="text-[9px] text-yellow-500 font-bold uppercase">Futter</span>
+                        <span class="text-[9px] text-yellow-500 font-bold uppercase">{{ $t('logbook.food') }}</span>
                         <input 
                           v-model.number="box.food" 
                           type="number" 
@@ -990,7 +990,7 @@
                           min="0" 
                           :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 8" 
                           class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                          :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? '0 g' : '0/8 Waben'"
+                          :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_g') : $t('logbook.eighths_placeholder')"
                         />
                         <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[9px] text-gray-400 font-mono">
                           ≙ {{ calculatedBoxTotals[idx].food }}
@@ -1004,9 +1004,9 @@
 
             <!-- SUB-FORM: VARROA COUNT DETAILS -->
             <div v-if="entryForm.entryType === 'VARROA_COUNT'" class="space-y-3 border-t border-gray-100 dark:border-dark-border pt-4">
-              <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">Windel-Messergebnis</h4>
+              <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">{{ $t('logbook.varroa_windel_result') }}</h4>
               <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Gezählte Milben (Rohwert auf der Windel) *</label>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('logbook.varroa_raw_count_label') }}</label>
                 <input 
                   v-model.number="entryForm.varroaCountDetail.rawCount" 
                   type="number" 
@@ -1014,40 +1014,40 @@
                   min="0"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                 />
-                <p class="text-[10px] text-gray-400 mt-1 italic">Unser Berechnungs-Service korrigiert den Milbenfall automatisch anhand saisonaler Multiplikatoren.</p>
+                <p class="text-[10px] text-gray-400 mt-1 italic">{{ $t('logbook.varroa_calc_hint') }}</p>
               </div>
             </div>
 
             <!-- SUB-FORM: VARROA TREATMENT DETAILS -->
             <div v-if="entryForm.entryType === 'VARROA_TREATMENT'" class="space-y-3 border-t border-gray-100 dark:border-dark-border pt-4">
-              <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">Behandlungsmethode</h4>
+              <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">{{ $t('logbook.treatment_method') }}</h4>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Produkt (z.B. Ameisensäure, Oxalsäure) *</label>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('logbook.treatment_product_label') }}</label>
                   <input 
                     v-model="entryForm.varroaTreatmentDetail.product" 
                     type="text" 
                     required
-                    placeholder="z.B. Ameisensäure 60%"
+                    :placeholder="$t('logbook.treatment_product_placeholder')"
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                   />
                 </div>
                 <div>
-                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Dosierung (z.B. 50ml, 1 Streifen) *</label>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('logbook.treatment_dosage_label') }}</label>
                   <input 
                     v-model="entryForm.varroaTreatmentDetail.dosage" 
                     type="text" 
                     required
-                    placeholder="z.B. 50 ml"
+                    :placeholder="$t('logbook.treatment_dosage_placeholder')"
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                   />
                 </div>
               </div>
               <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Behandlungshinweise</label>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('logbook.treatment_notes_label') }}</label>
                 <textarea 
                   v-model="entryForm.varroaTreatmentDetail.treatmentNotes" 
-                  placeholder="Zusätzliche Behandlungsdetails..."
+                  :placeholder="$t('logbook.treatment_notes_placeholder')"
                   rows="2"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                 ></textarea>
@@ -1055,9 +1055,9 @@
             </div>
 
             <div class="flex justify-end space-x-2 pt-4 border-t border-gray-100 dark:border-dark-border">
-              <button type="button" @click="showEntryModal = false" class="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">Abbrechen</button>
+              <button type="button" @click="showEntryModal = false" class="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">{{ $t('common.cancel') }}</button>
               <button type="submit" class="px-5 py-2 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md">
-                Speichern
+                {{ $t('common.save') }}
               </button>
             </div>
           </form>
@@ -1067,25 +1067,25 @@
         <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl overflow-hidden shadow-sm">
           <div v-if="loadingAllEntries" class="flex flex-col items-center justify-center py-20">
             <svg class="animate-spin h-8 w-8 text-primary mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            <span class="text-xs text-gray-400 font-bold">Lade Logeinträge...</span>
+            <span class="text-xs text-gray-400 font-bold">{{ $t('logbook.loading_entries') }}</span>
           </div>
 
           <div v-else-if="filteredEntries.length === 0" class="p-12 text-center text-gray-400 italic text-sm">
-            Keine Einträge für die gewählten Filterkriterien gefunden.
+            {{ $t('logbook.no_filtered_entries') }}
           </div>
 
           <div v-else class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
-                  <th class="px-6 py-4">Datum</th>
-                  <th class="px-6 py-4">Imkerei / Standort</th>
-                  <th class="px-6 py-4">Volk</th>
-                  <th class="px-6 py-4">Typ</th>
-                  <th class="px-6 py-4">Beschreibung / Notizen</th>
-                  <th class="px-6 py-4">Erfasser</th>
-                  <th class="px-6 py-4 text-center">Bilder</th>
-                  <th class="px-6 py-4 text-right">Aktionen</th>
+                  <th class="px-6 py-4">{{ $t('logbook.table_date') }}</th>
+                  <th class="px-6 py-4">{{ $t('logbook.table_apiary_location') }}</th>
+                  <th class="px-6 py-4">{{ $t('logbook.table_hive') }}</th>
+                  <th class="px-6 py-4">{{ $t('logbook.table_type') }}</th>
+                  <th class="px-6 py-4">{{ $t('logbook.table_notes') }}</th>
+                  <th class="px-6 py-4">{{ $t('logbook.table_creator') }}</th>
+                  <th class="px-6 py-4 text-center">{{ $t('logbook.table_images') }}</th>
+                  <th class="px-6 py-4 text-right">{{ $t('logbook.table_actions') }}</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-100 dark:divide-dark-border text-xs">
@@ -1119,12 +1119,12 @@
                   
                   <!-- Notes & details -->
                   <td class="px-6 py-4 max-w-xs md:max-w-md">
-                    <p class="text-gray-700 dark:text-gray-300 italic mb-2">"{{ entry.notes || 'Keine Anmerkungen erfasst.' }}"</p>
+                    <p class="text-gray-700 dark:text-gray-300 italic mb-2">"{{ entry.notes || $t('logbook.no_notes_recorded') }}"</p>
                     
                     <!-- Nested details rendering -->
                     <div v-if="entry.entry_type === 'INSPECTION' && entry.inspection_detail" class="mt-2 text-[10px] bg-gray-50 dark:bg-dark-bg/40 p-2.5 rounded-xl border space-y-1.5 border-gray-100 dark:border-dark-border">
                       <div class="flex justify-between items-center pb-1 border-b border-gray-200/40 dark:border-dark-border">
-                        <span class="font-bold text-gray-500 uppercase tracking-wide">🔎 Belegung nach Zarge & Volk:</span>
+                        <span class="font-bold text-gray-500 uppercase tracking-wide">{{ $t('logbook.inspection_details_header') }}</span>
                         <span v-if="getBoxTotalsForEntry(entry)" class="font-black text-amber-500 text-[10px] flex flex-wrap gap-2">
                           <span>B: {{ getBoxTotalsForEntry(entry).hive.brood.toFixed(0) }}</span>
                           <span>N: {{ getBoxTotalsForEntry(entry).hive.bees.toFixed(0) }}</span>
@@ -1150,13 +1150,13 @@
                         </span>
                       </div>
                       <div v-else class="text-[9px] text-gray-400 italic">
-                        Zargen- und Volksdaten konnten nicht berechnet werden.
+                        {{ $t('logbook.box_calc_error') }}
                       </div>
                     </div>
 
                     <div v-if="entry.entry_type === 'VARROA_COUNT' && entry.varroa_count_detail" class="mt-2 text-[10px] bg-red-500/5 p-2 rounded-xl border border-red-500/10 flex space-x-3 text-red-500">
-                      <div>Roh: <span class="font-bold font-mono">{{ entry.varroa_count_detail.raw_count }}</span></div>
-                      <div>Berechnet: <span class="font-bold font-mono">~{{ entry.varroa_count_detail.estimated_total.toFixed(1) }}/Tag</span></div>
+                      <div>{{ $t('logbook.measured_mites_raw') }}: <span class="font-bold font-mono">{{ entry.varroa_count_detail.raw_count }}</span></div>
+                      <div>{{ $t('logbook.estimated_mites_day') }}: <span class="font-bold font-mono">{{ $t('logbook.estimated_mites_day_val', { count: entry.varroa_count_detail.estimated_total.toFixed(1) }) }}</span></div>
                     </div>
 
                     <div v-if="entry.entry_type === 'VARROA_TREATMENT' && entry.varroa_treatment_detail" class="mt-2 text-[10px] bg-green-500/5 p-2 rounded-xl border border-green-500/10 text-green-600 dark:text-green-400">
@@ -1227,12 +1227,14 @@
 
 <script setup>
 import { ref, onMounted, reactive, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useApiaryStore } from '../stores/apiary'
 import { useErrorStore } from '../stores/error'
 import { useConfirmStore } from '../stores/confirm'
 import AIChatPane from '../components/AIChatPane.vue'
 import axios from 'axios'
 
+const { t, locale } = useI18n()
 const apiaryStore = useApiaryStore()
 const errorStore = useErrorStore()
 const confirmStore = useConfirmStore()
@@ -1536,9 +1538,9 @@ async function submitSessionForm() {
   if (!sessionForm.title.trim()) return
   if (sessionForm.title.trim().length > 30) {
     if (errorStore && typeof errorStore.showError === 'function') {
-      errorStore.showError('Die Bezeichnung darf maximal 30 Zeichen lang sein.')
+      errorStore.showError(t('logbook.limit_session_title_error'))
     } else {
-      alert('Die Bezeichnung darf maximal 30 Zeichen lang sein.')
+      alert(t('logbook.limit_session_title_error'))
     }
     return
   }
@@ -1575,10 +1577,10 @@ async function submitSessionForm() {
 
 async function deleteSession(session) {
   const confirmed = await confirmStore.ask({
-    title: 'Arbeitssitzung löschen',
-    message: `Möchtest du die Arbeitssitzung "${session.title}" wirklich löschen? Alle darin enthaltenen Inspektionen und Fotos werden endgültig gelöscht.`,
+    title: t('logbook.delete_session'),
+    message: t('logbook.delete_session_confirm', { title: session.title }),
     type: 'danger',
-    confirmText: 'Ja, löschen'
+    confirmText: t('common.delete')
   })
   if (!confirmed) return
   try {
@@ -1786,16 +1788,16 @@ async function submitEntryForm() {
     showEntryModal.value = false
     await refreshCurrentEntries()
   } catch (err) {
-    errorStore.showError('Fehler beim Speichern des Eintrags.', err, 'Eintrag speichern')
+    errorStore.showError(t('logbook.entry_form_submission_error'), err, t('common.save'))
   }
 }
 
 async function deleteEntry(entry) {
   const confirmed = await confirmStore.ask({
-    title: 'Eintrag löschen',
-    message: 'Möchtest du diesen Eintrag und alle verknüpften Messwerte und Fotos wirklich löschen?',
+    title: t('common.delete'),
+    message: t('logbook.delete_entry_confirm'),
     type: 'danger',
-    confirmText: 'Ja, löschen'
+    confirmText: t('common.delete')
   })
   if (!confirmed) return
   try {
@@ -1821,16 +1823,16 @@ async function uploadEntryImage(event, entryId) {
     })
     await refreshCurrentEntries()
   } catch (err) {
-    errorStore.showError('Bilderupload fehlgeschlagen.', err, 'Bilder-Upload')
+    errorStore.showError(t('hives.error_upload_photo'), err, t('hives.photo_upload_btn'))
   }
 }
 
 async function deleteEntryImage(imageId) {
   const confirmed = await confirmStore.ask({
-    title: 'Bild löschen',
-    message: 'Bild wirklich löschen?',
+    title: t('logbook.delete_image'),
+    message: t('logbook.delete_image_confirm'),
     type: 'danger',
-    confirmText: 'Ja, löschen'
+    confirmText: t('common.delete')
   })
   if (!confirmed) return
   try {
@@ -1898,21 +1900,21 @@ function closeLightbox() {
 function formatDateTime(dateTimeStr) {
   if (!dateTimeStr) return ''
   const d = new Date(dateTimeStr)
-  return d.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleString(locale.value === 'de' ? 'de-DE' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
 function formatDate(dateStr) {
   if (!dateStr) return ''
   const d = new Date(dateStr)
-  return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  return d.toLocaleDateString(locale.value === 'de' ? 'de-DE' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 function getEntryTypeName(type) {
   switch (type) {
-    case 'INSPECTION': return '🔍 Inspektion'
-    case 'VARROA_COUNT': return '🕷️ Varroazählung'
-    case 'VARROA_TREATMENT': return '🧪 Varroabehandlung'
-    case 'GENERAL': return '📝 Allgemeine Notiz'
+    case 'INSPECTION': return t('logbook.type_inspection')
+    case 'VARROA_COUNT': return t('logbook.type_varroa_count')
+    case 'VARROA_TREATMENT': return t('logbook.type_varroa_treatment')
+    case 'GENERAL': return t('logbook.type_general')
     default: return type
   }
 }
@@ -1931,7 +1933,7 @@ function getBoxTotalsForEntry(entry) {
       box_type: 'BROOD',
       frame_count: 0,
       multiplier: 1.0,
-      frame_type_name: 'Zarge',
+      frame_type_name: t('hives.box_label'),
       brood: b.brood_total ?? 0,
       bees: b.bee_total ?? 0,
       food: b.food_total ?? 0,
