@@ -55,3 +55,13 @@
 .dark ::-webkit-scrollbar-thumb {
   @apply bg-dark-border rounded-full hover:bg-gray-600;
 }
+
+/* Style date input calendar picker indicator for visibility in dark mode */
+::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
