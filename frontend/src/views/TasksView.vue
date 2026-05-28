@@ -4,41 +4,41 @@
     <!-- Back to Dashboard Link -->
     <router-link to="/dashboard" class="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-hover mb-4 transition-colors duration-200">
       <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-      Zurück zum Dashboard
+      {{ $t('common.back_to_dashboard') }}
     </router-link>
 
     <!-- Header -->
     <div class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
       <div>
         <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-          {{ viewMode === 'calendar' ? '📅 Kalender' : '📋 Aufgaben & To-Dos' }}
+          {{ viewMode === 'calendar' ? $t('tasks.title_calendar') : $t('tasks.title_tasks') }}
         </h1>
         <p class="text-gray-500 dark:text-gray-400 mt-1">
           {{ viewMode === 'calendar' 
-            ? 'Verwalte deine Termine und anstehenden Aufgaben in der Kalenderansicht.' 
-            : 'Verwalte anstehende Arbeiten, Zyklen und wiederkehrende Aufgaben an deinen Ständen.' }}
+            ? $t('tasks.subtitle_calendar') 
+            : $t('tasks.subtitle_tasks') }}
         </p>
       </div>
       <button 
         @click="openCreateTaskModal" 
         class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-2 animate-fade-in"
       >
-        <span>+ Neue Aufgabe</span>
+        <span>{{ $t('tasks.new_task') }}</span>
       </button>
     </div>
 
     <!-- Active Apiary check -->
     <div v-if="!apiaryStore.activeApiaryId" class="glass rounded-3xl p-12 text-center max-w-lg mx-auto border border-dashed border-gray-300 dark:border-gray-700">
       <div class="text-4xl mb-4">📋</div>
-      <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2">Keine aktive Imkerei ausgewählt</h3>
-      <p class="text-gray-500 dark:text-gray-400">Bitte wähle oben eine Imkerei aus, um auf die Aufgaben zuzugreifen.</p>
+      <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2">{{ $t('logbook.no_active_apiary') }}</h3>
+      <p class="text-gray-500 dark:text-gray-400">{{ $t('tasks.select_apiary_desc') }}</p>
     </div>
 
     <div v-else class="space-y-6 animate-scale">
 
       <!-- Quick Filter Bar -->
       <div class="flex flex-wrap items-center gap-2">
-        <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider shrink-0">Schnellfilter:</span>
+        <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider shrink-0">{{ $t('tasks.quick_filters_label') }}</span>
         <button
           v-for="qf in quickFilters"
           :key="qf.key"
@@ -61,39 +61,39 @@
       <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
-            <span>🔍 Filter-Optionen</span>
+            <span>🔍 {{ $t('tasks.filter_options') }}</span>
           </h3>
           <button 
             @click="resetFilters" 
             class="text-xs text-primary hover:underline font-bold"
           >
-            Filter zurücksetzen
+            {{ $t('hives.reset_filters') }}
           </button>
         </div>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <!-- Status -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Status</label>
+            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('common.status') }}</label>
             <select 
               v-model="filters.status" 
               class="w-full px-3 py-2 border border-gray-200 dark:border-gray-800 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer font-semibold"
             >
-              <option value="ALL">Alle Aufgaben</option>
-              <option value="PENDING">Offen</option>
-              <option value="OVERDUE">Überfällig</option>
-              <option value="COMPLETED">Abgeschlossen</option>
+              <option value="ALL">{{ $t('tasks.filter_status_all') }}</option>
+              <option value="PENDING">{{ $t('tasks.filter_status_pending') }}</option>
+              <option value="OVERDUE">{{ $t('tasks.filter_status_overdue') }}</option>
+              <option value="COMPLETED">{{ $t('tasks.filter_status_completed') }}</option>
             </select>
           </div>
           
           <!-- Standort -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Standort</label>
+            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('hives.location_label') }}</label>
             <select 
               v-model="filters.locationId" 
               class="w-full px-3 py-2 border border-gray-200 dark:border-gray-800 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer font-semibold"
             >
-              <option value="">Alle Standorte</option>
+              <option value="">{{ $t('hives.all_locations') }}</option>
               <option v-for="loc in locations" :key="loc.id" :value="loc.id">
                 {{ loc.name }}
               </option>
@@ -102,12 +102,12 @@
           
           <!-- Volk -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Volk</label>
+            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('hives.table_hive') }}</label>
             <select 
               v-model="filters.hiveId" 
               class="w-full px-3 py-2 border border-gray-200 dark:border-gray-800 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer font-semibold"
             >
-              <option value="">Alle Völker</option>
+              <option value="">{{ $t('hives.all_hives') }}</option>
               <option v-for="h in filteredHivesForFilter" :key="h.id" :value="h.id">
                 {{ h.name }}
               </option>
@@ -116,21 +116,21 @@
           
           <!-- Priorität -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Priorität</label>
+            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('hives.filter_tasks') }}</label>
             <select 
               v-model="filters.priority" 
               class="w-full px-3 py-2 border border-gray-200 dark:border-gray-800 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer font-semibold"
             >
-              <option value="">Alle Prioritäten</option>
-              <option value="HIGH">Hoch 🔴</option>
-              <option value="MEDIUM">Mittel 🟡</option>
-              <option value="LOW">Niedrig 🟢</option>
+              <option value="">{{ $t('tasks.all_priorities') }}</option>
+              <option value="HIGH">{{ $t('tasks.priority_high_emoji') }}</option>
+              <option value="MEDIUM">{{ $t('tasks.priority_medium_emoji') }}</option>
+              <option value="LOW">{{ $t('tasks.priority_low_emoji') }}</option>
             </select>
           </div>
 
           <!-- Von Datum -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Fällig Von</label>
+            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('tasks.filter_due_from') }}</label>
             <input 
               v-model="filters.startDate" 
               type="date" 
@@ -140,7 +140,7 @@
           
           <!-- Bis Datum -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Fällig Bis</label>
+            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('tasks.filter_due_to') }}</label>
             <input 
               v-model="filters.endDate" 
               type="date" 
@@ -153,34 +153,34 @@
       <!-- View Mode & Summary Switcher -->
       <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border p-4 rounded-2xl shadow-sm gap-4">
         <div class="flex items-center space-x-2">
-          <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ansicht:</span>
+          <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ $t('tasks.view_label') }}</span>
           <div class="inline-flex rounded-xl p-0.5 bg-gray-100 dark:bg-dark-bg border border-gray-200 dark:border-dark-border">
             <button 
               @click="viewMode = 'tiles'" 
               class="px-4 py-1.5 rounded-lg text-xs font-extrabold tracking-wide transition-all"
               :class="viewMode === 'tiles' ? 'bg-white dark:bg-dark-card text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
             >
-              🗂️ Kacheln
+              {{ $t('tasks.view_tiles') }}
             </button>
             <button 
               @click="viewMode = 'list'" 
               class="px-4 py-1.5 rounded-lg text-xs font-extrabold tracking-wide transition-all"
               :class="viewMode === 'list' ? 'bg-white dark:bg-dark-card text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
             >
-              📊 Liste
+              {{ $t('tasks.view_list') }}
             </button>
             <button 
               @click="viewMode = 'calendar'" 
               class="px-4 py-1.5 rounded-lg text-xs font-extrabold tracking-wide transition-all"
               :class="viewMode === 'calendar' ? 'bg-white dark:bg-dark-card text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
             >
-              🗓️ Kalender
+              {{ $t('tasks.view_calendar') }}
             </button>
           </div>
         </div>
         
         <div class="text-xs font-bold text-gray-500 dark:text-gray-400">
-          Gefunden: <span class="text-primary font-extrabold">{{ filteredTasks.length }}</span> Aufgaben
+          {{ $t('tasks.found_count', { count: filteredTasks.length }) }}
         </div>
       </div>
 
@@ -191,7 +191,7 @@
 
       <!-- No Tasks Found -->
       <div v-else-if="viewMode !== 'calendar' && filteredTasks.length === 0" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-12 text-center text-gray-400 italic text-sm">
-        Keine Aufgaben für diese Filterkriterien vorhanden. Lege eine neue Aufgabe an, um zu starten!
+        {{ $t('tasks.no_tasks_found') }}
       </div>
 
       <!-- VIEW 1: TILES GRID -->
@@ -204,7 +204,7 @@
         >
           <!-- Corner Ribbon for completed tasks -->
           <div v-if="task.is_completed" class="absolute top-0 right-0 bg-green-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-bl-xl">
-            Erledigt ✓
+            {{ $t('tasks.completed_badge') }}
           </div>
 
           <div>
@@ -223,7 +223,7 @@
                 <span 
                   v-if="task.is_recurring"
                   class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400 flex items-center gap-1"
-                  title="Wiederkehrende Aufgabe"
+                  :title="$t('tasks.recurring_tooltip')"
                 >
                   🔄 {{ getRecurrenceIntervalText(task.recurrence_interval) }}
                 </span>
@@ -234,14 +234,14 @@
                 <button 
                   @click="openEditTaskModal(task)"
                   class="p-1 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-                  title="Aufgabe bearbeiten"
+                  :title="$t('tasks.edit_task_tooltip')"
                 >
                   <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                 </button>
                 <button 
                   @click="deleteTask(task.id)"
                   class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
-                  title="Aufgabe löschen"
+                  :title="$t('tasks.delete_task_tooltip')"
                 >
                   <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 </button>
@@ -261,10 +261,10 @@
             <!-- Links (Location / Hive) -->
             <div class="mt-3.5 flex flex-wrap gap-1.5">
               <span v-if="task.location" class="inline-flex items-center text-xs font-bold bg-blue-500/10 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400 px-2.5 py-1 rounded-lg">
-                📍 Stand: {{ task.location.name }}
+                {{ $t('tasks.location_prefix', { name: task.location.name }) }}
               </span>
               <span v-if="task.hive" class="inline-flex items-center text-xs font-bold bg-amber-500/10 text-amber-700 dark:bg-amber-950/30 dark:text-primary px-2.5 py-1 rounded-lg">
-                🐝 Volk: {{ task.hive.name }}
+                {{ $t('tasks.hive_prefix', { name: task.hive.name }) }}
               </span>
             </div>
           </div>
@@ -273,10 +273,10 @@
           <div class="mt-5 pt-3.5 border-t border-gray-100 dark:border-dark-border/60 flex items-center justify-between">
             <div class="text-xs font-mono">
               <span v-if="task.is_completed" class="text-green-500 dark:text-green-400 font-bold">
-                Erledigt am: {{ formatDate(task.completed_at) }}
+                {{ $t('tasks.completed_at', { date: formatDate(task.completed_at) }) }}
               </span>
               <span v-else :class="isOverdue(task.due_date) ? 'text-red-500 font-bold animate-pulse' : 'text-gray-400 dark:text-gray-500'">
-                Fällig: {{ formatDate(task.due_date) || 'Kein Datum' }}
+                {{ formatDate(task.due_date) ? $t('tasks.due_prefix', { date: formatDate(task.due_date) }) : $t('tasks.no_date') }}
               </span>
             </div>
             
@@ -285,7 +285,7 @@
               @click="completeTask(task.id)"
               class="px-3.5 py-1.5 bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow transition-colors flex items-center gap-1 cursor-pointer"
             >
-              <span>Erledigt</span> ✓
+              <span>{{ $t('tasks.complete_btn') }}</span> ✓
             </button>
           </div>
         </div>
@@ -297,13 +297,13 @@
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-gray-50 dark:bg-dark-bg/60 border-b border-gray-200 dark:border-dark-border text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                <th class="py-4 px-6 w-12 text-center">Status</th>
-                <th class="py-4 px-4">Bezeichnung</th>
-                <th class="py-4 px-4 w-40">Zugeordnet</th>
-                <th class="py-4 px-4 w-28">Fälligkeit</th>
-                <th class="py-4 px-4 w-24">Priorität</th>
-                <th class="py-4 px-4 w-24">Intervall</th>
-                <th class="py-4 px-6 w-20 text-right">Aktionen</th>
+                <th class="py-4 px-6 w-12 text-center">{{ $t('common.status') }}</th>
+                <th class="py-4 px-4">{{ $t('tasks.table_title') }}</th>
+                <th class="py-4 px-4 w-40">{{ $t('tasks.table_assigned') }}</th>
+                <th class="py-4 px-4 w-28">{{ $t('tasks.table_due_date') }}</th>
+                <th class="py-4 px-4 w-24">{{ $t('hives.filter_tasks') }}</th>
+                <th class="py-4 px-4 w-24">{{ $t('tasks.table_interval') }}</th>
+                <th class="py-4 px-6 w-20 text-right">{{ $t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-dark-border">
@@ -347,7 +347,7 @@
                 
                 <!-- Due Date -->
                 <td class="py-4 px-4 text-xs font-mono">
-                  <span v-if="task.is_completed" class="text-green-500 font-bold">Erledigt</span>
+                  <span v-if="task.is_completed" class="text-green-500 font-bold">{{ $t('tasks.completed_badge') }}</span>
                   <span v-else :class="isOverdue(task.due_date) ? 'text-red-500 font-black animate-pulse' : 'text-gray-600 dark:text-gray-300'">
                     {{ formatDate(task.due_date) || '—' }}
                   </span>
@@ -377,14 +377,14 @@
                     <button 
                       @click="openEditTaskModal(task)"
                       class="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
-                      title="Aufgabe bearbeiten"
+                      :title="$t('tasks.edit_task_tooltip')"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                     </button>
                     <button 
                       @click="deleteTask(task.id)"
                       class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
-                      title="Aufgabe löschen"
+                      :title="$t('tasks.delete_task_tooltip')"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     </button>
@@ -410,10 +410,10 @@
 
         <div class="space-y-4">
           <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-5 shadow-sm">
-            <h4 class="text-sm font-extrabold text-gray-900 dark:text-white mb-3">📌 Fällig am {{ formatDate(selectedDateString) }}</h4>
+            <h4 class="text-sm font-extrabold text-gray-900 dark:text-white mb-3">{{ $t('tasks.due_on_date', { date: formatDate(selectedDateString) }) }}</h4>
 
             <div v-if="!selectedDateTaskItems.length && !selectedDateCustomItems.length" class="text-xs text-gray-500 dark:text-gray-400 italic">
-              Keine Aufgaben oder Termine für diesen Tag.
+              {{ $t('tasks.no_events_on_day') }}
             </div>
 
             <div v-else class="space-y-2">
@@ -424,7 +424,7 @@
                 :class="item.is_completed ? 'border-green-200 bg-green-50/70 dark:border-green-900/30 dark:bg-green-950/10' : 'border-gray-200 bg-gray-50 dark:border-dark-border dark:bg-dark-bg/60'"
               >
                 <div class="font-bold text-gray-900 dark:text-white">{{ item.title }}</div>
-                <div class="text-gray-500 dark:text-gray-400 mt-0.5">Aufgabe</div>
+                <div class="text-gray-500 dark:text-gray-400 mt-0.5">{{ $t('dashboard.task_kind') }}</div>
               </div>
 
               <div
@@ -435,7 +435,7 @@
               >
                 <div class="font-bold text-gray-900 dark:text-white">{{ item.title }}</div>
                 <div class="text-gray-500 dark:text-gray-400 mt-0.5">
-                  Termin: {{ formatDate(item.start_date) }}<span v-if="item.end_date !== item.start_date"> - {{ formatDate(item.end_date) }}</span>
+                  {{ $t('dashboard.event_kind') }}: {{ formatDate(item.start_date) }}<span v-if="item.end_date !== item.start_date"> - {{ formatDate(item.end_date) }}</span>
                 </div>
               </div>
             </div>
@@ -443,13 +443,13 @@
 
           <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-5 shadow-sm">
             <div class="flex items-center justify-between mb-3">
-              <h4 class="text-sm font-extrabold text-gray-900 dark:text-white">🗂️ Eigener Termin</h4>
+              <h4 class="text-sm font-extrabold text-gray-900 dark:text-white">{{ $t('tasks.custom_event_header') }}</h4>
               <button
                 v-if="customEventForm.id"
                 @click="resetCustomEventForm"
                 class="text-[11px] font-bold text-primary hover:underline"
               >
-                Neu
+                {{ $t('tasks.new_custom_event_btn') }}
               </button>
             </div>
 
@@ -458,7 +458,7 @@
                 v-model="customEventForm.title"
                 type="text"
                 required
-                placeholder="z.B. Wanderung Rapsfeld"
+                :placeholder="$t('tasks.custom_event_placeholder')"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary"
               />
 
@@ -481,7 +481,7 @@
                 <input
                   v-model="customEventForm.notes"
                   type="text"
-                  placeholder="Notiz (optional)"
+                  :placeholder="$t('tasks.custom_event_notes_placeholder')"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary"
                 />
                 <input
@@ -495,7 +495,7 @@
                 type="submit"
                 class="w-full px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-extrabold uppercase tracking-wider rounded-xl"
               >
-                {{ customEventForm.id ? 'Termin speichern' : 'Termin anlegen' }}
+                {{ customEventForm.id ? $t('tasks.save_event_btn') : $t('tasks.create_event_btn') }}
               </button>
             </form>
 
@@ -517,14 +517,14 @@
                   </div>
 
                   <div class="flex items-center gap-1">
-                    <button @click="editCustomEvent(event)" class="text-[11px] text-primary font-bold hover:underline">Bearbeiten</button>
-                    <button @click="removeCustomEvent(event.id)" class="text-[11px] text-red-500 font-bold hover:underline">Löschen</button>
+                    <button @click="editCustomEvent(event)" class="text-[11px] text-primary font-bold hover:underline">{{ $t('common.edit') }}</button>
+                    <button @click="removeCustomEvent(event.id)" class="text-[11px] text-red-500 font-bold hover:underline">{{ $t('common.delete') }}</button>
                   </div>
                 </div>
               </div>
 
               <p v-if="customEvents.length === 0" class="text-xs text-gray-500 dark:text-gray-400 italic">
-                Noch keine eigenen Termine vorhanden.
+                {{ $t('tasks.no_custom_events_yet') }}
               </p>
             </div>
           </div>
@@ -546,7 +546,7 @@
           <!-- Header -->
           <div class="px-6 py-4 border-b border-gray-100 dark:border-dark-border flex justify-between items-center bg-gray-50/50 dark:bg-dark-bg/25">
             <h3 class="text-lg font-extrabold text-gray-900 dark:text-white" id="modal-title">
-              {{ isEditMode ? '📝 Aufgabe bearbeiten' : '📝 Neue Aufgabe erfassen' }}
+              {{ isEditMode ? $t('tasks.edit_modal_title') : $t('tasks.create_modal_title') }}
             </h3>
             <button @click="showTaskModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -558,22 +558,22 @@
             <div class="p-6 space-y-4">
               <!-- Title -->
               <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Bezeichnung *</label>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.task_label_title') }}</label>
                 <input 
                   v-model="taskForm.title" 
                   type="text" 
                   required
-                  placeholder="z.B. Varroagitter einschieben"
+                  :placeholder="$t('hives.task_title_placeholder')"
                   class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-semibold"
                 />
               </div>
 
               <!-- Description -->
               <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Beschreibung / Details</label>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.task_label_description') }}</label>
                 <textarea 
                   v-model="taskForm.description" 
-                  placeholder="Zusätzliche Notizen zur Durchführung..."
+                  :placeholder="$t('hives.task_desc_placeholder')"
                   rows="2"
                   class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                 ></textarea>
@@ -582,25 +582,25 @@
               <!-- Scope Section: Location / Hive -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Standort (Optional)</label>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('tasks.form_location') }}</label>
                   <select 
                     v-model="taskForm.locationId" 
                     @change="onLocationChange"
                     class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs cursor-pointer font-bold"
                   >
-                    <option value="">Global (Alle Stände)</option>
+                    <option value="">{{ $t('tasks.form_global_location') }}</option>
                     <option v-for="loc in locations" :key="loc.id" :value="loc.id">
                       {{ loc.name }}
                     </option>
                   </select>
                 </div>
                 <div>
-                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Bienenvolk (Optional)</label>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('tasks.form_hive') }}</label>
                   <select 
                     v-model="taskForm.hiveId" 
                     class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs cursor-pointer font-bold"
                   >
-                    <option value="">Keines (Global für Stand)</option>
+                    <option value="">{{ $t('tasks.form_global_hive') }}</option>
                     <option v-for="hive in filteredHivesForForm" :key="hive.id" :value="hive.id">
                       {{ hive.name }}
                     </option>
@@ -611,21 +611,21 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Priority -->
                 <div>
-                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Priorisierung *</label>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.task_priority') }}</label>
                   <select 
                     v-model="taskForm.priority" 
                     required
                     class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs cursor-pointer font-bold"
                   >
-                    <option value="LOW">Niedrig (Grün)</option>
-                    <option value="MEDIUM">Mittel (Gelb)</option>
-                    <option value="HIGH">Hoch (Rot)</option>
+                    <option value="LOW">{{ $t('hives.priority_low') }}</option>
+                    <option value="MEDIUM">{{ $t('hives.priority_medium') }}</option>
+                    <option value="HIGH">{{ $t('hives.priority_high') }}</option>
                   </select>
                 </div>
 
                 <!-- Due Date -->
                 <div>
-                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Fälligkeitsdatum</label>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.task_due_date') }}</label>
                   <input 
                     v-model="taskForm.dueDate" 
                     type="date" 
@@ -638,8 +638,8 @@
               <div class="border-t border-gray-100 dark:border-dark-border/80 pt-4 space-y-3">
                 <div class="flex items-center justify-between">
                   <div>
-                    <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wide">🔄 Wiederholende Aufgabe</h5>
-                    <p class="text-[10px] text-gray-400 dark:text-gray-500">Auto-Generierung bei Fertigstellung</p>
+                    <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wide">🔄 {{ $t('tasks.form_recurring') }}</h5>
+                    <p class="text-[10px] text-gray-400 dark:text-gray-500">{{ $t('hives.task_recurring_desc') }}</p>
                   </div>
                   <input 
                     v-model="taskForm.isRecurring" 
@@ -649,17 +649,17 @@
                 </div>
 
                 <div v-if="taskForm.isRecurring" class="animate-scale">
-                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Wiederholungsintervall</label>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.task_recurrence_interval') }}</label>
                   <select 
                     v-model="taskForm.recurrenceInterval" 
                     required
                     class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs cursor-pointer font-bold"
                   >
-                    <option value="DAILY">Täglich</option>
-                    <option value="WEEKLY">Wöchentlich</option>
-                    <option value="BIWEEKLY">Alle 2 Wochen</option>
-                    <option value="MONTHLY">Monatlich</option>
-                    <option value="YEARLY">Jährlich</option>
+                    <option value="DAILY">{{ $t('hives.recurrence_daily') }}</option>
+                    <option value="WEEKLY">{{ $t('hives.recurrence_weekly') }}</option>
+                    <option value="BIWEEKLY">{{ $t('hives.recurrence_biweekly') }}</option>
+                    <option value="MONTHLY">{{ $t('hives.recurrence_monthly') }}</option>
+                    <option value="YEARLY">{{ $t('hives.recurrence_yearly') }}</option>
                   </select>
                 </div>
               </div>
@@ -672,13 +672,13 @@
                 @click="showTaskModal = false" 
                 class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
               >
-                Abbrechen
+                {{ $t('common.cancel') }}
               </button>
               <button 
                 type="submit" 
                 class="px-5 py-2 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md cursor-pointer"
               >
-                {{ isEditMode ? 'Speichern' : 'Erstellen' }}
+                {{ isEditMode ? $t('common.save') : $t('hives.create') }}
               </button>
             </div>
           </form>
@@ -691,6 +691,7 @@
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useApiaryStore } from '../stores/apiary'
 import { useErrorStore } from '../stores/error'
@@ -698,6 +699,7 @@ import { useConfirmStore } from '../stores/confirm'
 import { getCustomCalendarEvents, upsertCustomCalendarEvent, deleteCustomCalendarEvent, isDateInRange } from '../utils/calendarEvents'
 import axios from 'axios'
 
+const { t, locale } = useI18n()
 const apiaryStore = useApiaryStore()
 const errorStore = useErrorStore()
 const confirmStore = useConfirmStore()
@@ -747,21 +749,21 @@ function todayStr() {
 const quickFilters = computed(() => [
   {
     key: 'TODAY',
-    label: 'Heute fällig',
+    label: t('tasks.qf_today'),
     icon: '📅',
     activeClass: 'bg-primary border-primary text-white shadow-md shadow-primary/20',
     count: tasks.value.filter(t => !t.is_completed && t.due_date === todayStr()).length
   },
   {
     key: 'OVERDUE',
-    label: 'Überfällig',
+    label: t('tasks.qf_overdue'),
     icon: '🔴',
     activeClass: 'bg-red-500 border-red-500 text-white shadow-md shadow-red-500/20',
     count: tasks.value.filter(t => !t.is_completed && t.due_date && t.due_date < todayStr()).length
   },
   {
     key: 'UPCOMING',
-    label: 'Anstehend',
+    label: t('tasks.qf_upcoming'),
     icon: '⏳',
     activeClass: 'bg-blue-500 border-blue-500 text-white shadow-md shadow-blue-500/20',
     count: tasks.value.filter(t => !t.is_completed && (!t.due_date || t.due_date > todayStr())).length
@@ -811,7 +813,7 @@ async function fetchData() {
     tasks.value = tasksRes.data
     customEvents.value = getCustomCalendarEvents(apiaryId)
   } catch (err) {
-    errorStore.showError('Fehler beim Laden der Aufgabendaten.', err, 'Aufgaben')
+    errorStore.showError(t('tasks.error_fetch'), err, t('sidebar.tasks'))
   } finally {
     loading.value = false
   }
@@ -964,7 +966,7 @@ const calendarAttributes = computed(() => {
         key: `task-${task.id}`,
         dates: new Date(`${task.due_date}T12:00:00`),
         dot: { color: isDone ? '#16a34a' : overdue ? '#dc2626' : '#f59e0b' },
-        popover: { label: `Aufgabe: ${task.title}` }
+        popover: { label: `${t('dashboard.task_kind')}: ${task.title}` }
       }
     })
 
@@ -975,7 +977,7 @@ const calendarAttributes = computed(() => {
       end: new Date(`${event.end_date}T12:00:00`)
     },
     highlight: { color: event.color, fillMode: 'outline' },
-    popover: { label: `Termin: ${event.title}` }
+    popover: { label: `${t('dashboard.event_kind')}: ${event.title}` }
   }))
 
   return [
@@ -1026,7 +1028,7 @@ async function saveCustomEvent() {
     customEvents.value = getCustomCalendarEvents(apiaryStore.activeApiaryId)
     resetCustomEventForm()
   } catch (err) {
-    errorStore.showError('Fehler beim Speichern des Kalendereintrags.', err, 'Kalender')
+    errorStore.showError(t('tasks.error_save'), err, t('sidebar.calendar'))
   }
 }
 
@@ -1036,10 +1038,10 @@ function editCustomEvent(event) {
 
 async function removeCustomEvent(eventId) {
   const confirmed = await confirmStore.ask({
-    title: 'Termin löschen',
-    message: 'Möchtest du diesen eigenen Termin wirklich löschen?',
+    title: t('tasks.confirm_delete_event_title'),
+    message: t('tasks.confirm_delete_event_msg'),
     type: 'danger',
-    confirmText: 'Ja, löschen'
+    confirmText: t('tasks.confirm_delete_btn')
   })
   if (!confirmed) return
 
@@ -1077,23 +1079,23 @@ async function completeTask(id) {
       await fetchData()
     }
   } catch (err) {
-    errorStore.showError('Fehler beim Abschließen der Aufgabe.', err, 'Aufgabe abschließen')
+    errorStore.showError(t('dashboard.error_complete_task'), err, t('tasks.complete_btn'))
   }
 }
 
 async function deleteTask(id) {
   const confirmed = await confirmStore.ask({
-    title: 'Aufgabe löschen',
-    message: 'Möchtest du diese Aufgabe wirklich löschen?',
+    title: t('tasks.delete_title'),
+    message: t('tasks.confirm_delete_msg'),
     type: 'danger',
-    confirmText: 'Ja, löschen'
+    confirmText: t('tasks.confirm_delete_btn')
   })
   if (!confirmed) return
   try {
     await axios.delete(`/api/tasks/${id}`)
     tasks.value = tasks.value.filter(t => t.id !== id)
   } catch (err) {
-    errorStore.showError('Fehler beim Löschen der Aufgabe.', err, 'Aufgabe löschen')
+    errorStore.showError(t('tasks.error_delete'), err, t('tasks.delete_title'))
   }
 }
 
@@ -1170,7 +1172,7 @@ async function submitTaskForm() {
     
     showTaskModal.value = false
   } catch (err) {
-    errorStore.showError('Fehler beim Speichern der Aufgabe.', err, 'Aufgabe speichern')
+    errorStore.showError(t('tasks.error_save'), err, t('common.save'))
   }
 }
 
@@ -1178,7 +1180,7 @@ async function submitTaskForm() {
 function formatDate(dateStr) {
   if (!dateStr) return ''
   const d = new Date(dateStr)
-  return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  return d.toLocaleDateString(locale.value === 'de' ? 'de-DE' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 function isOverdue(dateStr) {
@@ -1192,9 +1194,9 @@ function isOverdue(dateStr) {
 
 function getPriorityText(prio) {
   switch (prio) {
-    case 'HIGH': return 'Hoch 🔴'
-    case 'MEDIUM': return 'Mittel 🟡'
-    case 'LOW': return 'Niedrig 🟢'
+    case 'HIGH': return t('tasks.priority_high_emoji')
+    case 'MEDIUM': return t('tasks.priority_medium_emoji')
+    case 'LOW': return t('tasks.priority_low_emoji')
     default: return prio
   }
 }
@@ -1210,11 +1212,11 @@ function getPriorityBadgeClass(prio) {
 
 function getRecurrenceIntervalText(interval) {
   switch (interval?.toUpperCase()) {
-    case 'DAILY': return 'Täglich'
-    case 'WEEKLY': return 'Wöchentlich'
-    case 'BIWEEKLY': return 'Alle 2 Wochen'
-    case 'MONTHLY': return 'Monatlich'
-    case 'YEARLY': return 'Jährlich'
+    case 'DAILY': return t('hives.recurrence_daily')
+    case 'WEEKLY': return t('hives.recurrence_weekly')
+    case 'BIWEEKLY': return t('hives.recurrence_biweekly')
+    case 'MONTHLY': return t('hives.recurrence_monthly')
+    case 'YEARLY': return t('hives.recurrence_yearly')
     default: return interval
   }
 }
