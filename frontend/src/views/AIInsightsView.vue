@@ -337,12 +337,12 @@
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                   {{ scopeLabel(job.scope) }}
                 </span>
-                <span v-if="job.include_locations" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">Standorte</span>
-                <span v-if="job.include_hives" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">Völker</span>
-                <span v-if="job.include_journal_entries" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">Stockkarte</span>
-                <span v-if="job.include_tasks" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">Aufgaben</span>
-                <span v-if="job.include_calendar" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">Kalender</span>
-                <span v-if="job.include_weather_data" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">Wetter</span>
+                <span v-if="job.include_locations" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">{{ $t('beeAgent.badge_locations') }}</span>
+                <span v-if="job.include_hives" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">{{ $t('beeAgent.badge_hives') }}</span>
+                <span v-if="job.include_journal_entries" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">{{ $t('beeAgent.badge_journal') }}</span>
+                <span v-if="job.include_tasks" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">{{ $t('beeAgent.badge_tasks') }}</span>
+                <span v-if="job.include_calendar" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">{{ $t('beeAgent.badge_calendar') }}</span>
+                <span v-if="job.include_weather_data" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">{{ $t('beeAgent.badge_weather') }}</span>
               </div>
               <p class="text-[11px] text-gray-500 dark:text-gray-400 font-mono">{{ job.cron_expression }}</p>
               <p v-if="job.custom_prompt" class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-1 italic">
@@ -510,43 +510,43 @@
             <label class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-primary">
               <input type="checkbox" v-model="jobForm.include_locations" class="rounded" />
               <div>
-                <div class="text-sm font-bold text-gray-800 dark:text-white">📍 Standorte</div>
-                <div class="text-[10px] text-gray-500">Standortdaten in Prompt einbeziehen</div>
+                <div class="text-sm font-bold text-gray-800 dark:text-white">📍 {{ $t('beeAgent.include_locations_title') }}</div>
+                <div class="text-[10px] text-gray-500">{{ $t('beeAgent.include_locations_desc') }}</div>
               </div>
             </label>
             <label class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-primary">
               <input type="checkbox" v-model="jobForm.include_hives" class="rounded" />
               <div>
-                <div class="text-sm font-bold text-gray-800 dark:text-white">🐝 Völker</div>
-                <div class="text-[10px] text-gray-500">Volksdaten in Prompt einbeziehen</div>
+                <div class="text-sm font-bold text-gray-800 dark:text-white">🐝 {{ $t('beeAgent.include_hives_title') }}</div>
+                <div class="text-[10px] text-gray-500">{{ $t('beeAgent.include_hives_desc') }}</div>
               </div>
             </label>
             <label class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-primary">
               <input type="checkbox" v-model="jobForm.include_weather_data" class="rounded" />
               <div>
-                <div class="text-sm font-bold text-gray-800 dark:text-white">🌦️ Wetterdaten</div>
-                <div class="text-[10px] text-gray-500">Aktuelle Wetterdaten einbeziehen</div>
+                <div class="text-sm font-bold text-gray-800 dark:text-white">🌦️ {{ $t('beeAgent.include_weather_title') }}</div>
+                <div class="text-[10px] text-gray-500">{{ $t('beeAgent.include_weather_desc') }}</div>
               </div>
             </label>
             <label class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-primary">
               <input type="checkbox" v-model="jobForm.include_journal_entries" class="rounded" />
               <div>
-                <div class="text-sm font-bold text-gray-800 dark:text-white">📋 Stockkarte</div>
-                <div class="text-[10px] text-gray-500">Letzte Einträge einbeziehen</div>
+                <div class="text-sm font-bold text-gray-800 dark:text-white">📋 {{ $t('beeAgent.include_journal_title') }}</div>
+                <div class="text-[10px] text-gray-500">{{ $t('beeAgent.include_journal_desc') }}</div>
               </div>
             </label>
             <label class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-primary">
               <input type="checkbox" v-model="jobForm.include_tasks" class="rounded" />
               <div>
-                <div class="text-sm font-bold text-gray-800 dark:text-white">📋 Aufgaben</div>
-                <div class="text-[10px] text-gray-500">Aufgabenliste einbeziehen</div>
+                <div class="text-sm font-bold text-gray-800 dark:text-white">📋 {{ $t('beeAgent.include_tasks_title') }}</div>
+                <div class="text-[10px] text-gray-500">{{ $t('beeAgent.include_tasks_desc') }}</div>
               </div>
             </label>
             <label class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-primary">
               <input type="checkbox" v-model="jobForm.include_calendar" class="rounded" />
               <div>
-                <div class="text-sm font-bold text-gray-800 dark:text-white">📅 Kalender</div>
-                <div class="text-[10px] text-gray-500">Termine & Fälligkeiten einbeziehen</div>
+                <div class="text-sm font-bold text-gray-800 dark:text-white">📅 {{ $t('beeAgent.include_calendar_title') }}</div>
+                <div class="text-[10px] text-gray-500">{{ $t('beeAgent.include_calendar_desc') }}</div>
               </div>
             </label>
           </div>

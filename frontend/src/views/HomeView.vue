@@ -5,18 +5,18 @@
     <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
       <div>
         <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-          Hallo, {{ authStore.user?.first_name || authStore.user?.username }}!
+          {{ $t('dashboard.hello') }}, {{ authStore.user?.first_name || authStore.user?.username }}!
         </h1>
         <p v-if="apiaryStore.activeApiary" class="text-gray-500 dark:text-gray-400 mt-1">
-          Willkommen zurück auf deinem Bienenstand. Hier ist der aktuelle Zustand der Imkerei <span class="font-bold text-primary">{{ apiaryStore.activeApiary?.name }}</span>.
+          {{ $t('dashboard.welcome_back', { apiary: apiaryStore.activeApiary?.name }) }}
         </p>
         <p v-else class="text-gray-500 dark:text-gray-400 mt-1">
-          Willkommen auf deinem Bienenstand. Richte bitte deine Imkerei ein, um mit BeeBoard zu starten.
+          {{ $t('dashboard.welcome_new') }}
         </p>
       </div>
       <div v-if="apiaryStore.activeApiary" class="flex items-center space-x-2 bg-primary/10 border border-primary/20 text-primary px-4 py-2 rounded-2xl">
         <svg class="w-5 h-5 fill-primary" viewBox="0 0 24 24"><path d="M12 2C11.5 2 11 2.2 10.6 2.6L7.4 5.8C6.9 6.3 6.9 7.1 7.4 7.6L8.4 8.6C7.6 9.8 7 11 7 12H5C3.3 12 2 13.3 2 15C2 16.7 3.3 18 5 18H7C7 19.1 7.9 20 9 20H15C16.1 20 17 19.1 17 18H19C20.7 18 22 16.7 22 15C22 13.3 20.7 12 19 12H17C17 11 16.4 9.8 15.6 8.6L16.6 7.6C17.1 7.1 17.1 6.3 16.6 5.8L13.4 2.6C13 2.2 12.5 2 12 2M12 4L14.4 6.4L13 7.8L12.5 7.3C12.1 6.9 11.3 6.9 10.9 7.3L10.4 7.8L9.6 7L12 4M9 10H15V12H9V10M5 14H19C19.6 14 20 14.4 20 15C20 15.6 19.6 16 19 16H5C4.4 16 4 15.6 4 15C4 14.4 4.4 14 5 14M9 18H15V19H9V18Z"/></svg>
-        <span class="text-sm font-bold uppercase tracking-wider">Aktiv</span>
+        <span class="text-sm font-bold uppercase tracking-wider">{{ $t('dashboard.active') }}</span>
       </div>
     </div>
 
@@ -29,28 +29,28 @@
             <path d="M12 2C11.5 2 11 2.2 10.6 2.6L7.4 5.8C6.9 6.3 6.9 7.1 7.4 7.6L8.4 8.6C7.6 9.8 7 11 7 12H5C3.3 12 2 13.3 2 15C2 16.7 3.3 18 5 18H7C7 19.1 7.9 20 9 20H15C16.1 20 17 19.1 17 18H19C20.7 18 22 16.7 22 15C22 13.3 20.7 12 19 12H17C17 11 16.4 9.8 15.6 8.6L16.6 7.6C17.1 7.1 17.1 6.3 16.6 5.8L13.4 2.6C13 2.2 12.5 2 12 2M12 4L14.4 6.4L13 7.8L12.5 7.3C12.1 6.9 11.3 6.9 10.9 7.3L10.4 7.8L9.6 7L12 4M9 10H15V12H9V10M5 14H19C19.6 14 20 14.4 20 15C20 15.6 19.6 16 19 16H5C4.4 16 4 15.6 4 15C4 14.4 4.4 14 5 14M9 18H15V19H9V18Z"/>
           </svg>
         </div>
-        <h3 class="text-xl font-extrabold text-gray-900 dark:text-white">Neue Imkerei anlegen</h3>
+        <h3 class="text-xl font-extrabold text-gray-900 dark:text-white">{{ $t('dashboard.create_apiary_title') }}</h3>
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-          Um BeeBoard nutzen zu können, lege bitte zuerst deine Imkerei an.
+          {{ $t('dashboard.create_apiary_desc') }}
         </p>
       </div>
 
       <form @submit.prevent="createApiary" class="space-y-4">
         <div>
-          <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Name der Imkerei *</label>
+          <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('dashboard.apiary_name') }}</label>
           <input 
             v-model="newApiaryName" 
             type="text" 
             required
-            placeholder="z.B. Imkerei Sonnenschein"
+            :placeholder="$t('dashboard.apiary_name_placeholder')"
             class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
           />
         </div>
         <div>
-          <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Anmerkungen (Optional)</label>
+          <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('dashboard.apiary_notes') }}</label>
           <textarea 
             v-model="newApiaryNotes" 
-            placeholder="z.B. Standorte hauptsächlich im Odenwald"
+            :placeholder="$t('dashboard.apiary_notes_placeholder')"
             rows="3"
             class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
           ></textarea>
@@ -64,14 +64,14 @@
             <!-- Spinner -->
             <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
           </span>
-          <span>Imkerei erstellen 🚀</span>
+          <span>{{ $t('dashboard.apiary_create_btn') }}</span>
         </button>
       </form>
     </div>
 
     <div v-else-if="loading" class="flex flex-col items-center justify-center py-20">
       <svg class="animate-spin h-10 w-10 text-primary mb-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-      <p class="text-gray-500 dark:text-gray-400 font-bold">Lade Bienenstand-Daten...</p>
+      <p class="text-gray-500 dark:text-gray-400 font-bold">{{ $t('dashboard.loading') }}</p>
     </div>
 
     <div v-else class="space-y-8">
@@ -83,12 +83,12 @@
             <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
           </div>
           <div>
-            <h4 class="font-bold text-base">Achtung: Erhöhter Milbenfall!</h4>
+            <h4 class="font-bold text-base">{{ $t('dashboard.varroa_alert_title') }}</h4>
             <p class="text-sm mt-1 text-gray-700 dark:text-gray-300">
-              Bei <strong>{{ warning.hive_name }}</strong> wurde am {{ formatDate(warning.date) }} ein geschätzter natürlicher Varroamilbenfall von <strong class="text-amber-600 dark:text-amber-400">{{ warning.estimated_total.toFixed(1) }} Milben/Tag</strong> festgestellt (Gemessener Wert: {{ warning.raw_count }} Milben in der Saison {{ warning.season }}). 
+              {{ $t('dashboard.varroa_alert_desc', { hive: warning.hive_name, date: formatDate(warning.date), count: warning.estimated_total.toFixed(1), raw: warning.raw_count, season: warning.season }) }}
             </p>
             <p class="text-sm mt-1 font-bold text-primary">
-              Empfehlung: Leite umgehend eine Varroabehandlung ein oder kontrolliere die Beute.
+              {{ $t('dashboard.varroa_alert_rec') }}
             </p>
           </div>
         </div>
@@ -97,14 +97,14 @@
 
       <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-bold text-gray-900 dark:text-white">🗓️ Fällige Termine (14 Tage)</h3>
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white">🗓️ {{ $t('dashboard.due_dates_title') }}</h3>
           <router-link to="/tasks?view=calendar" class="text-xs font-extrabold text-primary hover:underline uppercase tracking-wider">
-            Kalender öffnen
+            {{ $t('dashboard.open_calendar') }}
           </router-link>
         </div>
 
         <div v-if="dueScheduleItems.length === 0" class="text-sm text-gray-500 dark:text-gray-400 italic">
-          Keine fälligen Aufgaben oder Termine in den nächsten 14 Tagen.
+          {{ $t('dashboard.no_due_items') }}
         </div>
 
         <div v-else class="space-y-2">
@@ -127,7 +127,7 @@
               <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-full"
                 :class="item.kind === 'task' ? 'bg-primary/15 text-primary' : 'bg-blue-500/15 text-blue-600 dark:text-blue-400'"
               >
-                {{ item.kind === 'task' ? 'Aufgabe' : 'Termin' }}
+                {{ item.kind === 'task' ? $t('dashboard.task_kind') : $t('dashboard.event_kind') }}
               </span>
               <span class="text-[10px] font-bold uppercase"
                 :class="item.status === 'overdue' ? 'text-red-500' : item.status === 'today' ? 'text-amber-600 dark:text-amber-400' : 'text-gray-500 dark:text-gray-400'"
@@ -149,10 +149,10 @@
           <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
             <div class="flex justify-between items-center mb-6">
               <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center space-x-2">
-                <span>📋 Anstehende Aufgaben & Empfehlungen</span>
+                <span>📋 {{ $t('dashboard.upcoming_tasks_title') }}</span>
               </h3>
               <span class="px-2.5 py-1 bg-primary/10 text-primary text-xs font-extrabold rounded-full">
-                {{ tasks.length }} Aufgaben
+                {{ $t('dashboard.tasks_count', { count: tasks.length }) }}
               </span>
             </div>
 
@@ -161,17 +161,17 @@
               <input 
                 v-model="newTaskTitle" 
                 type="text" 
-                placeholder="z.B. Honigraum aufsetzen bei Volk 3..."
+                :placeholder="$t('dashboard.add_task_placeholder')"
                 required
                 class="flex-grow px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
               />
               <button type="submit" class="px-4 py-2 bg-primary hover:bg-primary-hover text-white font-bold rounded-xl text-sm shadow-md hover-scale shrink-0">
-                + Hinzufügen
+                + {{ $t('dashboard.add_btn') }}
               </button>
             </form>
 
             <div v-if="tasks.length === 0" class="text-center py-8 text-gray-400">
-              <p>Hervorragend! Keine fälligen Aufgaben oder Warnungen auf deinem Bienenstand.</p>
+              <p>{{ $t('dashboard.no_tasks') }}</p>
             </div>
 
             <div v-else class="space-y-3">
@@ -203,7 +203,7 @@
                   v-if="task.urgent" 
                   class="px-2 py-0.5 bg-red-500/10 text-red-500 text-[10px] font-bold uppercase rounded-full shrink-0"
                 >
-                  Dringend
+                  {{ $t('dashboard.urgent') }}
                 </span>
               </div>
             </div>
@@ -213,13 +213,13 @@
           <!-- Quick AI Assistant / Insight Banner -->
           <div v-if="latestInsight" class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 dark:from-dark-card dark:to-dark-bg dark:border-amber-900/50 rounded-3xl p-6 shadow-sm relative overflow-hidden">
             <div class="flex items-center gap-2 mb-4">
-              <span class="bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 text-xs font-black uppercase px-3 py-1 rounded-full">KI-Analyse</span>
+              <span class="bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 text-xs font-black uppercase px-3 py-1 rounded-full">{{ $t('dashboard.ai_analysis') }}</span>
               <span class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">{{ formatDateTime(latestInsight.created_at) }}</span>
             </div>
             <h3 class="text-xl font-black mb-3 text-gray-900 dark:text-white">{{ latestInsight.title }}</h3>
             <div class="prose dark:prose-invert max-w-none text-sm text-gray-700 dark:text-gray-300 line-clamp-4 markdown-content mb-4" v-html="renderMarkdown(latestInsight.content)"></div>
             <router-link to="/ai-insights" class="inline-block px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-sm rounded-xl shadow-sm hover-scale transition-colors">
-              Ganzer Beitrag & Mehr Insights 🐝
+              {{ $t('dashboard.full_post_btn') }}
             </router-link>
           </div>
           
@@ -229,12 +229,12 @@
               <svg class="w-72 h-72 fill-white" viewBox="0 0 24 24"><path d="M12 2C11.5 2 11 2.2 10.6 2.6L7.4 5.8C6.9 6.3 6.9 7.1 7.4 7.6L8.4 8.6C7.6 9.8 7 11 7 12H5C3.3 12 2 13.3 2 15C2 16.7 3.3 18 5 18H7C7 19.1 7.9 20 9 20H15C16.1 20 17 19.1 17 18H19C20.7 18 22 16.7 22 15C22 13.3 20.7 12 19 12H17C17 11 16.4 9.8 15.6 8.6L16.6 7.6C17.1 7.1 17.1 6.3 16.6 5.8L13.4 2.6C13 2.2 12.5 2 12 2Z"/></svg>
             </div>
 
-            <h3 class="text-xl font-black mb-2">Fragen an deine Bienen?</h3>
+            <h3 class="text-xl font-black mb-2">{{ $t('dashboard.ai_questions_title') }}</h3>
             <p class="text-sm opacity-90 max-w-lg mb-4">
-              Unser KI-Imkerassistent analysiert deine Standorte, die Volksstärken und Varroaverläufe, um dir kompetenten Rat zu geben oder gesprochene Notizen automatisch in Logbucheinträge umzuwandeln.
+              {{ $t('dashboard.ai_questions_desc') }}
             </p>
             <router-link to="/ai-insights" class="inline-block px-5 py-2.5 bg-white text-amber-700 font-extrabold text-sm rounded-xl shadow-md hover:bg-gray-100 hover-scale">
-              KI-Insights öffnen 🐝
+              {{ $t('dashboard.ai_open_btn') }}
             </router-link>
           </div>
 
@@ -242,13 +242,13 @@
 
         <!-- Right 1 Col: Recent Activities Log -->
         <div class="space-y-6">
-          <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">🔔 Letzte Aktivitäten</h3>
+          <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border p-6 rounded-2xl shadow-sm">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">🔔 {{ $t('dashboard.recent_activities') }}</h3>
             
             <div v-if="recentEntries.length === 0" class="text-center py-10 text-gray-400">
-              <p>Noch keine Logbucheinträge vorhanden.</p>
+              <p>{{ $t('dashboard.no_logs') }}</p>
               <router-link to="/logbook" class="text-primary hover:underline text-sm font-bold block mt-2">
-                Jetzt Eintrag erfassen ->
+                {{ $t('dashboard.create_log_prompt') }}
               </router-link>
             </div>
 
@@ -277,7 +277,7 @@
                     {{ getEntryTypeName(entry.entry_type) }}
                   </p>
                   <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2 italic">
-                    "{{ entry.notes || 'Keine Anmerkungen erfasst.' }}"
+                    "{{ entry.notes || $t('dashboard.no_notes') }}"
                   </p>
                 </div>
               </div>
@@ -285,7 +285,7 @@
 
             <div class="border-t border-gray-100 dark:border-dark-border mt-6 pt-4 text-center">
               <router-link to="/logbook" class="text-primary hover:text-primary-hover text-sm font-bold hover:underline">
-                Alle Aktivitäten ansehen
+                {{ $t('dashboard.view_all_activities') }}
               </router-link>
             </div>
           </div>
@@ -302,6 +302,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useApiaryStore } from '../stores/apiary'
 import { useErrorStore } from '../stores/error'
+import { useI18n } from 'vue-i18n'
 import { getCustomCalendarEvents, classifyDueStatus } from '../utils/calendarEvents'
 import axios from 'axios'
 import { marked } from 'marked'
@@ -310,6 +311,7 @@ import DOMPurify from 'dompurify'
 const authStore = useAuthStore()
 const apiaryStore = useApiaryStore()
 const errorStore = useErrorStore()
+const { t, locale } = useI18n()
 
 const loading = ref(false)
 const locations = ref([])
@@ -411,7 +413,7 @@ function calculateBiologicalAggregates(entries) {
       if (detail.estimated_total >= threshold && !varroaWarnings.value.some(w => w.hive_id === entry.hive_id)) {
         varroaWarnings.value.push({
           hive_id: entry.hive_id,
-          hive_name: entry.hive?.name || 'Unbekanntes Volk',
+          hive_name: entry.hive?.name || t('dashboard.unknown_hive'),
           raw_count: detail.raw_count,
           estimated_total: detail.estimated_total,
           season: detail.season,
@@ -429,23 +431,23 @@ function generateIntelligentTasks(entries, dbTasks = []) {
   const generated = []
   
   // 1. General database tasks
-  dbTasks.forEach(t => {
-    let subtitle = t.description || 'Fällige Aufgabe'
-    if (t.location || t.hive) {
+  dbTasks.forEach(taskItem => {
+    let subtitle = taskItem.description || t('dashboard.default_due_task')
+    if (taskItem.location || taskItem.hive) {
       const parts = []
-      if (t.location) parts.push(`Standort: ${t.location.name}`)
-      if (t.hive) parts.push(`Volk: ${t.hive.name}`)
+      if (taskItem.location) parts.push(t('dashboard.location_prefix', { name: taskItem.location.name }))
+      if (taskItem.hive) parts.push(t('dashboard.hive_prefix', { name: taskItem.hive.name }))
       subtitle = `${parts.join(', ')} — ${subtitle}`
     }
-    if (t.due_date) {
-      subtitle = `Fällig: ${formatDate(t.due_date)} | ${subtitle}`
+    if (taskItem.due_date) {
+      subtitle = `${t('dashboard.due_prefix', { date: formatDate(taskItem.due_date) })} | ${subtitle}`
     }
     
     generated.push({
-      id: t.id,
-      title: t.title,
+      id: taskItem.id,
+      title: taskItem.title,
       subtitle: subtitle,
-      urgent: t.priority === 'HIGH' || (t.due_date && isOverdue(t.due_date)),
+      urgent: taskItem.priority === 'HIGH' || (taskItem.due_date && isOverdue(taskItem.due_date)),
       completed: false,
       isDbTask: true
     })
@@ -476,10 +478,10 @@ function buildDueScheduleOverview(dbTasks, customEvents) {
         id: `task-${task.id}`,
         kind: 'task',
         title: task.title,
-        subtitle: `Fällig am ${formatDate(task.due_date)}`,
+        subtitle: t('dashboard.task_due_on', { date: formatDate(task.due_date) }),
         sortDate: task.due_date,
         status,
-        statusLabel: status === 'overdue' ? 'überfällig' : status === 'today' ? 'heute' : 'anstehend'
+        statusLabel: t(`dashboard.status_${status}`)
       })
     })
 
@@ -496,10 +498,12 @@ function buildDueScheduleOverview(dbTasks, customEvents) {
       id: `custom-${event.id}`,
       kind: 'custom',
       title: event.title,
-      subtitle: `Zeitraum ${formatDate(event.start_date)}${end !== event.start_date ? ` - ${formatDate(end)}` : ''}`,
+      subtitle: end !== event.start_date 
+        ? t('dashboard.event_range_multi', { start: formatDate(event.start_date), end: formatDate(end) })
+        : t('dashboard.event_range', { start: formatDate(event.start_date) }),
       sortDate: dueDate,
       status,
-      statusLabel: status === 'overdue' ? 'abgelaufen' : status === 'today' ? 'heute' : 'anstehend'
+      statusLabel: status === 'overdue' ? t('dashboard.status_expired') : t(`dashboard.status_${status}`)
     })
   })
 
@@ -509,16 +513,16 @@ function buildDueScheduleOverview(dbTasks, customEvents) {
 }
 
 async function completeTask(id) {
-  const task = tasks.value.find(t => t.id === id)
+  const task = tasks.value.find(item => item.id === id)
   if (task && task.isDbTask) {
     try {
       await axios.post(`/api/tasks/${id}/complete`)
     } catch (err) {
-      errorStore.showError('Fehler beim Abschließen der Aufgabe.', err, 'Aufgabe')
+      errorStore.showError(t('dashboard.error_complete_task'), err, 'Aufgabe')
       return
     }
   }
-  tasks.value = tasks.value.filter(t => t.id !== id)
+  tasks.value = tasks.value.filter(item => item.id !== id)
 }
 
 async function addManualTask() {
@@ -531,18 +535,18 @@ async function addManualTask() {
       params: { apiary_id: apiaryStore.activeApiaryId }
     })
     
-    const t = res.data
+    const taskData = res.data
     tasks.value.unshift({
-      id: t.id,
-      title: t.title,
-      subtitle: 'Fällige Aufgabe',
+      id: taskData.id,
+      title: taskData.title,
+      subtitle: t('dashboard.default_due_task'),
       urgent: false,
       completed: false,
       isDbTask: true
     })
     newTaskTitle.value = ''
   } catch (err) {
-    errorStore.showError('Fehler beim Hinzufügen der Aufgabe.', err, 'Aufgabe erstellen')
+    errorStore.showError(t('dashboard.error_add_task'), err, 'Aufgabe erstellen')
   }
 }
 
@@ -563,7 +567,7 @@ async function createApiary() {
     newApiaryNotes.value = ''
     window.location.reload()
   } catch (err) {
-    errorStore.showError('Fehler beim Erstellen der Imkerei.', err, 'Imkerei anlegen')
+    errorStore.showError(t('dashboard.error_create_apiary'), err, 'Imkerei anlegen')
   }
 }
 
@@ -571,17 +575,17 @@ async function createApiary() {
 function formatDate(dateStr) {
   if (!dateStr) return ''
   const d = new Date(dateStr)
-  return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  return d.toLocaleDateString(locale.value === 'de' ? 'de-DE' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 function formatDateTime(dateStr) {
   if (!dateStr) return ''
   const d = new Date(dateStr)
-  return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleDateString(locale.value === 'de' ? 'de-DE' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
 function formatNumber(num) {
-  return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(num)
+  return new Intl.NumberFormat(locale.value === 'de' ? 'de-DE' : 'en-US', { maximumFractionDigits: 0 }).format(num)
 }
 
 function toLocalDateString(dateObj) {
@@ -599,10 +603,10 @@ function renderMarkdown(text) {
 
 function getEntryTypeName(type) {
   switch (type) {
-    case 'INSPECTION': return 'Beuteninspektion'
-    case 'VARROA_COUNT': return 'Varroazählung'
-    case 'VARROA_TREATMENT': return 'Varroabehandlung'
-    case 'GENERAL': return 'Allgemeine Notiz'
+    case 'INSPECTION': return t('dashboard.entry_inspection')
+    case 'VARROA_COUNT': return t('dashboard.entry_varroa_count')
+    case 'VARROA_TREATMENT': return t('dashboard.entry_varroa_treatment')
+    case 'GENERAL': return t('dashboard.entry_general')
     default: return type
   }
 }
