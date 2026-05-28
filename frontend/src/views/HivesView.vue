@@ -4,21 +4,21 @@
     <!-- Back to Dashboard Link -->
     <router-link to="/dashboard" class="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-hover mb-4 transition-colors duration-200">
       <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-      Zurück zum Dashboard
+      {{ $t('common.back_to_dashboard') }}
     </router-link>
 
     <!-- Header -->
     <div class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
       <div>
-        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">🐝 Bienenvölker</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Verwalte deine Bienenvölker, Königinnen und Zargensysteme.</p>
+        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">🐝 {{ $t('hives.title') }}</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">{{ $t('hives.description') }}</p>
       </div>
       <div class="flex space-x-2">
         <button 
           @click="openCreateModal" 
           class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-2"
         >
-          <span>+ Neues Volk</span>
+          <span>+ {{ $t('hives.new_hive') }}</span>
         </button>
       </div>
     </div>
@@ -31,10 +31,10 @@
     <!-- Empty State -->
     <div v-if="!loading && hives.length === 0" class="glass rounded-3xl p-12 text-center max-w-lg mx-auto border border-dashed border-gray-300 dark:border-gray-700 mt-8">
       <div class="text-4xl mb-4">🐝</div>
-      <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-1">Keine Bienenvölker angelegt</h3>
-      <p class="text-gray-500 dark:text-gray-400 mb-6">Lege dein erstes Volk an, um danach Inspektionen und Honigräume verwalten zu können.</p>
+      <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-1">{{ $t('hives.empty_title') }}</h3>
+      <p class="text-gray-500 dark:text-gray-400 mb-6">{{ $t('hives.empty_desc') }}</p>
       <button @click="openCreateModal" class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md hover-scale">
-        + Erstes Volk anlegen
+        + {{ $t('hives.create_first') }}
       </button>
     </div>
 
@@ -46,12 +46,12 @@
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 flex-1">
           <!-- Standort -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1 font-sans">Standort</label>
+            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-505 uppercase tracking-wider mb-1 font-sans">{{ $t('hives.filter_location') }}</label>
             <select 
               v-model="filters.locationId" 
               class="w-full px-2.5 py-1.5 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-gray-800 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
             >
-              <option value="">Alle Standorte</option>
+              <option value="">{{ $t('hives.all_locations') }}</option>
               <option v-for="loc in locations" :key="loc.id" :value="loc.id">
                 {{ loc.name }}
               </option>
@@ -60,38 +60,38 @@
 
           <!-- Aktiv/Inaktiv -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1 font-sans">Status</label>
+            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-550 uppercase tracking-wider mb-1 font-sans">{{ $t('common.status') }}</label>
             <select 
               v-model="filters.status" 
               class="w-full px-2.5 py-1.5 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-gray-800 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
             >
-              <option value="ALL">Alle Völker</option>
-              <option value="ACTIVE">Nur aktive</option>
-              <option value="INACTIVE">Nur inaktive</option>
+              <option value="ALL">{{ $t('hives.all_hives') }}</option>
+              <option value="ACTIVE">{{ $t('hives.only_active') }}</option>
+              <option value="INACTIVE">{{ $t('hives.only_inactive') }}</option>
             </select>
           </div>
 
           <!-- Aufgaben -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1 font-sans">Aufgaben</label>
+            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-505 uppercase tracking-wider mb-1 font-sans">{{ $t('hives.filter_tasks') }}</label>
             <select 
               v-model="filters.tasks" 
               class="w-full px-2.5 py-1.5 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-gray-800 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
             >
-              <option value="ALL">Alle</option>
-              <option value="WITH">Mit Aufgaben</option>
-              <option value="WITHOUT">Ohne Aufgaben</option>
+              <option value="ALL">{{ $t('hives.tasks_all') }}</option>
+              <option value="WITH">{{ $t('hives.tasks_with') }}</option>
+              <option value="WITHOUT">{{ $t('hives.tasks_without') }}</option>
             </select>
           </div>
 
           <!-- Königinjahr -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1 font-sans">Königinjahr</label>
+            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-505 uppercase tracking-wider mb-1 font-sans">{{ $t('hives.filter_queen_year') }}</label>
             <select 
               v-model="filters.queenYear" 
               class="w-full px-2.5 py-1.5 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-gray-800 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
             >
-              <option value="">Alle Jahre</option>
+              <option value="">{{ $t('hives.all_years') }}</option>
               <option v-for="year in availableQueenYears" :key="year" :value="year">
                 👑 {{ year }}
               </option>
@@ -110,7 +110,7 @@
                 ? 'bg-white dark:bg-dark-card text-primary shadow-sm' 
                 : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'"
             >
-              🗂️ Kacheln
+              🗂️ {{ $t('hives.view_tiles') }}
             </button>
             <button 
               type="button"
@@ -120,7 +120,7 @@
                 ? 'bg-white dark:bg-dark-card text-primary shadow-sm' 
                 : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'"
             >
-              📊 Liste
+              📊 {{ $t('hives.view_list') }}
             </button>
           </div>
 
@@ -128,7 +128,7 @@
             type="button"
             @click="resetFilters" 
             class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
-            title="Filter zurücksetzen"
+            :title="$t('hives.reset_filters')"
           >
             🧹
           </button>
@@ -138,13 +138,13 @@
 
       <div v-if="loading" class="flex flex-col items-center justify-center py-20 bg-white dark:bg-dark-card rounded-3xl border border-gray-200 dark:border-dark-border">
         <svg class="animate-spin h-10 w-10 text-primary mb-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-        <p class="text-gray-500 dark:text-gray-400 font-bold">Lade Bienenvölker...</p>
+        <p class="text-gray-500 dark:text-gray-400 font-bold">{{ $t('hives.loading') }}</p>
       </div>
 
       <template v-else>
         <!-- No results matching filters -->
-        <div v-if="filteredHives.length === 0" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-8 text-center text-gray-400 dark:text-gray-500 italic text-sm">
-          Keine Bienenvölker entsprechen den ausgewählten Filtern.
+        <div v-if="filteredHives.length === 0" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-8 text-center text-gray-400 dark:text-gray-550 italic text-sm">
+          {{ $t('hives.no_filtered_results') }}
         </div>
 
         <!-- TILES VIEW -->
@@ -180,7 +180,7 @@
                   class="absolute top-2.5 left-2.5 px-2 py-0.5 text-[10px] font-black rounded-full tracking-wider uppercase shadow-sm"
                   :class="hive.is_active ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'"
                 >
-                  {{ hive.is_active ? 'Aktiv' : 'Inaktiv' }}
+                  {{ hive.is_active ? $t('common.active') : $t('common.inactive') }}
                 </span>
               </div>
 
@@ -189,9 +189,9 @@
                 <h3 class="font-extrabold text-lg text-gray-900 dark:text-white truncate">{{ hive.name }}</h3>
                 
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center space-x-1">
-                  <span>📍 Standort:</span>
+                  <span>📍 {{ $t('hives.location_label') }}:</span>
                   <span class="font-bold text-gray-700 dark:text-gray-300 truncate">
-                    {{ hive.location?.name || 'Kein Standort' }}
+                    {{ hive.location?.name || $t('hives.no_location') }}
                   </span>
                 </p>
                 
@@ -200,7 +200,7 @@
                     {{ hive.frame_type?.name }}
                   </span>
                   <span class="px-2 py-0.5 bg-primary/15 text-primary text-[10px] font-extrabold rounded-full">
-                    {{ hive.boxes?.length || 0 }} Zargen
+                    {{ $t('hives.boxes_count', { count: hive.boxes?.length || 0 }) }}
                   </span>
                 </div>
               </div>
@@ -208,15 +208,15 @@
               <!-- Tasks Section -->
               <div v-if="getTasksForHive(hive.id).length > 0" class="mt-auto pt-3 border-t border-gray-100 dark:border-dark-border/60 w-full" @click.stop>
                 <div class="flex items-center justify-between mb-2">
-                  <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                    📋 Aufgaben ({{ getTasksForHive(hive.id).filter(t => !t.is_completed).length }} offen)
+                  <span class="text-[10px] font-bold text-gray-400 dark:text-gray-505 uppercase tracking-wider">
+                    📋 {{ $t('hives.tasks_label', { count: getTasksForHive(hive.id).filter(taskItem => !taskItem.is_completed).length }) }}
                   </span>
                   <div class="flex items-center space-x-1.5">
                     <router-link 
                       :to="{ name: 'tasks', query: { hiveId: hive.id } }" 
                       class="text-[10px] font-extrabold text-gray-500 hover:text-primary"
                     >
-                      Anzeigen
+                      {{ $t('hives.action_view') }}
                     </router-link>
                     <span class="text-gray-300 dark:text-gray-700">|</span>
                     <button 
@@ -224,7 +224,7 @@
                       @click.stop="openCreateTaskModal(hive)"
                       class="text-[10px] font-extrabold text-primary hover:underline cursor-pointer"
                     >
-                      + Erstellen
+                      + {{ $t('hives.action_create') }}
                     </button>
                   </div>
                 </div>
@@ -244,18 +244,18 @@
                     </div>
                   </li>
                   <li v-if="getTasksForHive(hive.id).length > 2" class="text-[9px] text-gray-400 italic pl-1">
-                    ... und {{ getTasksForHive(hive.id).length - 2 }} weitere.
+                    {{ $t('hives.tasks_more', { count: getTasksForHive(hive.id).length - 2 }) }}
                   </li>
                 </ul>
               </div>
               <div v-else class="mt-auto pt-3 border-t border-gray-100 dark:border-dark-border/60 flex items-center justify-between w-full" @click.stop>
-                <span class="text-[10px] text-gray-400 italic">Keine Aufgaben</span>
+                <span class="text-[10px] text-gray-400 italic">{{ $t('hives.no_tasks') }}</span>
                 <button 
                   type="button"
                   @click.stop="openCreateTaskModal(hive)"
                   class="text-[10px] font-extrabold text-primary hover:underline cursor-pointer"
                 >
-                  + Erstellen
+                  + {{ $t('hives.action_create') }}
                 </button>
               </div>
 
@@ -270,11 +270,11 @@
               <table class="min-w-full divide-y divide-gray-100 dark:divide-dark-border">
                 <thead class="bg-gray-50 dark:bg-dark-bg/50">
                   <tr>
-                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-450 dark:text-gray-450 uppercase tracking-wider">Volk</th>
-                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-450 dark:text-gray-450 uppercase tracking-wider">Standort</th>
-                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-450 dark:text-gray-450 uppercase tracking-wider">Königin</th>
-                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-450 dark:text-gray-450 uppercase tracking-wider">Zargen</th>
-                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-450 dark:text-gray-450 uppercase tracking-wider">Aufgaben</th>
+                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-450 dark:text-gray-450 uppercase tracking-wider">{{ $t('hives.table_hive') }}</th>
+                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-450 dark:text-gray-450 uppercase tracking-wider">{{ $t('hives.table_location') }}</th>
+                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-450 dark:text-gray-450 uppercase tracking-wider">{{ $t('hives.table_queen') }}</th>
+                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-450 dark:text-gray-450 uppercase tracking-wider">{{ $t('hives.table_boxes') }}</th>
+                    <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-450 dark:text-gray-450 uppercase tracking-wider">{{ $t('hives.table_tasks') }}</th>
                   </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-dark-card divide-y divide-gray-100 dark:divide-dark-border">
@@ -302,7 +302,7 @@
                               class="px-1.5 py-0.2 text-[8px] font-black rounded-full uppercase"
                               :class="hive.is_active ? 'bg-green-500/10 text-green-500' : 'bg-gray-500/10 text-gray-500'"
                             >
-                              {{ hive.is_active ? 'A' : 'I' }}
+                              {{ hive.is_active ? $t('hives.status_active_short') : $t('hives.status_inactive_short') }}
                             </span>
                           </div>
                           <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{{ hive.frame_type?.name }}</div>
@@ -310,7 +310,7 @@
                       </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300 font-bold">
-                      {{ hive.location?.name || 'Kein Standort' }}
+                      {{ hive.location?.name || $t('hives.no_location') }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                       <div v-if="hive.queen_year" class="flex items-center space-x-1.5">
@@ -323,7 +323,7 @@
                       <span v-else class="text-xs text-gray-400">—</span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-600 dark:text-gray-400">
-                      {{ hive.boxes?.length || 0 }} Zargen
+                      {{ $t('hives.boxes_count', { count: hive.boxes?.length || 0 }) }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                       <div class="flex items-center space-x-2" @click.stop>
@@ -333,7 +333,7 @@
                             ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400' 
                             : 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400'"
                         >
-                          {{ getTasksForHive(hive.id).filter(t => !t.is_completed).length }} offen
+                          {{ $t('hives.tasks_open_count', { count: getTasksForHive(hive.id).filter(taskItem => !taskItem.is_completed).length }) }}
                         </span>
                         
                         <!-- Links -->
@@ -342,7 +342,7 @@
                             :to="{ name: 'tasks', query: { hiveId: hive.id } }" 
                             class="text-xs font-extrabold text-gray-500 hover:text-primary hover:underline"
                           >
-                            Anzeigen
+                            {{ $t('hives.action_view') }}
                           </router-link>
                           <span class="text-gray-300 dark:text-gray-700">|</span>
                           <button 
@@ -350,7 +350,7 @@
                             @click.stop="openCreateTaskModal(hive)"
                             class="text-xs font-extrabold text-primary hover:underline flex items-center gap-0.5 cursor-pointer"
                           >
-                            + Erstellen
+                            + {{ $t('hives.action_create') }}
                           </button>
                         </div>
                       </div>
@@ -377,7 +377,7 @@
           <!-- Header -->
           <div class="px-6 py-4 border-b border-gray-100 dark:border-dark-border flex justify-between items-center bg-gray-50/50 dark:bg-dark-bg/25">
             <h3 class="text-lg font-extrabold text-gray-900 dark:text-white" id="modal-title">
-              📝 Neue Aufgabe erfassen
+              📝 {{ $t('hives.task_modal_title') }}
             </h3>
             <button @click="showTaskModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -389,35 +389,34 @@
             <div class="p-6 space-y-4">
               <!-- Title -->
               <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Bezeichnung *</label>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.task_label_title') }}</label>
                 <input 
                   v-model="taskForm.title" 
                   type="text" 
                   required
-                  placeholder="z.B. Varroagitter einschieben"
+                  :placeholder="$t('hives.task_title_placeholder')"
                   class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-semibold"
                 />
               </div>
 
               <!-- Description -->
               <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Beschreibung / Details</label>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.task_label_description') }}</label>
                 <textarea 
                   v-model="taskForm.description" 
-                  placeholder="Zusätzliche Notizen zur Durchführung..."
+                  :placeholder="$t('hives.task_desc_placeholder')"
                   rows="2"
-                  class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                  class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-705 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                 ></textarea>
               </div>
 
-              <!-- Scope Info -->
               <div class="bg-primary/5 dark:bg-primary/10 px-4 py-3 rounded-2xl border border-primary/10 flex items-center justify-between">
                 <div>
-                  <span class="text-[10px] uppercase font-black text-primary tracking-wider">Verknüpft mit</span>
+                  <span class="text-[10px] uppercase font-black text-primary tracking-wider">{{ $t('hives.task_linked_with') }}</span>
                   <div class="text-sm font-extrabold text-gray-800 dark:text-white">🐝 {{ taskForm.hiveName }}</div>
                 </div>
                 <div class="text-right">
-                  <span class="text-[10px] uppercase font-black text-gray-400 tracking-wider">Standort</span>
+                  <span class="text-[10px] uppercase font-black text-gray-400 tracking-wider">{{ $t('hives.task_location') }}</span>
                   <div class="text-xs font-bold text-gray-600 dark:text-gray-300">{{ taskForm.locationName }}</div>
                 </div>
               </div>
@@ -425,21 +424,21 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Priority -->
                 <div>
-                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Priorisierung *</label>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.task_priority') }}</label>
                   <select 
                     v-model="taskForm.priority" 
                     required
                     class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs cursor-pointer font-bold"
                   >
-                    <option value="LOW">Niedrig (Grün)</option>
-                    <option value="MEDIUM">Mittel (Gelb)</option>
-                    <option value="HIGH">Hoch (Rot)</option>
+                    <option value="LOW">{{ $t('hives.priority_low') }}</option>
+                    <option value="MEDIUM">{{ $t('hives.priority_medium') }}</option>
+                    <option value="HIGH">{{ $t('hives.priority_high') }}</option>
                   </select>
                 </div>
 
                 <!-- Due Date -->
                 <div>
-                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Fälligkeitsdatum</label>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.task_due_date') }}</label>
                   <input 
                     v-model="taskForm.dueDate" 
                     type="date" 
@@ -452,8 +451,8 @@
               <div class="border-t border-gray-100 dark:border-dark-border/80 pt-4 space-y-3">
                 <div class="flex items-center justify-between">
                   <div>
-                    <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wide">🔄 Wiederholende Aufgabe</h5>
-                    <p class="text-[10px] text-gray-400 dark:text-gray-500">Auto-Generierung bei Fertigstellung</p>
+                    <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wide">🔄 {{ $t('hives.task_recurring') }}</h5>
+                    <p class="text-[10px] text-gray-400 dark:text-gray-505">{{ $t('hives.task_recurring_desc') }}</p>
                   </div>
                   <input 
                     v-model="taskForm.isRecurring" 
@@ -463,17 +462,17 @@
                 </div>
 
                 <div v-if="taskForm.isRecurring" class="animate-scale">
-                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Wiederholungsintervall</label>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.task_recurrence_interval') }}</label>
                   <select 
                     v-model="taskForm.recurrenceInterval" 
                     required
                     class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs cursor-pointer font-bold"
                   >
-                    <option value="DAILY">Täglich</option>
-                    <option value="WEEKLY">Wöchentlich</option>
-                    <option value="BIWEEKLY">Alle 2 Wochen</option>
-                    <option value="MONTHLY">Monatlich</option>
-                    <option value="YEARLY">Jährlich</option>
+                    <option value="DAILY">{{ $t('hives.recurrence_daily') }}</option>
+                    <option value="WEEKLY">{{ $t('hives.recurrence_weekly') }}</option>
+                    <option value="BIWEEKLY">{{ $t('hives.recurrence_biweekly') }}</option>
+                    <option value="MONTHLY">{{ $t('hives.recurrence_monthly') }}</option>
+                    <option value="YEARLY">{{ $t('hives.recurrence_yearly') }}</option>
                   </select>
                 </div>
               </div>
@@ -486,14 +485,14 @@
                 @click="showTaskModal = false" 
                 class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
               >
-                Abbrechen
+                {{ $t('common.cancel') }}
               </button>
               <button 
                 type="submit" 
                 :disabled="submittingTask"
                 class="px-5 py-2 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {{ submittingTask ? 'Erstelle...' : 'Erstellen' }}
+                {{ submittingTask ? $t('hives.creating') : $t('hives.create') }}
               </button>
             </div>
           </form>
@@ -502,7 +501,7 @@
     </div>
 
     <!-- HIVE EDIT/CREATE DIALOG MODAL -->
-    <div v-if="showModal" class="fixed inset-0 z-50 overflow-y-auto font-sans" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div v-if="showModal" class="fixed inset-0 z-50 overflow-y-auto font-sans" role="dialog" aria-modal="true">
       <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <!-- Backdrop -->
         <div @click="closeModal" class="fixed inset-0 z-0 bg-black/50 dark:bg-black/75 backdrop-blur-sm transition-opacity animate-fade-in" aria-hidden="true"></div>
@@ -515,9 +514,9 @@
           <!-- Header -->
           <div class="px-8 py-5 border-b border-gray-100 dark:border-dark-border flex justify-between items-center bg-gray-50/50 dark:bg-dark-bg/25">
             <h3 class="text-xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2" id="modal-title">
-              {{ isEditMode ? '🐝 Volk-Einstellungen bearbeiten' : '🐝 Neues Bienenvolk anlegen' }}
+              {{ isEditMode ? $t('hives.edit_title') : $t('hives.create_title') }}
             </h3>
-            <button type="button" @click="closeModal" class="text-gray-400 hover:text-gray-650 dark:hover:text-gray-200 p-2 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-full transition-all cursor-pointer">
+            <button type="button" @click="closeModal" class="text-gray-400 hover:text-gray-655 dark:hover:text-gray-200 p-2 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-full transition-all cursor-pointer">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -528,27 +527,27 @@
               
               <!-- Left Column: Metadata (Form) -->
               <div class="lg:col-span-5 space-y-4">
-                <h4 class="text-xs font-bold text-gray-400 dark:text-gray-505 uppercase tracking-widest mb-2 border-b border-gray-100 dark:border-dark-border/40 pb-2">📋 Stammdaten</h4>
+                <h4 class="text-xs font-bold text-gray-400 dark:text-gray-505 uppercase tracking-widest mb-2 border-b border-gray-100 dark:border-dark-border/40 pb-2">📋 {{ $t('hives.section_master_data') }}</h4>
                 
                 <div>
-                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">Volksbezeichnung / Name *</label>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">{{ $t('hives.form_name') }}</label>
                   <input 
                     v-model="form.name" 
                     type="text" 
                     required
-                    placeholder="z.B. Volk 14"
+                    :placeholder="$t('hives.form_name_placeholder')"
                     class="w-full px-4 py-3 border border-gray-305 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-semibold transition-all"
                   />
                 </div>
 
                 <div>
-                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">Standort (Stand) *</label>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">{{ $t('hives.form_location') }}</label>
                   <select 
                     v-model="form.locationId" 
                     required
                     class="w-full px-4 py-3 border border-gray-305 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer font-semibold transition-all"
                   >
-                    <option value="" disabled>Bitte Standort wählen...</option>
+                    <option value="" disabled>{{ $t('hives.form_select_location') }}</option>
                     <option v-for="loc in locations" :key="loc.id" :value="loc.id">
                       {{ loc.name }}
                     </option>
@@ -556,13 +555,13 @@
                 </div>
 
                 <div>
-                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">Wabenmaß *</label>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">{{ $t('hives.form_frame_type') }}</label>
                   <select 
                     v-model="form.frameTypeId" 
                     required
                     class="w-full px-4 py-3 border border-gray-350 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer font-semibold transition-all"
                   >
-                    <option value="" disabled>Bitte Wabenmaß wählen...</option>
+                    <option value="" disabled>{{ $t('hives.form_select_frame_type') }}</option>
                     <option v-for="ft in frameTypes" :key="ft.id" :value="ft.id">
                       {{ ft.name }}
                     </option>
@@ -571,11 +570,11 @@
 
                 <div class="grid grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">Königin Jahr</label>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">{{ $t('hives.form_queen_year') }}</label>
                     <input 
                       v-model.number="form.queenYear" 
                       type="number" 
-                      placeholder="z.B. 2026"
+                      :placeholder="$t('hives.form_queen_year_placeholder')"
                       class="w-full px-4 py-3 border border-gray-305 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-semibold transition-all"
                     />
                   </div>
@@ -586,16 +585,16 @@
                         type="checkbox"
                         class="rounded text-primary focus:ring-primary h-5 w-5 border-gray-300 dark:border-gray-700"
                       />
-                      <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Volk ist aktiv</span>
+                      <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $t('hives.form_is_active') }}</span>
                     </label>
                   </div>
                 </div>
 
                 <div>
-                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">Notizen (Königinlinie etc.)</label>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">{{ $t('hives.form_notes') }}</label>
                   <textarea 
                     v-model="form.notes" 
-                    placeholder="Königin F1 Carnica, standbegattet, sanftmütig..."
+                    :placeholder="$t('hives.form_notes_placeholder')"
                     rows="3"
                     class="w-full px-4 py-3 border border-gray-305 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm transition-all"
                   ></textarea>
@@ -604,7 +603,7 @@
 
               <!-- Right Column: Box Editor & Photo (Only in Edit Mode) -->
               <div class="lg:col-span-7 space-y-6">
-                <h4 class="text-xs font-bold text-gray-400 dark:text-gray-505 uppercase tracking-widest mb-2 border-b border-gray-100 dark:border-dark-border/40 pb-2">📦 Struktur & Foto</h4>
+                <h4 class="text-xs font-bold text-gray-400 dark:text-gray-550 uppercase tracking-widest mb-2 border-b border-gray-100 dark:border-dark-border/40 pb-2">📦 {{ $t('hives.section_structure_photo') }}</h4>
                 
                 <template v-if="isEditMode">
                   <!-- Profile Photo Uploader -->
@@ -619,8 +618,8 @@
                       <span v-else class="text-3xl">📸</span>
                     </div>
                     <div>
-                      <p class="text-xs font-black text-gray-850 dark:text-gray-200">Bienenvolk Profilbild</p>
-                      <p class="text-[10px] text-gray-400 mt-0.5">Zeigt ein individuelles Foto für dieses Volk in der Kachelübersicht an.</p>
+                      <p class="text-xs font-black text-gray-850 dark:text-gray-200">{{ $t('hives.photo_title') }}</p>
+                      <p class="text-[10px] text-gray-400 mt-0.5">{{ $t('hives.photo_desc') }}</p>
                       <input 
                         type="file" 
                         ref="photoInput" 
@@ -633,7 +632,7 @@
                         @click="$refs.photoInput.click()" 
                         class="text-[11px] font-black text-primary hover:text-primary-hover hover:underline uppercase tracking-wider mt-1.5 cursor-pointer flex items-center gap-1"
                       >
-                        <span>Bild hochladen</span> 📤
+                        <span>{{ $t('hives.photo_upload_btn') }}</span> 📤
                       </button>
                     </div>
                   </div>
@@ -655,34 +654,34 @@
                       <!-- Box properties config panel -->
                       <div class="lg:col-span-6 space-y-4">
                         <div v-if="!selectedBox" class="text-sm text-gray-600 dark:text-gray-300 italic p-6 bg-white/90 dark:bg-dark-bg/70 rounded-2xl border border-gray-300 dark:border-gray-600 text-center leading-relaxed">
-                          Wähle eine Zarge im Stapel aus, um deren Werte (Brut/Honig, Wabenzahl) zu editieren oder sie zu löschen.
+                          {{ $t('hives.visualizer_hint') }}
                         </div>
                         
                         <div v-else class="p-5 bg-white/90 dark:bg-dark-bg/70 border border-gray-300 dark:border-gray-600 rounded-2xl space-y-4 animate-scale shadow-sm">
                           <div class="flex justify-between items-center pb-2.5 border-b border-gray-200 dark:border-gray-700">
-                            <span class="text-xs font-black uppercase text-gray-700 dark:text-gray-200">Zarge #{{ selectedBox.order }}</span>
+                            <span class="text-xs font-black uppercase text-gray-700 dark:text-gray-200">{{ $t('hives.box_label') }} #{{ selectedBox.order }}</span>
                             <span 
                               class="px-2.5 py-0.5 text-[10px] font-black rounded-full uppercase"
                               :class="selectedBox.box_type === 'BROOD' ? 'bg-amber-500/20 text-amber-700 dark:bg-amber-600/20 dark:text-amber-300' : 'bg-yellow-400/25 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-300'"
                             >
-                              {{ selectedBox.box_type === 'BROOD' ? 'Brutraum' : 'Honigraum' }}
+                              {{ selectedBox.box_type === 'BROOD' ? $t('hives.brood_chamber') : $t('hives.honey_chamber') }}
                             </span>
                           </div>
 
                           <div>
-                            <label class="block text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-1">Kammertyp</label>
+                            <label class="block text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.box_type_label') }}</label>
                             <select 
                               v-model="selectedBox.box_type"
                               class="w-full px-3 py-2 bg-white dark:bg-dark-card border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold text-gray-800 dark:text-gray-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/40"
                             >
-                              <option value="BROOD">Brutraum</option>
-                              <option value="HONEY">Honigraum</option>
+                              <option value="BROOD">{{ $t('hives.brood_chamber') }}</option>
+                              <option value="HONEY">{{ $t('hives.honey_chamber') }}</option>
                             </select>
                           </div>
 
                           <div class="grid grid-cols-2 gap-3">
                             <div>
-                              <label class="block text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-1">Anzahl Waben</label>
+                              <label class="block text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.box_frame_count') }}</label>
                               <input 
                                 v-model.number="selectedBox.frame_count"
                                 type="number"
@@ -693,7 +692,7 @@
                             </div>
 
                             <div>
-                              <label class="block text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-1">Wabenmaß</label>
+                              <label class="block text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.box_frame_type') }}</label>
                               <select 
                                 v-model="selectedBox.frame_type_id"
                                 class="w-full px-3 py-2 bg-white dark:bg-dark-card border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold text-gray-800 dark:text-gray-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/40"
@@ -710,9 +709,9 @@
                             <button 
                               type="button"
                               @click="deleteSelectedBox"
-                              class="w-full py-2 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 font-extrabold text-[11px] rounded-xl tracking-wider uppercase border border-red-200 dark:border-red-900/50 transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                              class="w-full py-2 bg-red-50 hover:bg-red-105 dark:bg-red-950/20 dark:hover:bg-red-900/30 text-red-650 dark:text-red-400 font-extrabold text-[11px] rounded-xl tracking-wider uppercase border border-red-200 dark:border-red-900/50 transition-colors flex items-center justify-center gap-1 cursor-pointer"
                             >
-                              <span>Zarge entfernen</span> 🗑️
+                              <span>{{ $t('hives.box_remove_btn') }}</span> 🗑️
                             </button>
                           </div>
 
@@ -725,7 +724,7 @@
                           class="w-full py-3.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs rounded-xl tracking-wider uppercase border border-amber-400/30 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/40"
                         >
                           <span class="text-base leading-none">+</span>
-                          <span>Zarge hinzufügen</span>
+                          <span>{{ $t('hives.box_add_btn') }}</span>
                         </button>
                       </div>
 
@@ -737,9 +736,9 @@
                   <!-- Helper / Hint for new hives -->
                   <div class="h-full flex flex-col items-center justify-center p-8 bg-gray-50 dark:bg-dark-bg/40 border border-dashed border-gray-300 dark:border-gray-800 rounded-3xl text-center min-h-[300px]">
                     <span class="text-5xl mb-4">📦</span>
-                    <h5 class="text-sm font-bold text-gray-700 dark:text-white mb-2">Zargenstruktur & Foto-Upload</h5>
+                    <h5 class="text-sm font-bold text-gray-700 dark:text-white mb-2">{{ $t('hives.placeholder_visualizer_title') }}</h5>
                     <p class="text-xs text-gray-450 dark:text-gray-500 max-w-sm">
-                      Nachdem du das neue Bienenvolk erstellt hast, kannst du hier im Dialog das Zargensystem aufbauen und ein Bild hochladen.
+                      {{ $t('hives.placeholder_visualizer_desc') }}
                     </p>
                   </div>
                 </template>
@@ -754,9 +753,9 @@
                   v-if="isEditMode"
                   type="button" 
                   @click="deleteHive(selectedHive); closeModal()" 
-                  class="px-4 py-2 bg-red-50 hover:bg-red-105 dark:bg-red-950/20 text-red-600 dark:text-red-400 font-bold text-xs uppercase tracking-wider rounded-xl border border-red-200 dark:border-red-900/50 cursor-pointer transition-colors"
+                  class="px-4 py-2 bg-red-50 hover:bg-red-105 dark:bg-red-950/20 text-red-650 dark:text-red-400 font-bold text-xs uppercase tracking-wider rounded-xl border border-red-200 dark:border-red-900/50 cursor-pointer transition-colors"
                 >
-                  Volk auflösen 🗑️
+                  {{ $t('hives.delete_btn') }} 🗑️
                 </button>
               </div>
               <div class="flex space-x-2">
@@ -765,13 +764,13 @@
                   @click="closeModal" 
                   class="px-5 py-2.5 text-xs font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer"
                 >
-                  Abbrechen
+                  {{ $t('common.cancel') }}
                 </button>
                 <button 
                   type="submit" 
                   class="px-6 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md cursor-pointer transition-all hover-scale"
                 >
-                  {{ isEditMode ? 'Speichern' : 'Volk anlegen' }}
+                  {{ isEditMode ? $t('common.save') : $t('hives.create_btn') }}
                 </button>
               </div>
             </div>
@@ -787,11 +786,13 @@
 import { ref, onMounted, reactive, computed, watch } from 'vue'
 import { useConfirmStore } from '../stores/confirm'
 import { useApiaryStore } from '../stores/apiary'
+import { useI18n } from 'vue-i18n'
 import BeehiveVisualizer from '../components/BeehiveVisualizer.vue'
 import axios from 'axios'
 
 const apiaryStore = useApiaryStore()
 const confirmStore = useConfirmStore()
+const { t, locale } = useI18n()
 
 const hives = ref([])
 const locations = ref([])
@@ -873,7 +874,7 @@ function getTasksForHive(hiveId) {
 function formatDate(dateStr) {
   if (!dateStr) return ''
   const d = new Date(dateStr)
-  return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  return d.toLocaleDateString(locale.value === 'de' ? 'de-DE' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 async function fetchHives() {
@@ -895,7 +896,7 @@ async function fetchHives() {
     }
   } catch (err) {
     console.error('Fetch hives error:', err)
-    showAlert('Fehler beim Laden der Bienenvölker.', 'error')
+    showAlert(t('hives.error_fetch_hives'), 'error')
   } finally {
     loading.value = false
   }
@@ -950,10 +951,10 @@ function onUpdateBoxes(newBoxes) {
 async function deleteSelectedBox() {
   if (!selectedBox.value) return
   const confirmed = await confirmStore.ask({
-    title: 'Zarge entfernen',
-    message: 'Möchtest du diese Zarge wirklich aus der Beute entfernen?',
+    title: t('hives.confirm_box_remove_title'),
+    message: t('hives.confirm_box_remove_msg'),
     type: 'danger',
-    confirmText: 'Ja, entfernen'
+    confirmText: t('hives.confirm_box_remove_btn')
   })
   if (!confirmed) return
   
@@ -1000,12 +1001,12 @@ async function saveChamberStructure() {
     }))
 
     await axios.post(`/api/hives/${selectedHive.value.id}/boxes`, payload)
-    showAlert('Zargenstruktur erfolgreich gespeichert!', 'success')
+    showAlert(t('hives.success_save_boxes'), 'success')
     boxesChanged.value = false
     await fetchHives()
   } catch (err) {
     console.error('Save chamber structure failed:', err)
-    showAlert(err.response?.data?.detail || 'Fehler beim Speichern der Zargen.', 'error')
+    showAlert(err.response?.data?.detail || t('hives.error_save_boxes'), 'error')
   }
 }
 
@@ -1022,11 +1023,11 @@ async function uploadPhoto(event) {
         'Content-Type': 'multipart/form-data'
       }
     })
-    showAlert('Bilder-Upload erfolgreich!', 'success')
+    showAlert(t('hives.success_upload_photo'), 'success')
     await fetchHives()
   } catch (err) {
     console.error('Upload photo failed:', err)
-    showAlert(err.response?.data?.detail || 'Fehler beim Hochladen des Bildes.', 'error')
+    showAlert(err.response?.data?.detail || t('hives.error_upload_photo'), 'error')
   }
 }
 
@@ -1049,6 +1050,7 @@ function openCreateModal() {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
+// Open Edit Modal
 function openEditModal(hive) {
   isEditMode.value = true
   editingId.value = hive.id
@@ -1093,38 +1095,38 @@ async function submitForm() {
         await axios.post(`/api/hives/${editingId.value}/boxes`, boxesPayload)
         boxesChanged.value = false
       }
-      showAlert('Volk erfolgreich aktualisiert!', 'success')
+      showAlert(t('hives.success_update'), 'success')
     } else {
       await axios.post('/api/hives', payload, {
         params: { apiary_id: apiaryStore.activeApiaryId }
       })
-      showAlert('Volk erfolgreich angelegt!', 'success')
+      showAlert(t('hives.success_create'), 'success')
     }
     
     showModal.value = false
     await fetchHives()
   } catch (err) {
     console.error('Submit hive error:', err)
-    showAlert(err.response?.data?.detail || 'Fehler beim Speichern des Volks.', 'error')
+    showAlert(err.response?.data?.detail || t('hives.error_save'), 'error')
   }
 }
 
 async function deleteHive(hive) {
   const confirmed = await confirmStore.ask({
-    title: 'Volk auflösen/löschen',
-    message: `Möchtest du das Volk "${hive.name}" wirklich auflösen/löschen? Dadurch werden alle Zargen und dazugehörigen Logbucheinträge gelöscht.`,
+    title: t('hives.confirm_delete_title'),
+    message: t('hives.confirm_delete_msg', { name: hive.name }),
     type: 'danger',
-    confirmText: 'Ja, auflösen'
+    confirmText: t('hives.confirm_delete_btn')
   })
   if (!confirmed) return
   try {
     await axios.delete(`/api/hives/${hive.id}`)
-    showAlert('Volk erfolgreich gelöscht.', 'success')
+    showAlert(t('hives.success_delete'), 'success')
     selectedHive.value = null
     await fetchHives()
   } catch (err) {
     console.error('Delete hive error:', err)
-    showAlert(err.response?.data?.detail || 'Fehler beim Löschen des Volks.', 'error')
+    showAlert(err.response?.data?.detail || t('hives.error_delete'), 'error')
   }
 }
 
@@ -1274,7 +1276,7 @@ function openCreateTaskModal(hive) {
   taskForm.hiveId = hive.id
   taskForm.hiveName = hive.name
   taskForm.locationId = hive.location_id
-  taskForm.locationName = hive.location?.name || 'Kein Standort'
+  taskForm.locationName = hive.location?.name || t('hives.no_location')
   
   showTaskModal.value = true
 }
@@ -1295,12 +1297,12 @@ async function submitTaskForm() {
       is_completed: false
     }
     await axios.post('/api/tasks', payload)
-    showAlert('Aufgabe erfolgreich angelegt!', 'success')
+    showAlert(t('hives.success_create_task'), 'success')
     showTaskModal.value = false
     await fetchTasks()
   } catch (err) {
     console.error('Submit task failed:', err)
-    showAlert(err.response?.data?.detail || 'Fehler beim Erstellen der Aufgabe.', 'error')
+    showAlert(err.response?.data?.detail || t('hives.error_create_task'), 'error')
   } finally {
     submittingTask.value = false
   }
