@@ -64,6 +64,12 @@ class BeeAgentPromptBuilder:
             if weather_ctx:
                 context_parts.append(weather_ctx)
 
+        if self._job.include_tasks:
+            context_parts.append(self._build_tasks_context())
+
+        if self._job.include_calendar:
+            context_parts.append(self._build_calendar_context())
+
         context_str = "\n\n".join(p for p in context_parts if p)
 
         prompt_parts = [BeeAgentPromptTemplate.MASTER_SYSTEM_PROMPT]
@@ -243,4 +249,80 @@ class BeeAgentPromptBuilder:
                 f"  - [{entry.date}] Volk='{hive_name}' Typ={entry.entry_type} {detail}"
             )
 
+        return "\n".join(lines)
+
+    def _build_tasks_context(self) -> str:
+        from app.models.task import Task
+        from app.models.hive import Hive
+
+        entity_ids = self._parse_entity_ids()
+        query = self._db.query(Task).filter(
+            Task.apiary_id == self._job.apiary_id,
+            Task.is_completed == False
+        )
+
+        if self._job.scope == "VOLK" and entity_ids:
+            query = query.filter(Task.hive_id.in_(entity_ids))
+        elif self._job.scope == "STANDORT" and entity_ids:
+            hive_ids = [
+                r[0] for r in self._db.query(Hive.id).filter(
+                    Hive.location_id.in_(entity_ids)
+                ).all()
+            ]
+            from sqlalchemy import or_
+            query = query.filter(
+                or_(
+                    Task.location_id.in_(entity_ids),
+                    Task.hive_id.in_(hive_ids)
+                )
+            )
+
+        tasks = query.all()
+        if not tasks:
+            return ""
+
+        lines = ["Anstehende Aufgaben:"]
+        for t in tasks:
+            due = f" (Fällig: {t.due_date})" if t.due_date else ""
+            hive_name = t.hive.name if t.hive else "Keines"
+            loc_name = t.location.name if t.location else "Keiner"
+            lines.append(f"  - [{t.priority}] {t.title}{due} (Standort: {loc_name}, Volk: {hive_name})")
+        return "\n".join(lines)
+
+    def _build_calendar_context(self) -> str:
+        from app.models.task import Task
+        from app.models.hive import Hive
+
+        entity_ids = self._parse_entity_ids()
+        query = self._db.query(Task).filter(
+            Task.apiary_id == self._job.apiary_id,
+            Task.is_completed == False,
+            Task.due_date.isnot(None)
+        )
+
+        if self._job.scope == "VOLK" and entity_ids:
+            query = query.filter(Task.hive_id.in_(entity_ids))
+        elif self._job.scope == "STANDORT" and entity_ids:
+            hive_ids = [
+                r[0] for r in self._db.query(Hive.id).filter(
+                    Hive.location_id.in_(entity_ids)
+                ).all()
+            ]
+            from sqlalchemy import or_
+            query = query.filter(
+                or_(
+                    Task.location_id.in_(entity_ids),
+                    Task.hive_id.in_(hive_ids)
+                )
+            )
+
+        tasks = query.order_by(Task.due_date.asc()).all()
+        if not tasks:
+            return ""
+
+        lines = ["Kalender-Termine (Fälligkeiten):"]
+        for t in tasks:
+            hive_name = t.hive.name if t.hive else "Keines"
+            loc_name = t.location.name if t.location else "Keiner"
+            lines.append(f"  - Datum={t.due_date} Typ='Fällige Aufgabe' Titel='{t.title}' Prio='{t.priority}' (Standort: {loc_name}, Volk: {hive_name})")
         return "\n".join(lines)

@@ -24,6 +24,8 @@ class BeeAgentJob(UUIDTimeStampedModel, CreatedByModel, ApiaryScopedModel):
     include_locations: Mapped[bool] = mapped_column(Boolean, default=True)
     include_hives: Mapped[bool] = mapped_column(Boolean, default=True)
     include_journal_entries: Mapped[bool] = mapped_column(Boolean, default=True)
+    include_tasks: Mapped[bool] = mapped_column(Boolean, default=True)
+    include_calendar: Mapped[bool] = mapped_column(Boolean, default=True)
     max_journal_entries: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
 
     cron_expression: Mapped[str] = mapped_column(String(64), default="0 8 * * *")

@@ -36,6 +36,8 @@ class BeeAgentJobCreate(BaseModel):
     include_locations: bool = True
     include_hives: bool = True
     include_journal_entries: bool = True
+    include_tasks: bool = True
+    include_calendar: bool = True
     max_journal_entries: Optional[int] = None
     cron_expression: str = "0 8 * * *"
     is_active: bool = True
@@ -51,6 +53,8 @@ class BeeAgentJobUpdate(BaseModel):
     include_locations: Optional[bool] = None
     include_hives: Optional[bool] = None
     include_journal_entries: Optional[bool] = None
+    include_tasks: Optional[bool] = None
+    include_calendar: Optional[bool] = None
     max_journal_entries: Optional[int] = None
     cron_expression: Optional[str] = None
     is_active: Optional[bool] = None
@@ -68,6 +72,8 @@ class BeeAgentJobOut(BaseModel):
     include_locations: bool
     include_hives: bool
     include_journal_entries: bool
+    include_tasks: bool
+    include_calendar: bool
     max_journal_entries: Optional[int]
     cron_expression: str
     is_active: bool
@@ -96,6 +102,8 @@ class BeeAgentJobOut(BaseModel):
             include_locations=job.include_locations,
             include_hives=job.include_hives,
             include_journal_entries=job.include_journal_entries,
+            include_tasks=job.include_tasks,
+            include_calendar=job.include_calendar,
             max_journal_entries=job.max_journal_entries,
             cron_expression=job.cron_expression,
             is_active=job.is_active,
@@ -176,6 +184,8 @@ def create_job(
         include_locations=payload.include_locations,
         include_hives=payload.include_hives,
         include_journal_entries=payload.include_journal_entries,
+        include_tasks=payload.include_tasks,
+        include_calendar=payload.include_calendar,
         max_journal_entries=payload.max_journal_entries,
         cron_expression=payload.cron_expression,
         is_active=payload.is_active,
@@ -221,6 +231,10 @@ def update_job(
         job.include_hives = payload.include_hives
     if payload.include_journal_entries is not None:
         job.include_journal_entries = payload.include_journal_entries
+    if payload.include_tasks is not None:
+        job.include_tasks = payload.include_tasks
+    if payload.include_calendar is not None:
+        job.include_calendar = payload.include_calendar
     if payload.max_journal_entries is not None:
         job.max_journal_entries = payload.max_journal_entries
     if payload.cron_expression is not None:

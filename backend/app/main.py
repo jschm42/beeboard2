@@ -54,6 +54,12 @@ with engine.connect() as conn:
         if "include_hives" not in bee_agent_job_columns:
             conn.execute(text("ALTER TABLE bee_agent_jobs ADD COLUMN include_hives BOOLEAN DEFAULT 1"))
             conn.commit()
+        if "include_tasks" not in bee_agent_job_columns:
+            conn.execute(text("ALTER TABLE bee_agent_jobs ADD COLUMN include_tasks BOOLEAN DEFAULT 1"))
+            conn.commit()
+        if "include_calendar" not in bee_agent_job_columns:
+            conn.execute(text("ALTER TABLE bee_agent_jobs ADD COLUMN include_calendar BOOLEAN DEFAULT 1"))
+            conn.commit()
 
         result = conn.execute(text("PRAGMA table_info(ai_insight_cron_jobs)"))
         ai_insight_cron_job_columns = [row[1] for row in result.fetchall()]

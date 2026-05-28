@@ -340,6 +340,8 @@
                 <span v-if="job.include_locations" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">Standorte</span>
                 <span v-if="job.include_hives" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">Völker</span>
                 <span v-if="job.include_journal_entries" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">Stockkarte</span>
+                <span v-if="job.include_tasks" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">Aufgaben</span>
+                <span v-if="job.include_calendar" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">Kalender</span>
                 <span v-if="job.include_weather_data" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">Wetter</span>
               </div>
               <p class="text-[11px] text-gray-500 dark:text-gray-400 font-mono">{{ job.cron_expression }}</p>
@@ -531,6 +533,20 @@
               <div>
                 <div class="text-sm font-bold text-gray-800 dark:text-white">📋 Stockkarte</div>
                 <div class="text-[10px] text-gray-500">Letzte Einträge einbeziehen</div>
+              </div>
+            </label>
+            <label class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-primary">
+              <input type="checkbox" v-model="jobForm.include_tasks" class="rounded" />
+              <div>
+                <div class="text-sm font-bold text-gray-800 dark:text-white">📋 Aufgaben</div>
+                <div class="text-[10px] text-gray-500">Aufgabenliste einbeziehen</div>
+              </div>
+            </label>
+            <label class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-primary">
+              <input type="checkbox" v-model="jobForm.include_calendar" class="rounded" />
+              <div>
+                <div class="text-sm font-bold text-gray-800 dark:text-white">📅 Kalender</div>
+                <div class="text-[10px] text-gray-500">Termine & Fälligkeiten einbeziehen</div>
               </div>
             </label>
           </div>
@@ -919,6 +935,8 @@ const defaultJobForm = () => ({
   include_locations: true,
   include_hives: true,
   include_journal_entries: true,
+  include_tasks: true,
+  include_calendar: true,
   max_journal_entries: 20,
   cron_expression: '0 8 * * *',
   is_active: true,
@@ -999,6 +1017,8 @@ function openJobModal(job) {
       include_locations: job.include_locations ?? true,
       include_hives: job.include_hives ?? true,
       include_journal_entries: job.include_journal_entries,
+      include_tasks: job.include_tasks ?? true,
+      include_calendar: job.include_calendar ?? true,
       max_journal_entries: job.max_journal_entries ?? 20,
       cron_expression: job.cron_expression,
       is_active: job.is_active,
@@ -1028,6 +1048,8 @@ async function saveJob() {
       include_locations: jobForm.value.include_locations,
       include_hives: jobForm.value.include_hives,
       include_journal_entries: jobForm.value.include_journal_entries,
+      include_tasks: jobForm.value.include_tasks,
+      include_calendar: jobForm.value.include_calendar,
       max_journal_entries: jobForm.value.include_journal_entries ? (jobForm.value.max_journal_entries || 20) : null,
       cron_expression: jobForm.value.cron_expression,
       is_active: jobForm.value.is_active,
