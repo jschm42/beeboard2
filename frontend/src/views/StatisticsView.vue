@@ -4,39 +4,39 @@
     <!-- Back to Dashboard Link -->
     <router-link to="/dashboard" class="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-hover mb-4 transition-colors duration-200">
       <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-      Zurück zum Dashboard
+      {{ $t('common.back_to_dashboard') }}
     </router-link>
 
     <!-- Header -->
     <div class="mb-8">
-      <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">📈 Bienenstand-Statistiken</h1>
-      <p class="text-gray-500 dark:text-gray-400 mt-1">Verfolge die Entwicklung von Brut, Futter und Bienenmasse im zeitlichen Verlauf.</p>
+      <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">📈 {{ $t('stats.title') }}</h1>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">{{ $t('stats.subtitle') }}</p>
     </div>
 
     <!-- Active Apiary Guard -->
     <div v-if="!apiaryStore.activeApiaryId" class="glass rounded-3xl p-12 text-center max-w-lg mx-auto border border-dashed border-gray-300 dark:border-gray-700">
       <div class="text-4xl mb-4">📊</div>
-      <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2">Keine aktive Imkerei</h3>
-      <p class="text-gray-500 dark:text-gray-400">Bitte wähle oben eine Imkerei aus, um Statistiken anzuzeigen.</p>
+      <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2">{{ $t('stats.no_active_apiary_title') }}</h3>
+      <p class="text-gray-500 dark:text-gray-400">{{ $t('stats.no_active_apiary_desc') }}</p>
     </div>
 
     <div v-else class="space-y-8">
       
       <!-- Filter Dock -->
       <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
-        <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">🔍 Analyse-Filter</h3>
+        <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">🔍 {{ $t('stats.filter_title') }}</h3>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           
           <!-- Location Filter -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Standort</label>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{{ $t('stats.filter_location') }}</label>
             <select 
               v-model="filters.locationId"
               @change="onFilterChange"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
             >
-              <option value="">Alle Standorte</option>
+              <option value="">{{ $t('stats.all_locations') }}</option>
               <option v-for="loc in locations" :key="loc.id" :value="loc.id">
                 {{ loc.name }}
               </option>
@@ -45,13 +45,13 @@
 
           <!-- Hive Filter -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Bienenvolk</label>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{{ $t('stats.filter_hive') }}</label>
             <select 
               v-model="filters.hiveId"
               @change="onFilterChange"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
             >
-              <option value="">Alle Bienenvölker</option>
+              <option value="">{{ $t('stats.all_hives') }}</option>
               <option v-for="hive in filteredHives" :key="hive.id" :value="hive.id">
                 {{ hive.name }}
               </option>
@@ -60,17 +60,17 @@
 
           <!-- Season Filter -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Jahreszeit (Saison)</label>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{{ $t('stats.filter_season') }}</label>
             <select 
               v-model="filters.season"
               @change="onFilterChange"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
             >
-              <option value="">Ganzjährig</option>
-              <option value="SPRING">Frühling (SPRING)</option>
-              <option value="SUMMER">Sommer (SUMMER)</option>
-              <option value="AUTUMN">Herbst (AUTUMN)</option>
-              <option value="WINTER">Winter (WINTER)</option>
+              <option value="">{{ $t('stats.season_all_year') }}</option>
+              <option value="SPRING">{{ $t('stats.season_spring') }}</option>
+              <option value="SUMMER">{{ $t('stats.season_summer') }}</option>
+              <option value="AUTUMN">{{ $t('stats.season_autumn') }}</option>
+              <option value="WINTER">{{ $t('stats.season_winter') }}</option>
             </select>
           </div>
 
@@ -85,8 +85,8 @@
             👑
           </div>
           <div>
-            <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">Brutwaben-Peak</p>
-            <p class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{{ formatNumber(peaks.brood) }} Waben</p>
+            <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">{{ $t('stats.peak_brood') }}</p>
+            <p class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{{ formatNumber(peaks.brood) }} {{ $t('stats.combs') }}</p>
           </div>
         </div>
 
@@ -95,8 +95,8 @@
             🐝
           </div>
           <div>
-            <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">Bienenmasse-Peak</p>
-            <p class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{{ formatNumber(peaks.bees) }} Waben</p>
+            <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">{{ $t('stats.peak_bees') }}</p>
+            <p class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{{ formatNumber(peaks.bees) }} {{ $t('stats.combs') }}</p>
           </div>
         </div>
 
@@ -105,8 +105,8 @@
             🍯
           </div>
           <div>
-            <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">Futterwaben-Peak</p>
-            <p class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{{ formatNumber(peaks.food) }} Waben</p>
+            <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">{{ $t('stats.peak_food') }}</p>
+            <p class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{{ formatNumber(peaks.food) }} {{ $t('stats.combs') }}</p>
           </div>
         </div>
 
@@ -116,24 +116,24 @@
       <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
         
         <div class="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-dark-border pb-4">
-          <h2 class="text-base font-extrabold text-gray-900 dark:text-white">⏰ Entwicklungsverlauf der Bienengesundheit</h2>
+          <h2 class="text-base font-extrabold text-gray-900 dark:text-white">⏰ {{ $t('stats.chart_title') }}</h2>
           <span class="text-[10px] text-gray-400 uppercase font-black tracking-wider bg-gray-50 dark:bg-dark-bg px-2 py-1 rounded">
-            Datenpunkte: {{ statsData.labels?.length || 0 }}
+            {{ $t('stats.data_points_prefix', { count: statsData.labels?.length || 0 }) }}
           </span>
         </div>
 
         <!-- Chart loader -->
         <div v-if="loading" class="flex flex-col items-center justify-center py-32">
           <svg class="animate-spin h-10 w-10 text-primary mb-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-          <p class="text-gray-500 dark:text-gray-400 font-bold text-sm">Lade Zeitreihendaten...</p>
+          <p class="text-gray-500 dark:text-gray-400 font-bold text-sm">{{ $t('stats.loading_data') }}</p>
         </div>
 
         <!-- No data notification -->
         <div v-else-if="!statsData.labels || statsData.labels.length === 0" class="flex flex-col items-center justify-center py-24 text-center">
           <div class="text-3xl mb-2">📈</div>
-          <h4 class="text-sm font-bold text-gray-800 dark:text-white">Keine passenden Inspektionsdaten gefunden</h4>
+          <h4 class="text-sm font-bold text-gray-800 dark:text-white">{{ $t('stats.no_data_title') }}</h4>
           <p class="text-xs text-gray-400 max-w-sm mt-1">
-            Es müssen zuerst Logbucheinträge vom Typ "Beuteninspektion" mit Wabenbewertungen erfasst werden, um zeitliche Trends anzuzeigen.
+            {{ $t('stats.no_data_desc') }}
           </p>
         </div>
 
@@ -151,6 +151,7 @@
 
 <script setup>
 import { ref, onMounted, reactive, computed, watch, onBeforeUnmount } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useApiaryStore } from '../stores/apiary'
 import { Chart, registerables } from 'chart.js'
 import axios from 'axios'
@@ -158,6 +159,7 @@ import axios from 'axios'
 Chart.register(...registerables)
 
 const apiaryStore = useApiaryStore()
+const { t, locale } = useI18n()
 
 const loading = ref(false)
 const locations = ref([])
@@ -280,10 +282,10 @@ function renderChart() {
   const data = statsData.value
   if (!data.labels || data.labels.length === 0) return
 
-  // Format label dates to de-DE locale
+  // Format label dates to local locale
   const formattedLabels = data.labels.map(l => {
     const d = new Date(l)
-    return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })
+    return d.toLocaleDateString(locale.value === 'de' ? 'de-DE' : 'en-US', { day: '2-digit', month: '2-digit' })
   })
 
   // Detect dark mode setting in window/HTML
@@ -297,7 +299,7 @@ function renderChart() {
       labels: formattedLabels,
       datasets: [
         {
-          label: 'Brutraum (Waben)',
+          label: t('stats.dataset_brood'),
           data: data.brood,
           borderColor: '#D97706', // Warm Amber
           backgroundColor: 'rgba(217, 119, 6, 0.1)',
@@ -308,7 +310,7 @@ function renderChart() {
           pointHoverRadius: 7
         },
         {
-          label: 'Bienen (Waben)',
+          label: t('stats.dataset_bees'),
           data: data.bees,
           borderColor: '#10B981', // Green
           backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -319,7 +321,7 @@ function renderChart() {
           pointHoverRadius: 7
         },
         {
-          label: 'Futter (Waben)',
+          label: t('stats.dataset_food'),
           data: data.food,
           borderColor: '#F59E0B', // Honey Yellow
           backgroundColor: 'rgba(245, 158, 11, 0.05)',

@@ -4,14 +4,14 @@
     <!-- Back to Dashboard Link -->
     <router-link to="/dashboard" class="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-hover mb-4 transition-colors duration-200">
       <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-      Zurück zum Dashboard
+      {{ $t('common.back_to_dashboard') }}
     </router-link>
 
     <!-- Header Area -->
     <div class="mb-8 flex flex-col md:flex-row md:justify-between md:items-center space-y-4 md:space-y-0">
       <div>
-        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">💰 Verkäufe & Umsatz</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Erfasse deine Honigverkäufe, verwalte Produkte und exportiere Daten für die Steuererklärung.</p>
+        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">💰 {{ $t('sales.title') }}</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">{{ $t('sales.subtitle') }}</p>
       </div>
       
       <div class="flex items-center space-x-3" v-if="activeTab === 'sales'">
@@ -21,13 +21,13 @@
           class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-dark-card dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-extrabold text-sm rounded-xl transition-all duration-200 hover-scale flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-          <span>Steuerexport (CSV)</span>
+          <span>{{ $t('sales.export_tax_csv_btn') }}</span>
         </button>
         <button 
           @click="openCreateSaleModal" 
           class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-2"
         >
-          <span>+ Verkauf buchen</span>
+          <span>{{ $t('sales.new_sale_btn') }}</span>
         </button>
       </div>
       
@@ -36,7 +36,7 @@
           @click="openCreateProductModal" 
           class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-2"
         >
-          <span>+ Neues Produkt</span>
+          <span>{{ $t('sales.new_product_btn') }}</span>
         </button>
       </div>
     </div>
@@ -50,7 +50,7 @@
     <!-- Tax Calculation Info Alert -->
     <div v-if="!taxSettings.calculate_taxes" class="mb-6 p-4 bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 rounded-2xl text-xs flex items-center space-x-2">
       <span class="text-base">💼</span>
-      <span><strong>Steuerberechnung ist deaktiviert:</strong> In Verkaufstabellen und Steuerexporten wird mit 0% Steuer gerechnet.</span>
+      <span><strong>{{ $t('sales.tax_disabled_label') }}</strong> {{ $t('sales.tax_disabled_desc') }}</span>
     </div>
 
     <!-- Tabs Dock -->
@@ -64,7 +64,7 @@
             : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
         ]"
       >
-        📊 Verkäufe
+        📊 {{ $t('sales.tab_sales') }}
       </button>
       <button 
         @click="activeTab = 'products'"
@@ -75,7 +75,7 @@
             : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
         ]"
       >
-        🍯 Produkte & Preise
+        🍯 {{ $t('sales.tab_products') }}
       </button>
     </div>
 
@@ -85,7 +85,7 @@
       <!-- Date Filters Card -->
       <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-4 items-end animate-scale">
         <div class="flex-1 w-full">
-          <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Startdatum</label>
+          <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('sales.filter_start_date') }}</label>
           <input 
             v-model="filters.startDate" 
             type="date" 
@@ -94,7 +94,7 @@
           />
         </div>
         <div class="flex-1 w-full">
-          <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Enddatum</label>
+          <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('sales.filter_end_date') }}</label>
           <input 
             v-model="filters.endDate" 
             type="date" 
@@ -106,7 +106,7 @@
           @click="resetFilters" 
           class="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl transition duration-150 border border-gray-200 dark:border-gray-700 w-full md:w-auto h-[38px] flex items-center justify-center hover-scale"
         >
-          Zurücksetzen
+          {{ $t('sales.filter_reset') }}
         </button>
       </div>
 
@@ -114,29 +114,29 @@
       <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl overflow-hidden shadow-sm">
         <div v-if="loadingSales" class="flex flex-col items-center justify-center py-20">
           <svg class="animate-spin h-8 w-8 text-primary mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-          <span class="text-xs text-gray-400 font-bold">Lade Verkaufstransaktionen...</span>
+          <span class="text-xs text-gray-400 font-bold">{{ $t('sales.loading_sales') }}</span>
         </div>
 
         <div v-else-if="sales.length === 0" class="flex flex-col items-center justify-center py-20 text-center px-4">
           <span class="text-4xl mb-3">💸</span>
-          <h3 class="text-base font-bold text-gray-900 dark:text-white">Keine Verkäufe erfasst</h3>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-sm">Bisher wurden im ausgewählten Zeitraum keine Verkäufe eingetragen. Klicke auf "+ Verkauf buchen" um zu starten.</p>
+          <h3 class="text-base font-bold text-gray-900 dark:text-white">{{ $t('sales.empty_sales_title') }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-sm">{{ $t('sales.empty_sales_desc') }}</p>
         </div>
 
         <div v-else class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
-                <th class="px-6 py-4">Datum</th>
-                <th class="px-6 py-4">Produkt</th>
-                <th class="px-6 py-4 text-center">Menge</th>
-                <th class="px-6 py-4 text-right">Gesamtpreis</th>
-                <th class="px-6 py-4 text-center">USt. / MwSt.</th>
-                <th class="px-6 py-4">Kanal</th>
-                <th class="px-6 py-4">Charge</th>
-                <th class="px-6 py-4">Verkauft an</th>
-                <th class="px-6 py-4">Notizen</th>
-                <th class="px-6 py-4 text-right">Aktionen</th>
+                <th class="px-6 py-4">{{ $t('sales.table_date') }}</th>
+                <th class="px-6 py-4">{{ $t('sales.table_product') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('sales.table_quantity') }}</th>
+                <th class="px-6 py-4 text-right">{{ $t('sales.table_total_price') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('sales.table_tax') }}</th>
+                <th class="px-6 py-4">{{ $t('sales.table_channel') }}</th>
+                <th class="px-6 py-4">{{ $t('sales.table_batch') }}</th>
+                <th class="px-6 py-4">{{ $t('sales.table_buyer') }}</th>
+                <th class="px-6 py-4">{{ $t('sales.table_notes') }}</th>
+                <th class="px-6 py-4 text-right">{{ $t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-dark-border text-sm">
@@ -152,7 +152,7 @@
                 
                 <!-- Product Name -->
                 <td class="px-6 py-4 font-bold text-gray-800 dark:text-gray-200">
-                  {{ s.product?.name || 'Gelöschtes Produkt' }}
+                  {{ s.product?.name || $t('sales.deleted_product') }}
                 </td>
                 
                 <!-- Quantity -->
@@ -202,14 +202,14 @@
                   <button 
                     @click="openEditSaleModal(s)" 
                     class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border rounded-lg transition-all duration-150 inline-flex hover-scale"
-                    title="Bearbeiten"
+                    :title="$t('common.edit')"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                   </button>
                   <button 
                     @click="deleteSale(s)" 
                     class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all duration-150 inline-flex hover-scale"
-                    title="Löschen"
+                    :title="$t('common.delete')"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                   </button>
@@ -227,26 +227,26 @@
       <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl overflow-hidden shadow-sm">
         <div v-if="loadingProducts" class="flex flex-col items-center justify-center py-20">
           <svg class="animate-spin h-8 w-8 text-primary mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-          <span class="text-xs text-gray-400 font-bold">Lade Produktkonfigurationen...</span>
+          <span class="text-xs text-gray-400 font-bold">{{ $t('sales.loading_products') }}</span>
         </div>
 
         <div v-else-if="products.length === 0" class="flex flex-col items-center justify-center py-20 text-center px-4">
           <span class="text-4xl mb-3">🍯</span>
-          <h3 class="text-base font-bold text-gray-900 dark:text-white">Keine Produkte eingerichtet</h3>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-sm">Richte zuerst Produkte wie "Blütenhonig 500g" ein, um dafür Verkäufe verbuchen zu können.</p>
+          <h3 class="text-base font-bold text-gray-900 dark:text-white">{{ $t('sales.empty_products_title') }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-sm">{{ $t('sales.empty_products_desc') }}</p>
         </div>
 
         <div v-else class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
-                <th class="px-6 py-4">Bezeichnung</th>
-                <th class="px-6 py-4">Honigsorte</th>
-                <th class="px-6 py-4 text-right">Standardpreis</th>
-                <th class="px-6 py-4 text-center">Steuersatz</th>
-                <th class="px-6 py-4 text-center">Lospflicht</th>
-                <th class="px-6 py-4 text-center">Status</th>
-                <th class="px-6 py-4 text-right">Aktionen</th>
+                <th class="px-6 py-4">{{ $t('sales.table_name') }}</th>
+                <th class="px-6 py-4">{{ $t('sales.table_honey_type') }}</th>
+                <th class="px-6 py-4 text-right">{{ $t('sales.table_default_price') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('sales.table_tax_rate') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('sales.table_requires_batch') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('common.status') }}</th>
+                <th class="px-6 py-4 text-right">{{ $t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-dark-border text-sm">
@@ -286,7 +286,7 @@
                     class="px-2 py-0.5 rounded-full text-[10px] font-bold"
                     :class="p.requires_batch_selection ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-gray-100 text-gray-400 dark:bg-gray-800'"
                   >
-                    {{ p.requires_batch_selection ? '🔗 Pflicht' : 'Optional' }}
+                    {{ p.requires_batch_selection ? '🔗 ' + $t('sales.requires_batch_badge') : $t('sales.optional_badge') }}
                   </span>
                 </td>
 
@@ -296,7 +296,7 @@
                     class="px-2 py-0.5 rounded-full text-[10px] font-bold"
                     :class="p.is_active ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'"
                   >
-                    {{ p.is_active ? 'Aktiv' : 'Inaktiv' }}
+                    {{ p.is_active ? $t('common.active') : $t('common.inactive') }}
                   </span>
                 </td>
 
@@ -305,14 +305,14 @@
                   <button 
                     @click="openEditProductModal(p)" 
                     class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border rounded-lg transition-all duration-150 inline-flex hover-scale"
-                    title="Bearbeiten"
+                    :title="$t('common.edit')"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                   </button>
                   <button 
                     @click="deleteProduct(p)" 
                     class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all duration-150 inline-flex hover-scale"
-                    title="Löschen"
+                    :title="$t('common.delete')"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                   </button>
@@ -329,7 +329,7 @@
       <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl shadow-xl w-full max-w-xl p-6 animate-scale">
         <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100 dark:border-dark-border">
           <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-            {{ isEditMode ? '📝 Verkauf bearbeiten' : '💸 Verkauf erfassen' }}
+            {{ isEditMode ? $t('sales.edit_sale_title') : $t('sales.create_sale_title') }}
           </h3>
           <button @click="closeSaleModal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -340,27 +340,27 @@
           <div class="space-y-4">
             <!-- Product Select -->
             <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Produkt *</label>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('sales.product_label') }}</label>
               <select 
                 v-model="saleForm.product_id" 
                 required
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                 @change="onProductChange"
               >
-                <option value="" disabled>Bitte Produkt auswählen...</option>
+                <option value="" disabled>{{ $t('sales.select_product_placeholder') }}</option>
                 <option v-for="p in activeProducts" :key="p.id" :value="p.id">
                   {{ p.name }} ({{ formatCurrency(p.price) }})
                 </option>
               </select>
               <p v-if="activeProducts.length === 0" class="text-[11px] text-red-500 font-bold mt-1">
-                ⚠️ Du hast noch keine aktiven Produkte eingerichtet. Bitte im Tab "Produkte & Preise" anlegen!
+                ⚠️ {{ $t('sales.no_active_products_warning') }}
               </p>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
               <!-- Quantity -->
               <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Menge *</label>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('sales.quantity_label') }}</label>
                 <input 
                   v-model.number="saleForm.quantity" 
                   type="number" 
@@ -373,7 +373,7 @@
 
               <!-- Total Price -->
               <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Gesamtpreis (€) *</label>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('sales.total_price_label') }}</label>
                 <input 
                   v-model.number="saleForm.total_price" 
                   type="number" 
@@ -387,25 +387,25 @@
 
             <!-- Sales Channel -->
             <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Verkaufskanal *</label>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('sales.channel_label') }}</label>
               <select 
                 v-model="saleForm.sales_channel" 
                 required
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
               >
-                <option value="direktverkauf">Direktverkauf</option>
-                <option value="online">Online</option>
-                <option value="email">E-Mail</option>
-                <option value="verkaufsstand">Verkaufsstand</option>
+                <option value="direktverkauf">{{ formatChannel('direktverkauf') }}</option>
+                <option value="online">{{ formatChannel('online') }}</option>
+                <option value="email">{{ formatChannel('email') }}</option>
+                <option value="verkaufsstand">{{ formatChannel('verkaufsstand') }}</option>
               </select>
             </div>
 
             <!-- Honey Batch (optional / required) -->
             <div>
               <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
-                Honig-Charge
+                {{ $t('sales.honey_batch_label') }}
                 <span v-if="selectedProductRequiresBatch" class="text-red-500">*</span>
-                <span v-else class="text-gray-400 font-normal">(Optional)</span>
+                <span v-else class="text-gray-400 font-normal">({{ $t('sales.optional_badge') }})</span>
               </label>
               <select
                 v-model="saleForm.batch_id"
@@ -415,19 +415,19 @@
                   ? 'border-amber-400 dark:border-amber-500 dark:bg-dark-bg dark:text-white'
                   : 'border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white'"
               >
-                <option :value="null">Keine Verknüpfung</option>
+                <option :value="null">{{ $t('sales.no_batch_link') }}</option>
                 <option v-for="b in batches" :key="b.id" :value="b.id">
                   {{ b.batch_number || `MHD: ${formatDate(b.best_before_date)}` }} - {{ b.honey_type }} ({{ b.quantity_kg }} kg)
                 </option>
               </select>
               <p v-if="selectedProductRequiresBatch && !saleForm.batch_id" class="text-[11px] text-amber-600 dark:text-amber-400 font-bold mt-1">
-                ⚠️ Für dieses Produkt ist die Angabe einer Losnummer zur Rückverfolgbarkeit zwingend erforderlich.
+                ⚠️ {{ $t('sales.requires_batch_warning') }}
               </p>
             </div>
 
             <!-- Sale Date -->
             <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Verkaufsdatum *</label>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('sales.sale_date_label') }}</label>
               <input 
                 v-model="saleForm.sale_date" 
                 type="datetime-local" 
@@ -438,22 +438,22 @@
 
             <!-- Buyer (optional) -->
             <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Verkauft an <span class="text-gray-400 font-normal">(Optional)</span></label>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('sales.buyer_label') }} <span class="text-gray-400 font-normal">({{ $t('sales.optional_badge') }})</span></label>
               <input
                 v-model="saleForm.buyer"
                 type="text"
-                placeholder="Name des Käufers oder Unternehmens..."
+                :placeholder="$t('sales.buyer_placeholder')"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
               />
             </div>
 
             <!-- Notes -->
             <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Notizen</label>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('sales.notes_label') }}</label>
               <textarea
                 v-model="saleForm.notes"
                 rows="2"
-                placeholder="Optionale Notizen zum Verkauf..."
+                :placeholder="$t('sales.notes_placeholder')"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
               ></textarea>
             </div>
@@ -465,13 +465,13 @@
               @click="closeSaleModal" 
               class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-100 dark:hover:bg-dark-border text-gray-700 dark:text-gray-300"
             >
-              Abbrechen
+              {{ $t('common.cancel') }}
             </button>
             <button 
               type="submit" 
               class="px-5 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl shadow-md hover-scale"
             >
-              Speichern
+              {{ $t('common.save') }}
             </button>
           </div>
         </form>
@@ -483,7 +483,7 @@
       <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl shadow-xl w-full max-w-md p-6 animate-scale">
         <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100 dark:border-dark-border">
           <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-            {{ isEditMode ? '📝 Produkt bearbeiten' : '🍯 Neues Produkt anlegen' }}
+            {{ isEditMode ? $t('sales.edit_product_title') : $t('sales.create_product_title') }}
           </h3>
           <button @click="closeProductModal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -494,30 +494,30 @@
           <div class="space-y-4">
             <!-- Name -->
             <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Bezeichnung *</label>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('sales.product_name_label') }} *</label>
               <input 
                 v-model="productForm.name" 
                 type="text" 
                 required
-                placeholder="z.B. Sommertracht 500g D.I.B."
+                :placeholder="$t('sales.product_name_placeholder')"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
               />
             </div>
 
             <!-- Honey Type -->
             <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Honigsorte (Optional)</label>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('sales.product_honey_type_label') }}</label>
               <input 
                 v-model="productForm.honey_type" 
                 type="text" 
-                placeholder="z.B. Blütenhonig"
+                :placeholder="$t('sales.product_honey_type_placeholder')"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
               />
             </div>
 
             <!-- Price -->
             <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Standardpreis (€) *</label>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('sales.product_default_price_label') }} *</label>
               <input 
                 v-model.number="productForm.price" 
                 type="number" 
@@ -530,7 +530,7 @@
 
             <!-- Tax Rate -->
             <div v-if="taxSettings.calculate_taxes">
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Steuersatz *</label>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('sales.product_tax_rate_label') }} *</label>
               <select 
                 v-model.number="productForm.tax_rate" 
                 required
@@ -540,8 +540,8 @@
               </select>
             </div>
             <div v-else class="p-3 bg-gray-50 dark:bg-dark-bg border border-gray-100 dark:border-dark-border rounded-xl">
-              <span class="text-xs text-gray-500 dark:text-gray-400 font-bold block mb-1">Steuersatz:</span>
-              <span class="text-xs text-gray-600 dark:text-gray-300">0.0 % (Steuerberechnung deaktiviert)</span>
+              <span class="text-xs text-gray-500 dark:text-gray-400 font-bold block mb-1">{{ $t('sales.product_tax_rate_label') }}</span>
+              <span class="text-xs text-gray-600 dark:text-gray-300">0.0 % ({{ $t('sales.tax_disabled_short') }})</span>
             </div>
 
             <!-- Requires Batch Selection -->
@@ -552,7 +552,7 @@
                   type="checkbox"
                   class="rounded text-primary focus:ring-primary h-4 w-4"
                 />
-                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Losnummer bei Verkauf verpflichtend</span>
+                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $t('sales.product_requires_batch_checkbox') }}</span>
               </label>
             </div>
 
@@ -564,7 +564,7 @@
                   type="checkbox"
                   class="rounded text-primary focus:ring-primary h-4 w-4"
                 />
-                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Produkt aktiv</span>
+                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $t('sales.product_is_active_checkbox') }}</span>
               </label>
             </div>
           </div>
@@ -575,13 +575,13 @@
               @click="closeProductModal" 
               class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-100 dark:hover:bg-dark-border text-gray-700 dark:text-gray-300"
             >
-              Abbrechen
+              {{ $t('common.cancel') }}
             </button>
             <button 
               type="submit" 
               class="px-5 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl shadow-md hover-scale"
             >
-              Speichern
+              {{ $t('common.save') }}
             </button>
           </div>
         </form>
@@ -602,7 +602,7 @@ import { useSettingsStore } from '../stores/settings'
 const apiaryStore = useApiaryStore()
 const confirmStore = useConfirmStore()
 const settingsStore = useSettingsStore()
-const { locale } = useI18n()
+const { t, locale } = useI18n()
 
 const activeTab = ref('sales')
 const sales = ref([])
@@ -697,10 +697,10 @@ function formatCurrency(val) {
 
 function formatChannel(val) {
   const map = {
-    'direktverkauf': 'Direktverkauf',
-    'online': 'Online',
-    'email': 'E-Mail',
-    'verkaufsstand': 'Verkaufsstand'
+    'direktverkauf': t('sales.channel_direct'),
+    'online': t('sales.channel_online'),
+    'email': t('sales.channel_email'),
+    'verkaufsstand': t('sales.channel_booth')
   }
   return map[val] || val
 }
@@ -738,7 +738,7 @@ async function fetchSales() {
     sales.value = res.data
   } catch (err) {
     console.error('Fetch sales error:', err)
-    showAlert('Fehler beim Laden der Verkaufstransaktionen.', 'error')
+    showAlert(t('sales.error_fetch'), 'error')
   } finally {
     loadingSales.value = false
   }
@@ -751,7 +751,7 @@ async function fetchProducts() {
     products.value = res.data
   } catch (err) {
     console.error('Fetch products error:', err)
-    showAlert('Fehler beim Laden der Produkte.', 'error')
+    showAlert(t('sales.error_products_fetch'), 'error')
   } finally {
     loadingProducts.value = false
   }
@@ -849,7 +849,7 @@ async function submitSaleForm() {
 
   // Client-side: enforce batch if required by product
   if (selectedProductRequiresBatch.value && !saleForm.batch_id) {
-    showAlert('Bitte eine Losnummer (Charge) für dieses Produkt auswählen.', 'error')
+    showAlert(t('sales.error_batch_required'), 'error')
     return
   }
 
@@ -867,35 +867,35 @@ async function submitSaleForm() {
 
     if (isEditMode.value) {
       await axios.put(`/api/sales/${editingId.value}`, payload)
-      showAlert('Verkaufstransaktion erfolgreich aktualisiert!', 'success')
+      showAlert(t('sales.success_sale_update'), 'success')
     } else {
       await axios.post('/api/sales', payload)
-      showAlert('Verkaufstransaktion erfolgreich erfasst!', 'success')
+      showAlert(t('sales.success_sale_create'), 'success')
     }
     
     showSaleModal.value = false
     await fetchSales()
   } catch (err) {
     console.error('Submit sale error:', err)
-    showAlert(err.response?.data?.detail || 'Fehler beim Speichern der Transaktion.', 'error')
+    showAlert(err.response?.data?.detail || t('sales.error_sale_save'), 'error')
   }
 }
 
 async function deleteSale(s) {
   const confirmed = await confirmStore.ask({
-    title: 'Verkauf löschen',
-    message: 'Möchtest du diese Verkaufstransaktion wirklich löschen?',
+    title: t('sales.delete_sale_title'),
+    message: t('sales.delete_sale_confirm'),
     type: 'danger',
-    confirmText: 'Ja, löschen'
+    confirmText: t('sales.confirm_delete_btn')
   })
   if (!confirmed) return
   try {
     await axios.delete(`/api/sales/${s.id}`)
-    showAlert('Verkaufstransaktion erfolgreich gelöscht.', 'success')
+    showAlert(t('sales.success_sale_delete'), 'success')
     await fetchSales()
   } catch (err) {
     console.error('Delete sale error:', err)
-    showAlert(err.response?.data?.detail || 'Fehler beim Löschen der Transaktion.', 'error')
+    showAlert(err.response?.data?.detail || t('sales.error_sale_delete'), 'error')
   }
 }
 
@@ -946,35 +946,35 @@ async function submitProductForm() {
 
     if (isEditMode.value) {
       await axios.put(`/api/sales/products/${editingId.value}`, payload)
-      showAlert('Produktkonfiguration erfolgreich aktualisiert!', 'success')
+      showAlert(t('sales.success_product_update'), 'success')
     } else {
       await axios.post('/api/sales/products', payload)
-      showAlert('Produktkonfiguration erfolgreich erstellt!', 'success')
+      showAlert(t('sales.success_product_create'), 'success')
     }
     
     showProductModal.value = false
     await fetchProducts()
   } catch (err) {
     console.error('Submit product error:', err)
-    showAlert(err.response?.data?.detail || 'Fehler beim Speichern des Produkts.', 'error')
+    showAlert(err.response?.data?.detail || t('sales.error_product_save'), 'error')
   }
 }
 
 async function deleteProduct(p) {
   const confirmed = await confirmStore.ask({
-    title: 'Produkt löschen',
-    message: `Möchtest du das Produkt "${p.name}" wirklich löschen?`,
+    title: t('sales.delete_product_title'),
+    message: t('sales.delete_product_confirm', { name: p.name }),
     type: 'danger',
-    confirmText: 'Ja, löschen'
+    confirmText: t('sales.confirm_delete_btn')
   })
   if (!confirmed) return
   try {
     await axios.delete(`/api/sales/products/${p.id}`)
-    showAlert('Produktkonfiguration erfolgreich gelöscht.', 'success')
+    showAlert(t('sales.success_product_delete'), 'success')
     await fetchProducts()
   } catch (err) {
     console.error('Delete product error:', err)
-    showAlert(err.response?.data?.detail || 'Fehler beim Löschen des Produkts.', 'error')
+    showAlert(err.response?.data?.detail || t('sales.error_product_delete'), 'error')
   }
 }
 
@@ -1015,7 +1015,7 @@ async function exportCSV() {
     document.body.removeChild(link)
   } catch (err) {
     console.error('CSV export error:', err)
-    showAlert('Fehler beim Exportieren des Honigbuchs.', 'error')
+    showAlert(t('sales.error_export'), 'error')
   }
 }
 
