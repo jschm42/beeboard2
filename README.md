@@ -16,10 +16,11 @@ BeeBoard is fully localized in both **German** and **English**. The user interfa
 
 ## 📸 Screenshot Gallery
 
-| | |
-|:---:|:---:|
-| ![Dashboard (German)](/docs/screenshots/dashboard_de.png)<br>*Dashboard & AI Assistant* | ![Hive Details (English)](/docs/screenshots/hive_details_en.png)<br>*Hive Details & Box Stack Visualizer* |
-| ![Inspection Log (German)](/docs/screenshots/inspection_de.png)<br>*Detailed Inspection Log (Stockkarte)* | ![Admin Panel (English)](/docs/screenshots/admin_en.png)<br>*Administration & System Configuration* |
+| | | |
+|:---:|:---:|:---:|
+| [![Dashboard](./docs/screenshots/small/beeboard-dashboard.jpg)](./docs/screenshots/beeboard-dashboard.jpg)<br>*Dashboard & AI Assistant* | [![Hive Management](./docs/screenshots/small/beeboard-hives.jpg)](./docs/screenshots/beeboard-hives.jpg)<br>*Hive Management & Box Visualizer* | [![Logbook](./docs/screenshots/small/beeboard-logbook.jpg)](./docs/screenshots/beeboard-logbook.jpg)<br>*Inspection Logbook (Stockkarte)* |
+| [![Tasks](./docs/screenshots/small/beeboard-tasks.jpg)](./docs/screenshots/beeboard-tasks.jpg)<br>*Task Planner & Reminders* | [![Calendar](./docs/screenshots/small/beeboard-calendar.jpg)](./docs/screenshots/beeboard-calendar.jpg)<br>*Operational Calendar* | [![Honey Batches](./docs/screenshots/small/beeboard-honeybatches.jpg)](./docs/screenshots/beeboard-honeybatches.jpg)<br>*Honey Harvesting & Bottling* |
+| [![Statistics](./docs/screenshots/small/beeboard-statistics.jpg)](./docs/screenshots/beeboard-statistics.jpg)<br>*Analytics & Statistics* | [![AI Insights](./docs/screenshots/small/beeboard-aiinsights.jpg)](./docs/screenshots/beeboard-aiinsights.jpg)<br>*AI Assistant & Insights* | |
 
 ---
 
