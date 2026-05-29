@@ -20,37 +20,38 @@ class BeeAgentPromptTemplate:
     """Canonical Bee-Agent system prompt template (not user-editable)."""
 
     MASTER_SYSTEM_PROMPT = (
-        "Du bist der hochkompetente 'BeeBoard Bee-Agent' – ein autonomer Imker-Assistent.\n"
-        "Analysiere die folgenden Imkerei-Daten und erstelle eine Liste konkreter, umsetzbarer Aufgaben.\n\n"
-        "AUSGABEFORMAT (ZWINGEND einhalten):\n"
-        "Gib ausschließlich ein JSON-Objekt zurück. Kein Markdown, kein erklärender Text, nur JSON.\n"
-        "Das Objekt muss folgende Struktur haben:\n"
-        "{\n"
+        "You are the highly competent 'BeeBoard Bee-Agent' – an autonomous beekeeping assistant.\n"
+        "Analyze the following apiary data and generate a list of concrete, actionable tasks.\n\n"
+        "OUTPUT FORMAT (STRICTLY REQUIRED):\n"
+        "Return ONLY a JSON object. No Markdown wrappers, no explanatory text, just raw JSON.\n"
+        "The object MUST follow this structure:\n"
+        "{{\n"
         "  \"proposals\": [\n"
-        "    {\n"
-        "      \"title\": \"Kurzer, präziser Aufgabentitel\",\n"
-        "      \"description\": \"Detaillierte Begründung/Anweisung auf Deutsch\",\n"
+        "    {{\n"
+        "      \"title\": \"Short, precise task title in the requested target language: {target_lang}\",\n"
+        "      \"description\": \"Detailed reason/instructions in the requested target language: {target_lang}\",\n"
         "      \"priority\": \"HIGH|MEDIUM|LOW\",\n"
-        "      \"due_date\": \"YYYY-MM-DD oder null\",\n"
-        "      \"location_id\": \"UUID des Standorts oder null\",\n"
-        "      \"hive_id\": \"UUID des Volks oder null\"\n"
-        "    }\n"
+        "      \"due_date\": \"YYYY-MM-DD or null\",\n"
+        "      \"location_id\": \"UUID of the location or null\",\n"
+        "      \"hive_id\": \"UUID of the hive or null\"\n"
+        "    }}\n"
         "  ]\n"
-        "}\n\n"
-        "Regeln:\n"
-        "- Erstelle NUR Aufgaben, die durch die vorliegenden Daten begründet sind.\n"
-        "- Verwende KEINE placeholder-UUIDs; trage nur echte IDs aus den Daten ein, oder null.\n"
-        "- Priorisiere dringende Maßnahmen (z.B. hohe Varroa, Schwarmzeichen) als HIGH.\n"
-        "- Gib 0-10 Aufgaben zurück. Wenn keine Handlung erforderlich ist, gib ein leeres proposals-Array zurück.\n"
+        "}}\n\n"
+        "Rules:\n"
+        "- ONLY generate tasks that are justified by the provided data.\n"
+        "- Do NOT use placeholder UUIDs; only use actual IDs from the data, or null.\n"
+        "- Prioritize urgent actions (e.g., high Varroa counts, swarm signs) as HIGH.\n"
+        "- Return 0-10 tasks. If no action is needed, return an empty proposals array.\n"
     )
 
 
 class BeeAgentPromptBuilder:
     """Builds the full system prompt for a BeeAgentJob run."""
 
-    def __init__(self, job: BeeAgentJob, db: Session):
+    def __init__(self, job: BeeAgentJob, db: Session, lang: str = "de"):
         self._job = job
         self._db = db
+        self._lang = lang
 
     async def build_system_prompt(self) -> str:
         """Assembles system prompt with scope-filtered context injected."""
@@ -72,11 +73,12 @@ class BeeAgentPromptBuilder:
 
         context_str = "\n\n".join(p for p in context_parts if p)
 
-        prompt_parts = [BeeAgentPromptTemplate.MASTER_SYSTEM_PROMPT]
+        target_lang_name = "German" if self._lang == "de" else "English"
+        prompt_parts = [BeeAgentPromptTemplate.MASTER_SYSTEM_PROMPT.format(target_lang=target_lang_name)]
         if context_str:
-            prompt_parts.append(f"=== AKTUELLE IMKEREI-DATEN ===\n{context_str}")
+            prompt_parts.append(f"=== CURRENT APIARY DATA ===\n{context_str}")
         if self._job.custom_prompt:
-            prompt_parts.append(f"=== SPEZIELLE ANWEISUNG DES IMKERS ===\n{self._job.custom_prompt.strip()}")
+            prompt_parts.append(f"=== SPECIAL BEEKEEPER INSTRUCTIONS ===\n{self._job.custom_prompt.strip()}")
 
         return "\n\n".join(prompt_parts)
 
@@ -98,13 +100,13 @@ class BeeAgentPromptBuilder:
                         temp = w.get("temp", 0.0)
                         humidity = w.get("humidity", 0)
                         wind = w.get("wind_speed", 0.0)
-                        weather_desc = w.get("weather", [{}])[0].get("description", "Unbekannt")
-                        lines.append(f"  - Standort '{loc.name}': {temp}°C, {weather_desc}, Feuchte: {humidity}%, Wind: {wind} m/s")
+                        weather_desc = w.get("weather", [{}])[0].get("description", "Unknown")
+                        lines.append(f"  - Location '{loc.name}': {temp}°C, {weather_desc}, Humidity: {humidity}%, Wind: {wind} m/s")
                 except (RuntimeError, ValueError, TypeError) as exc:
                     logger.warning("Error fetching weather for location %s: %s", loc.id, exc)
         
         if lines:
-            return "Aktuelles Wetter:\n" + "\n".join(lines)
+            return "Current Weather:\n" + "\n".join(lines)
         return ""
 
 
@@ -172,22 +174,22 @@ class BeeAgentPromptBuilder:
             locations = self._db.query(Location).filter(Location.id.in_(loc_ids)).all()
 
         if locations and self._job.include_locations:
-            lines.append("Standorte:")
+            lines.append("Locations:")
             for loc in locations:
                 lines.append(
-                    f"  - ID={loc.id} Name='{loc.name}' Adresse='{loc.address}'"
-                    + (f" Notizen='{loc.notes}'" if loc.notes else "")
+                    f"  - ID={loc.id} Name='{loc.name}' Address='{loc.address}'"
+                    + (f" Notes='{loc.notes}'" if loc.notes else "")
                 )
 
         if hives and self._job.include_hives:
-            lines.append("Völker:")
+            lines.append("Colonies:")
             for hive in hives:
-                status = "Aktiv" if hive.is_active else "Inaktiv"
-                queen = f"Königin aus {hive.queen_year}" if hive.queen_year else "Königin-Jahr unbekannt"
-                loc_name = hive.location.name if hive.location else "Unbekannt"
+                status = "Active" if hive.is_active else "Inactive"
+                queen = f"Queen from {hive.queen_year}" if hive.queen_year else "Queen year unknown"
+                loc_name = hive.location.name if hive.location else "Unknown"
                 lines.append(
                     f"  - ID={hive.id} Name='{hive.name}' ({status})"
-                    f" Standort='{loc_name}' {queen}"
+                    f" Location='{loc_name}' {queen}"
                 )
 
         return "\n".join(lines) if lines else ""
@@ -220,33 +222,33 @@ class BeeAgentPromptBuilder:
         if not entries:
             return ""
 
-        lines = [f"Letzte Stockkarten-Einträge (max. {limit}):"]
+        lines = [f"Recent hive log entries (max. {limit}):"]
         for entry in entries:
             detail = ""
             if entry.entry_type == "INSPECTION" and entry.inspection_detail:
                 try:
                     totals = calculate_inspection_totals(entry.inspection_detail.boxes, self._db)
                     detail = (
-                        f"Brut={totals.get('brood', 0)} Waben,"
-                        f" Futter={totals.get('food', 0)} Waben,"
-                        f" Bienen={totals.get('bees', 0)} Waben"
+                        f"Brood={totals.get('brood', 0)} frames,"
+                        f" Food={totals.get('food', 0)} frames,"
+                        f" Bees={totals.get('bees', 0)} frames"
                     )
                 except (RuntimeError, ValueError, TypeError):
-                    detail = "Inspektionsdaten nicht auswertbar"
+                    detail = "Inspection data parsing error"
             elif entry.entry_type == "VARROA_COUNT" and entry.varroa_count_detail:
                 detail = (
-                    f"Milbenfall={entry.varroa_count_detail.raw_count},"
-                    f" Geschätzt={entry.varroa_count_detail.estimated_total}"
+                    f"Mite fall={entry.varroa_count_detail.raw_count},"
+                    f" Estimated={entry.varroa_count_detail.estimated_total}"
                 )
             elif entry.entry_type == "VARROA_TREATMENT" and entry.varroa_treatment_detail:
                 detail = (
-                    f"Behandlung {entry.varroa_treatment_detail.product}"
+                    f"Treatment with {entry.varroa_treatment_detail.product}"
                     f" ({entry.varroa_treatment_detail.dosage})"
                 )
 
-            hive_name = entry.hive.name if entry.hive else "Unbekannt"
+            hive_name = entry.hive.name if entry.hive else "Unknown"
             lines.append(
-                f"  - [{entry.date}] Volk='{hive_name}' Typ={entry.entry_type} {detail}"
+                f"  - [{entry.date}] Hive='{hive_name}' Type={entry.entry_type} {detail}"
             )
 
         return "\n".join(lines)
@@ -281,12 +283,12 @@ class BeeAgentPromptBuilder:
         if not tasks:
             return ""
 
-        lines = ["Anstehende Aufgaben:"]
+        lines = ["Pending tasks:"]
         for t in tasks:
-            due = f" (Fällig: {t.due_date})" if t.due_date else ""
-            hive_name = t.hive.name if t.hive else "Keines"
-            loc_name = t.location.name if t.location else "Keiner"
-            lines.append(f"  - [{t.priority}] {t.title}{due} (Standort: {loc_name}, Volk: {hive_name})")
+            due = f" (Due: {t.due_date})" if t.due_date else ""
+            hive_name = t.hive.name if t.hive else "None"
+            loc_name = t.location.name if t.location else "None"
+            lines.append(f"  - [{t.priority}] {t.title}{due} (Location: {loc_name}, Hive: {hive_name})")
         return "\n".join(lines)
 
     def _build_calendar_context(self) -> str:
@@ -320,9 +322,9 @@ class BeeAgentPromptBuilder:
         if not tasks:
             return ""
 
-        lines = ["Kalender-Termine (Fälligkeiten):"]
+        lines = ["Calendar events (Dues):"]
         for t in tasks:
-            hive_name = t.hive.name if t.hive else "Keines"
-            loc_name = t.location.name if t.location else "Keiner"
-            lines.append(f"  - Datum={t.due_date} Typ='Fällige Aufgabe' Titel='{t.title}' Prio='{t.priority}' (Standort: {loc_name}, Volk: {hive_name})")
+            hive_name = t.hive.name if t.hive else "None"
+            loc_name = t.location.name if t.location else "None"
+            lines.append(f"  - Date={t.due_date} Type='Due task' Title='{t.title}' Priority='{t.priority}' (Location: {loc_name}, Hive: {hive_name})")
         return "\n".join(lines)

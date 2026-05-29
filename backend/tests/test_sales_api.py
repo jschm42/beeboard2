@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-def test_sales_lifecycle_and_tax_export(client: TestClient, _db: Session):
+def test_sales_lifecycle_and_tax_export(client: TestClient, db: Session):
     # 1. Register and login
     reg_response = client.post("/api/auth/register", json={
         "username": "salestester",
@@ -208,7 +208,7 @@ def test_sales_tax_calculation_disabled(client: TestClient, db: Session):
 
 
 
-def test_requires_batch_selection_enforcement(client, _db):
+def test_requires_batch_selection_enforcement(client, db):
     """requires_batch_selection flag is stored and enforced at sale creation."""
     client.post('/api/auth/register', json={
         'username': 'batchtester', 'email': 'batchtester@example.com',

@@ -14,74 +14,69 @@ from app.models.user import User
 logger = logging.getLogger("beeboard.ai")
 
 DEFAULT_CHATBOT_PROMPT = (
-    "Du bist der hochkompetente 'BeeBoard KI-Assistent' für Imker.\n"
-    "Deine Aufgabe ist es, dem Imker basierend auf seinen Daten präzise Auskunft "
-    "zu geben. Antworte immer freundlich, sachlich und auf Deutsch. Halte dich kurz "
-    "und hebe wichtige Warnungen (wie hohe Varroazahlen) hervor.\n\n"
-    "Hier ist der aktuelle Zustand der Imkerei (Völker, Standorte, letzte Messungen):\n"
+    "You are the highly competent 'BeeBoard AI Assistant' for beekeepers.\n"
+    "Your job is to provide precise information based on the beekeeper's data.\n"
+    "Always reply in a friendly, professional manner. Respond in the requested target language: {target_lang}.\n"
+    "Keep your answers concise and highlight important warnings (like high varroa counts).\n\n"
+    "Here is the current state of the apiary (hives, locations, recent measurements):\n"
     "{context_str}"
 )
 
 DEFAULT_DRAFT_PROMPT = (
-    "Du bist ein intelligentere Daten-Extraktor für Imker.\n"
-    "Lies die folgende Freitext-Notiz des Imkers durch und wandle sie in ein valides JSON-Objekt um.\n"
-    "Das JSON-Objekt MUSS exakt der folgenden Struktur entsprechen. Gib NUR das reine JSON zurück. Keine Markdowns wie ```json.\n\n"
-    "STRUKTUR:\n"
+    "You are an intelligent data extractor for beekeepers.\n"
+    "Read the following free-text note from the beekeeper and convert it into a valid JSON object.\n"
+    "The JSON object MUST exactly match the following structure. Return ONLY the raw JSON string. Do NOT wrap it in markdown code fences like ```json.\n\n"
+    "STRUCTURE:\n"
     "{\n"
-    "  \"hive_name\": \"Name des Volks (z.B. Volk 3) oder null wenn nicht genannt\",\n"
-    "  \"entry_type\": \"Einer der Werte: 'INSPECTION', 'VARROA_COUNT', 'VARROA_TREATMENT', 'GENERAL'\",\n"
-    "  \"notes\": \"Zusammenfassung der Notiz als Fließtext\",\n"
-    "  \"date\": \"Datum im Format YYYY-MM-DD (Standard: '{date_str}')\",\n"
+    "  \"hive_name\": \"Name of the colony/hive (e.g., Volk 3 or Hive 3), or null if not mentioned\",\n"
+    "  \"entry_type\": \"One of: 'INSPECTION', 'VARROA_COUNT', 'VARROA_TREATMENT', 'GENERAL'\",\n"
+    "  \"notes\": \"Summary of the note in the requested target language: {target_lang}\",\n"
+    "  \"date\": \"Date in YYYY-MM-DD format (default: '{date_str}')\",\n"
     "  \"inspection_detail\": {\n"
     "    \"frames\": [\n"
     "      {\n"
-    "        \"frame_number\": 1, // Nummer der Wabe (1-basiert)\n"
-    "        \"side\": 1,         // Waben-Seite (1 oder 2)\n"
-    "        \"brood_eighths\": 0, // Brut in Achteln (0-8)\n"
-    "        \"food_eighths\": 0,  // Futter in Achteln (0-8)\n"
-    "        \"bee_eighths\": 0    // Bienenmasse in Achteln (0-8)\n"
+    "        \"frame_number\": 1, // Number of the frame (1-based)\n"
+    "        \"side\": 1,         // Frame side (1 or 2)\n"
+    "        \"brood_eighths\": 0, // Brood in eighths (0-8)\n"
+    "        \"food_eighths\": 0,  // Food in eighths (0-8)\n"
+    "        \"bee_eighths\": 0    // Bee mass in eighths (0-8)\n"
     "      }\n"
     "    ]\n"
-    "  }, // Nur vorhanden bei entry_type = 'INSPECTION', sonst null\n"
+    "  }, // Present only if entry_type = 'INSPECTION', otherwise null\n"
     "  \"varroa_count_detail\": {\n"
-    "    \"raw_count\": 0 // Rohwert Varroamilben (Zahl)\n"
-    "  }, // Nur vorhanden bei entry_type = 'VARROA_COUNT', sonst null\n"
+    "    \"raw_count\": 0 // Raw count of varroa mites (integer)\n"
+    "  }, // Present only if entry_type = 'VARROA_COUNT', otherwise null\n"
     "  \"varroa_treatment_detail\": {\n"
-    "    \"product\": \"Name des Präparats\",\n"
-    "    \"dosage\": \"Dosis (z.B. 50ml)\"\n"
-    "  } // Nur vorhanden bei entry_type = 'VARROA_TREATMENT', sonst null\n"
+    "    \"product\": \"Name of the treatment product\",\n"
+    "    \"dosage\": \"Dosage used (e.g., 50ml)\"\n"
+    "  } // Present only if entry_type = 'VARROA_TREATMENT', otherwise null\n"
     "}"
 )
 
 DEFAULT_HONEY_DRAFT_PROMPT = (
-    "Du bist ein intelligenter Daten-Extraktor für Imker.\n"
-    "Lies die folgende Freitext-Notiz des Imkers durch und wandle sie in ein valides JSON-Objekt für eine Honig-Charge (Honey Batch) um.\n"
-    "Das JSON-Objekt MUSS exakt der folgenden Struktur entsprechen. Gib NUR das reine JSON zurück. Keine Markdowns wie ```json.\n\n"
-    "WICHTIG für 'honey_type': Verwende bevorzugt eine dieser D.I.B.-konformen Bezeichnungen:\n"
-    "- 'Akazienhonig / Robinienhonig', 'Edelkastanienhonig', 'Eukalyptushonig', 'Fichtenhonig (Fichtenhonigtauhonig)', 'Heidehonig', 'Kleehonig', 'Kornblumenhonig', 'Lindenhonig', 'Löwenzahnhonig', 'Obstblütenhonig', 'Orangenblütenhonig', 'Pinienhonig (Pinienhonigtauhonig)', 'Rapshonig', 'Sonnenblumenhonig', 'Tannenhonig (Weißtannenhonigtauhonig)'\n"
-    "- 'Tannen-/Fichtenhonig', 'Tannen-/Edelkastanienhonig', 'Raps-Klee-Honig'\n"
-    "- 'Waldhonig', 'Wald- und Blütenhonig', 'Gebirgsblütenhonig / Bergblütenhonig'\n"
-    "- 'Wildblütenhonig'\n"
-    "- 'Blütenhonig', 'Honigtauhonig', 'Frühjahrsblütenhonig', 'Frühjahrstrachthonig', 'Sommerblütenhonig', 'Sommertrachthonig'\n"
-    "Wenn eine eigene Kombination oder ein regionaler Zusatz genannt wird (z.B. 'Bayerischer Waldhonig' oder 'Lindenblüte mit Raps'), verwende diese. "
-    "Achtung: Einfache Begriffe wie 'Frühlingshonig' oder 'Sommerhonig' sind nach D.I.B. unzulässig! Wandle sie um in 'Frühjahrsblütenhonig' oder 'Sommerblütenhonig'.\n\n"
-    "STRUKTUR:\n"
+    "You are an intelligent data extractor for beekeepers.\n"
+    "Read the following free-text note from the beekeeper and convert it into a valid JSON object for a Honey Batch.\n"
+    "The JSON object MUST exactly match the following structure. Return ONLY the raw JSON string. Do NOT wrap it in markdown code fences like ```json.\n\n"
+    "IMPORTANT for 'honey_type': Prefer using one of these standard or D.I.B.-compliant German/English names based on the note:\n"
+    "- 'Akazienhonig / Robinienhonig' (Acacia Honey), 'Edelkastanienhonig' (Chestnut Honey), 'Lindenhonig' (Linden Honey), 'Löwenzahnhonig' (Dandelion Honey), 'Rapshonig' (Rape Honey), 'Waldhonig' (Forest Honey), 'Blütenhonig' (Flower Honey), etc.\n"
+    "If a specific custom type or regional detail is mentioned, use it. Write the 'notes' field in the requested target language: {target_lang}.\n\n"
+    "STRUCTURE:\n"
     "{\n"
-    "  \"batch_number\": \"Losnummer/Chargennummer (z.B. L123-2026), null falls nicht genannt oder MHD taggenau ist\",\n"
-    "  \"honey_type\": \"Honigsorte, default 'Blütenhonig' falls nicht genannt\",\n"
-    "  \"harvest_date\": \"Erntedatum im Format YYYY-MM-DD (Standard: '{date_str}')\",\n"
-    "  \"bottling_date\": \"Abfülldatum im Format YYYY-MM-DD oder null\",\n"
-    "  \"quantity_kg\": Menge in Kilogramm als Zahl (z.B. 45.5), default 0.0,\n"
-    "  \"water_content_percent\": Wassergehalt in Prozent als Zahl (z.B. 16.2) oder null,\n"
-    "  \"heating_temperature_celsius\": Erwärmungstemperatur in Grad Celsius als Zahl (z.B. 35.0) oder null,\n"
-    "  \"best_before_date\": \"Mindesthaltbarkeitsdatum (MHD) im Format YYYY-MM-DD (Standard: 2 Jahre nach harvest_date bzw. heute, z.B. '{bb_date_str}')\",\n"
-    "  \"is_exact_date\": true/false, // true wenn ein taggenaues MHD (TT.MM.JJJJ) angegeben/erkannt wurde, sonst false,\n"
-    "  \"dib_label_start\": \"Startnummer des D.I.B. Gewährverschlusses (z.B. 012345) oder null\",\n"
-    "  \"dib_label_end\": \"Endnummer des D.I.B. Gewährverschlusses (z.B. 012399) oder null\",\n"
-    "  \"reserve_sample_taken\": true/false, // true wenn eine Rückstellprobe entnommen wurde, sonst false,\n"
-    "  \"reserve_sample_date\": \"Datum der Rückstellprobenentnahme im Format YYYY-MM-DD oder null\",\n"
-    "  \"reserve_sample_id\": \"ID/Nummer der Rückstellprobe oder null\",\n"
-    "  \"notes\": \"Sonstige Notizen oder Bemerkungen\"\n"
+    "  \"batch_number\": \"Lot/Batch number (e.g., L123-2026), null if not mentioned\",\n"
+    "  \"honey_type\": \"Honey type, default 'Flower Honey' or 'Blütenhonig' if not mentioned\",\n"
+    "  \"harvest_date\": \"Harvest date in YYYY-MM-DD format (default: '{date_str}')\",\n"
+    "  \"bottling_date\": \"Bottling date in YYYY-MM-DD format or null\",\n"
+    "  \"quantity_kg\": Quantity in kilograms as float (e.g., 45.5), default 0.0,\n"
+    "  \"water_content_percent\": Water content in percent as float (e.g., 16.2) or null,\n"
+    "  \"heating_temperature_celsius\": Heating temperature in Celsius as float (e.g., 35.0) or null,\n"
+    "  \"best_before_date\": \"Best before date in YYYY-MM-DD format (default: 2 years after harvest_date, e.g. '{bb_date_str}')\",\n"
+    "  \"is_exact_date\": true/false, // true if an exact best before date was specified in the text, otherwise false,\n"
+    "  \"dib_label_start\": \"Start number of D.I.B. seal or null\",\n"
+    "  \"dib_label_end\": \"End number of D.I.B. seal or null\",\n"
+    "  \"reserve_sample_taken\": true/false, // true if a reserve sample was taken, otherwise false,\n"
+    "  \"reserve_sample_date\": \"Date reserve sample was taken in YYYY-MM-DD format or null\",\n"
+    "  \"reserve_sample_id\": \"ID/Number of the reserve sample or null\",\n"
+    "  \"notes\": \"Other notes or remarks in the requested target language: {target_lang}\"\n"
     "}"
 )
 
@@ -116,7 +111,7 @@ def get_llm_config(db: Session) -> LLMConfig:
             db.refresh(config)
     return config
 
-async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apiary_id: str, current_user: Optional[User] = None, effective_model: str = "", api_key: str = "") -> str:
+async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apiary_id: str, current_user: Optional[User] = None, effective_model: str = "", api_key: str = "", lang: str = "de") -> str:
     from app.models.location import Location
     from app.models.hive import Hive
     from app.models.logbook import LogEntry
@@ -137,7 +132,7 @@ async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apia
             "type": "function",
             "function": {
                 "name": "get_locations",
-                "description": "Lädt alle Standorte der aktuellen Imkerei herunter.",
+                "description": "Downloads all locations of the current apiary.",
                 "parameters": {"type": "object", "properties": {}, "required": []}
             }
         },
@@ -145,7 +140,7 @@ async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apia
             "type": "function",
             "function": {
                 "name": "get_hives",
-                "description": "Lädt alle Bienenvölker (Name, Status, Königin, Zargen) der Imkerei herunter.",
+                "description": "Downloads all colonies/hives (name, status, queen, boxes) of the apiary.",
                 "parameters": {"type": "object", "properties": {}, "required": []}
             }
         },
@@ -153,11 +148,11 @@ async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apia
             "type": "function",
             "function": {
                 "name": "get_recent_log_entries",
-                "description": "Lädt die Logbucheinträge und Schätzungen (Inspektion, Varroafall, Behandlung) der letzten N Tage herunter.",
+                "description": "Downloads logbook entries and diagnostics (inspections, varroa count, treatment) of the last N days.",
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "days": {"type": "integer", "description": "Anzahl der Tage in der Vergangenheit (Standard: 7)"}
+                        "days": {"type": "integer", "description": "Number of days in the past to query (default: 7)"}
                     },
                     "required": []
                 }
@@ -167,16 +162,16 @@ async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apia
             "type": "function",
             "function": {
                 "name": "log_honey_sale",
-                "description": "Erfasst einen neuen Honigverkauf für den aktuellen Benutzer in der Datenbank.",
+                "description": "Records a new honey sale for the current user in the database.",
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "product_name": {"type": "string", "description": "Name oder Sorte des Produkts (z. B. 'Rapshonig', 'Lindenhonig 500g')"},
-                        "quantity": {"type": "number", "description": "Verkaufte Menge (Anzahl Gläser oder kg)"},
-                        "total_price": {"type": "number", "description": "Gesamtpreis in Euro für die angegebene Menge (z. B. 18.0)"},
-                        "sales_channel": {"type": "string", "enum": ["direktverkauf", "online", "email", "verkaufsstand"], "description": "Verkaufskanal"},
-                        "batch_number": {"type": "string", "description": "Die Losnummer/Chargennummer (z. B. 'L-02' oder 'LOT-0001'), falls vorhanden"},
-                        "notes": {"type": "string", "description": "Zusätzliche Notizen zum Verkauf, optional"}
+                        "product_name": {"type": "string", "description": "Name or type of the product (e.g. 'Rape Honey', 'Linden Honey 500g')"},
+                        "quantity": {"type": "number", "description": "Quantity sold (number of jars or kg)"},
+                        "total_price": {"type": "number", "description": "Total price in Euros for the given quantity (e.g. 18.0)"},
+                        "sales_channel": {"type": "string", "enum": ["direktverkauf", "online", "email", "verkaufsstand"], "description": "Sales channel"},
+                        "batch_number": {"type": "string", "description": "The lot/batch number (e.g. 'L-02' or 'LOT-0001'), if available"},
+                        "notes": {"type": "string", "description": "Additional notes about the sale, optional"}
                     },
                     "required": ["product_name", "quantity", "total_price", "sales_channel"]
                 }
@@ -189,7 +184,7 @@ async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apia
             "type": "function",
             "function": {
                 "name": "get_current_weather",
-                "description": "Lädt das aktuelle Wetter für alle Standorte der Imkerei herunter (via OpenWeatherMap).",
+                "description": "Downloads current weather for all locations of the apiary (via OpenWeatherMap).",
                 "parameters": {"type": "object", "properties": {}, "required": []}
             }
         })
@@ -204,7 +199,7 @@ async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apia
             )
         except Exception as e:
             logger.exception("LiteLLM completion error")
-            return "Fehler bei der KI-Anfrage. Bitte versuche es später erneut."
+            return "Fehler bei der KI-Anfrage. Bitte versuche es später erneut." if lang == "de" else "AI request error. Please try again later."
             
         response_message = response.choices[0].message
         
@@ -226,18 +221,18 @@ async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apia
             try:
                 if function_name == "get_locations":
                     locations = db.query(Location).filter(Location.apiary_id == apiary_id).all()
-                    res = [f"Standort '{loc.name}' in {loc.address}. Notizen: {loc.notes or 'Keine'}" for loc in locations]
-                    result = "\n".join(res) if res else "Keine Standorte gefunden."
+                    res = [f"Location '{loc.name}' in {loc.address}. Notes: {loc.notes or 'None'}" for loc in locations]
+                    result = "\n".join(res) if res else "No locations found."
                     
                 elif function_name == "get_hives":
                     hives = db.query(Hive).filter(Hive.apiary_id == apiary_id).all()
                     res = []
                     for hive in hives:
-                        status_str = "Aktiv" if hive.is_active else "Inaktiv"
-                        queen_str = f"Königin aus {hive.queen_year}" if hive.queen_year else "Königin-Jahr unbekannt"
-                        boxes_str = f"{len(hive.boxes)} Zargen"
-                        res.append(f"- Volk '{hive.name}' ({status_str}): Standort='{hive.location.name if hive.location else 'Unbekannt'}', {queen_str}, Struktur={boxes_str}.")
-                    result = "\n".join(res) if res else "Keine Bienenvölker gefunden."
+                        status_str = "Active" if hive.is_active else "Inactive"
+                        queen_str = f"Queen from {hive.queen_year}" if hive.queen_year else "Queen year unknown"
+                        boxes_str = f"{len(hive.boxes)} boxes"
+                        res.append(f"- Colony '{hive.name}' ({status_str}): Location='{hive.location.name if hive.location else 'Unknown'}', {queen_str}, Structure={boxes_str}.")
+                    result = "\n".join(res) if res else "No colonies found."
                     
                 elif function_name == "get_recent_log_entries":
                     days = arguments.get("days", 7)
@@ -251,13 +246,13 @@ async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apia
                         detail_desc = ""
                         if entry.entry_type == "INSPECTION" and entry.inspection_detail:
                             totals = calculate_inspection_totals(entry.inspection_detail.boxes, db)
-                            detail_desc = f"Brut={totals.get('brood',0)} Waben, Futter={totals.get('food',0)} Waben, Bienen={totals.get('bees',0)} Waben"
+                            detail_desc = f"Brood={totals.get('brood',0)} frames, Food={totals.get('food',0)} frames, Bees={totals.get('bees',0)} frames"
                         elif entry.entry_type == "VARROA_COUNT" and entry.varroa_count_detail:
-                            detail_desc = f"Milbenfall={entry.varroa_count_detail.raw_count}, Geschätzt={entry.varroa_count_detail.estimated_total}"
+                            detail_desc = f"Mite fall={entry.varroa_count_detail.raw_count}, Estimated={entry.varroa_count_detail.estimated_total}"
                         elif entry.entry_type == "VARROA_TREATMENT" and entry.varroa_treatment_detail:
-                            detail_desc = f"Behandlung {entry.varroa_treatment_detail.product} ({entry.varroa_treatment_detail.dosage})"
-                        res.append(f"- [{entry.date}] Volk: '{entry.hive.name if entry.hive else 'Unbekannt'}' | Typ: {entry.entry_type} | Details: {detail_desc}")
-                    result = "\n".join(res) if res else f"Keine Logbucheinträge in den letzten {days} Tagen gefunden."
+                            detail_desc = f"Treatment {entry.varroa_treatment_detail.product} ({entry.varroa_treatment_detail.dosage})"
+                        res.append(f"- [{entry.date}] Hive: '{entry.hive.name if entry.hive else 'Unknown'}' | Type: {entry.entry_type} | Details: {detail_desc}")
+                    result = "\n".join(res) if res else f"No log entries found in the last {days} days."
                     
                 elif function_name == "get_current_weather":
                     locations = db.query(Location).filter(Location.apiary_id == apiary_id).all()
@@ -269,12 +264,12 @@ async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apia
                                 temp = w.get("temp", 0.0)
                                 humidity = w.get("humidity", 0)
                                 wind = w.get("wind_speed", 0.0)
-                                weather_desc = w.get("weather", [{}])[0].get("description", "Unbekannt")
-                                res.append(f"Standort '{loc.name}': {temp}°C, {weather_desc}, Feuchte: {humidity}%, Wind: {wind} m/s")
-                    result = "\n".join(res) if res else "Konnte keine Wetterdaten abrufen (oder keine Geodaten)."
+                                weather_desc = w.get("weather", [{}])[0].get("description", "Unknown")
+                                res.append(f"Location '{loc.name}': {temp}°C, {weather_desc}, Humidity: {humidity}%, Wind: {wind} m/s")
+                    result = "\n".join(res) if res else "Could not retrieve weather data (or no geodata)."
                 elif function_name == "log_honey_sale":
                     if not current_user:
-                        result = "Fehler: Kein aktiver Benutzerkontext vorhanden, um Verkäufe zu buchen."
+                        result = "Error: No active user context found to log sales."
                     else:
                         product_name = arguments.get("product_name")
                         quantity = float(arguments.get("quantity", 0))
@@ -323,7 +318,7 @@ async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apia
                             db.add(matched_product)
                             db.commit()
                             db.refresh(matched_product)
-                            notes_extra = f" (Produkt '{product_name}' wurde automatisch angelegt)"
+                            notes_extra = f" (Product '{product_name}' was automatically created)"
                         else:
                             notes_extra = ""
 
@@ -353,13 +348,13 @@ async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apia
                         db.commit()
                         db.refresh(new_sale)
 
-                        result = f"Erfolgreich verbucht: {quantity}x '{matched_product.name}' für {total_price}€ über Kanal '{sales_channel}'."
+                        result = f"Successfully logged: {quantity}x '{matched_product.name}' for {total_price}€ via channel '{sales_channel}'."
                         if batch:
-                            result += f" Verknüpft mit Charge '{batch.batch_number}'."
+                            result += f" Linked with batch '{batch.batch_number}'."
                 else:
-                    result = f"Unbekannte Funktion: {function_name}"
+                    result = f"Unknown function: {function_name}"
             except Exception as e:
-                result = f"Fehler bei Funktionsausführung: {str(e)}"
+                result = f"Error executing function: {str(e)}"
                 
             messages.append({
                 "role": "tool",
@@ -368,7 +363,7 @@ async def run_agent_loop(system_prompt: str, user_prompt: str, db: Session, apia
                 "content": str(result)
             })
             
-    return "Der Assistent konnte die Anfrage nicht innerhalb der maximalen Anzahl von Schritten beantworten."
+    return "Der Assistent konnte die Anfrage nicht innerhalb der maximalen Anzahl von Schritten beantworten." if lang == "de" else "The assistant could not answer the request within the maximum number of steps."
 
 
 def get_effective_model_and_key(model: str) -> tuple[str, Optional[str]]:
@@ -420,7 +415,7 @@ def get_api_key_for_model(model: str) -> Optional[str]:
     _, key = get_effective_model_and_key(model)
     return key
 
-async def chatbot_completion(query: str, apiary_id: str, current_user: User, db: Session) -> str:
+async def chatbot_completion(query: str, apiary_id: str, current_user: User, db: Session, lang: str = "de") -> str:
     """
     Sends the user query along with tool access to the LLM
     to generate helpful, context-aware advice for the beekeeper.
@@ -429,25 +424,40 @@ async def chatbot_completion(query: str, apiary_id: str, current_user: User, db:
     
     # If no API key is provided, gracefully inform the user or fall back
     if not api_key and not effective_model.startswith("ollama"):
-        return (
-            "Der KI-Assistent ist bereit, aber es wurde kein API-Schlüssel für "
-            f"'{settings.LITELLM_MODEL}' konfiguriert. Bitte hinterlege einen "
-            "passenden API-Schlüssel (z.B. GEMINI_API_KEY, OPENROUTER_API_KEY, ANTHROPIC_API_KEY) in den Umgebungsvariablen."
-        )
+        if lang == "de":
+            return (
+                "Der KI-Assistent ist bereit, aber es wurde kein API-Schlüssel für "
+                f"'{settings.LITELLM_MODEL}' konfiguriert. Bitte hinterlege einen "
+                "passenden API-Schlüssel (z.B. GEMINI_API_KEY, OPENROUTER_API_KEY, ANTHROPIC_API_KEY) in den Umgebungsvariablen."
+            )
+        else:
+            return (
+                "The AI assistant is ready, but no API key has been configured for "
+                f"'{settings.LITELLM_MODEL}'. Please configure a "
+                "valid API key (e.g. GEMINI_API_KEY, OPENROUTER_API_KEY, ANTHROPIC_API_KEY) in your environment variables."
+            )
 
     config = get_llm_config(db)
+    
+    # Use English tool description reminder in the system prompt injection
     system_prompt = config.chatbot_system_prompt.replace(
         "{context_str}", 
-        "Du hast Zugriff auf Tools, um dir alle benötigten Daten (Wetter, Logbuch, Völker, Standorte) selbst abzurufen und Verkäufe direkt zu buchen. Nutze sie!"
+        "You have access to tools to fetch all needed data (weather, logbook, colonies, locations) yourself and book sales directly. Use them!"
     )
+    
+    target_lang_name = "German" if lang == "de" else "English"
+    if "{target_lang}" in system_prompt:
+        system_prompt = system_prompt.replace("{target_lang}", target_lang_name)
+    else:
+        system_prompt += f"\n\nIMPORTANT: Respond in the requested target language: {target_lang_name}."
 
     try:
-        return await run_agent_loop(system_prompt, query, db, apiary_id, current_user, effective_model, api_key)
+        return await run_agent_loop(system_prompt, query, db, apiary_id, current_user, effective_model, api_key, lang=lang)
     except Exception as e:
         logger.exception("LiteLLM error")
-        return "Entschuldigung, es gab einen internen Fehler bei der Bearbeitung deiner Anfrage."
+        return "Entschuldigung, es gab einen internen Fehler bei der Bearbeitung deiner Anfrage." if lang == "de" else "Sorry, there was an internal error processing your request."
 
-def draft_entry_from_text(freetext: str, date_str: Optional[str] = None, db: Optional[Session] = None) -> Dict[str, Any]:
+def draft_entry_from_text(freetext: str, date_str: Optional[str] = None, db: Optional[Session] = None, lang: str = "de") -> Dict[str, Any]:
     """
     Uses the LLM to parse unstructured audio transcripts or notes
     and converts them into a structured JSON draft for a log entry.
@@ -470,6 +480,11 @@ def draft_entry_from_text(freetext: str, date_str: Optional[str] = None, db: Opt
         prompt_tmpl = DEFAULT_DRAFT_PROMPT
 
     system_prompt = prompt_tmpl.replace("{date_str}", date_str)
+    target_lang_name = "German" if lang == "de" else "English"
+    if "{target_lang}" in system_prompt:
+        system_prompt = system_prompt.replace("{target_lang}", target_lang_name)
+    else:
+        system_prompt += f"\n\nIMPORTANT: Write the 'notes' field in the requested target language: {target_lang_name}."
 
     try:
         response = litellm.completion(
@@ -636,7 +651,7 @@ def get_fallback_honey_draft(freetext: str, harvest_date_str: str, error: Option
         "notes": notes
     }
 
-def draft_honey_batch_from_text(freetext: str, harvest_date_str: Optional[str] = None, db: Optional[Session] = None) -> Dict[str, Any]:
+def draft_honey_batch_from_text(freetext: str, harvest_date_str: Optional[str] = None, db: Optional[Session] = None, lang: str = "de") -> Dict[str, Any]:
     """
     Uses the LLM to parse unstructured honey harvest or bottling notes
     and converts them into a structured JSON draft for a honey batch.
@@ -660,6 +675,11 @@ def draft_honey_batch_from_text(freetext: str, harvest_date_str: Optional[str] =
 
     prompt_tmpl = DEFAULT_HONEY_DRAFT_PROMPT
     system_prompt = prompt_tmpl.replace("{date_str}", harvest_date_str).replace("{bb_date_str}", bb_date_str)
+    target_lang_name = "German" if lang == "de" else "English"
+    if "{target_lang}" in system_prompt:
+        system_prompt = system_prompt.replace("{target_lang}", target_lang_name)
+    else:
+        system_prompt += f"\n\nIMPORTANT: Write the 'notes' field in the requested target language: {target_lang_name}."
 
     try:
         response = litellm.completion(

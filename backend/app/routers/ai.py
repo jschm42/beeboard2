@@ -34,7 +34,7 @@ async def ai_chat(
     check_access(apiary_id, current_user, db)
 
     # Query LiteLLM with database session support for dynamic prompt templates
-    response_content = await chatbot_completion(query_in.query, apiary_id, current_user, db=db)
+    response_content = await chatbot_completion(query_in.query, apiary_id, current_user, db=db, lang=query_in.lang)
     return {"response": response_content}
 
 @router.post("/draft", response_model=AIDraftResponse)
@@ -47,7 +47,7 @@ def ai_draft_entry(
     Parses natural language notes into structured draft data
     so that the beekeeper can quickly auto-fill inspections or counts.
     """
-    draft = draft_entry_from_text(query_in.text, db=db)
+    draft = draft_entry_from_text(query_in.text, db=db, lang=query_in.lang)
     return {"draft": draft}
 
 @router.post("/draft-honey", response_model=AIDraftResponse)
@@ -60,5 +60,5 @@ def ai_draft_honey_batch(
     Parses natural language notes into structured honey batch draft data
     so that the beekeeper can quickly auto-fill honey harvests/bottlings.
     """
-    draft = draft_honey_batch_from_text(query_in.text, db=db)
+    draft = draft_honey_batch_from_text(query_in.text, db=db, lang=query_in.lang)
     return {"draft": draft}

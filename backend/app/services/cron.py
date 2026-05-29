@@ -35,7 +35,7 @@ async def generate_ai_insights_job():
         db.close()
     logger.info("Finished AI Insights job.")
 
-async def generate_insight_for_apiary(db: Session, apiary: Apiary, insight_job: AIInsightCronJob | None = None):
+async def generate_insight_for_apiary(db: Session, apiary: Apiary, insight_job: AIInsightCronJob | None = None, lang: str = "de"):
     # Prompt LLM
     effective_model, api_key = get_effective_model_and_key(settings.LITELLM_MODEL)
     if not api_key and not effective_model.startswith("ollama"):
@@ -43,26 +43,33 @@ async def generate_insight_for_apiary(db: Session, apiary: Apiary, insight_job: 
         return
         
     context_text = await _build_ai_insight_context(db, apiary, insight_job)
+    target_lang_name = "German" if lang == "de" else "English"
     base_prompt = (
         insight_job.prompt.strip()
         if insight_job and insight_job.prompt and insight_job.prompt.strip()
         else (
-            "Du bist ein intelligenter Imker-Assistent. Analysiere die Daten der Imkerei "
-            "und schreibe einen kurzen, motivierenden Blog-Eintrag (in Markdown) "
-            "mit einem Imker-Wetterbericht und Hinweisen, was bei dem aktuellen Wetter und der Jahreszeit "
-            "sowie den aktuellen Diagnosen zu beachten ist. "
-            "Verwende Emojis und halte es informativ aber kurz. "
-            "WICHTIG: Gib NUR den reinen Markdown-Text zurück. Verwende KEINE Markdown-Code-Blöcke wie ```markdown, um die Antwort zu umschließen!"
+            "You are an intelligent beekeeping assistant. Analyze the apiary data "
+            "and write a short, motivating blog-style entry (in Markdown) "
+            "with a beekeeping weather forecast and recommendations on what to watch out for "
+            "given the current weather, season, and colony health diagnostics. "
+            "Use emojis and keep it informative but brief. "
+            "IMPORTANT: You must write the report in the requested target language: {target_lang}. "
+            "IMPORTANT: Return ONLY the raw Markdown text. Do NOT wrap the answer in Markdown code fences like ```markdown!"
         )
     )
 
+    if "{target_lang}" in base_prompt:
+        base_prompt = base_prompt.replace("{target_lang}", target_lang_name)
+    else:
+        base_prompt += f"\n\nIMPORTANT: You must write the report in the requested target language: {target_lang_name}."
+
     system_prompt = (
         f"{base_prompt}\n\n"
-        "Nutze ausschließlich die injizierten Daten als Quelle. "
-        "Wenn Daten fehlen, benenne die Unsicherheit klar.\n\n"
-        f"=== INJIZIERTER KONTEXT ===\n{context_text}"
+        "Only use the injected context as the source of truth. "
+        "If data is missing, clearly state the uncertainty.\n\n"
+        f"=== INJECTED CONTEXT ===\n{context_text}"
     )
-    user_prompt = "Erstelle auf Basis des injizierten Kontexts den KI-Insight-Bericht."
+    user_prompt = "Generate the AI Insight report based on the injected context."
     
     try:
         from app.models.apiary import ApiaryMembership
@@ -85,7 +92,7 @@ async def generate_insight_for_apiary(db: Session, apiary: Apiary, insight_job: 
         # Save to DB
         insight = AIInsight(
             apiary_id=apiary.id,
-            title=(insight_job.name if insight_job else "Aktuelle Imkerei-Analyse"),
+            title=(insight_job.name if insight_job else ("Aktuelle Imkerei-Analyse" if lang == "de" else "Current Apiary Analysis")),
             content=content
         )
         db.add(insight)
@@ -418,7 +425,7 @@ async def _run_bee_agent_job(job_id: str) -> None:
 
         builder = BeeAgentPromptBuilder(job, db)
         system_prompt = await builder.build_system_prompt()
-        user_prompt = "Analysiere die Daten und erstelle eine Liste mit konkreten Aufgaben als JSON."
+        user_prompt = "Analyze the data and generate a list of concrete tasks as JSON."
 
 
         # Determine representative user for weather tool access

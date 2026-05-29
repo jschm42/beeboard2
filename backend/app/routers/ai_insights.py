@@ -128,6 +128,7 @@ def get_latest_insight(
 @router.post("/trigger", response_model=dict)
 async def trigger_insight(
     apiary_id: str = Query(...),
+    lang: Optional[str] = Query("de", description="Target language (de/en)"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -138,5 +139,5 @@ async def trigger_insight(
     if not apiary:
         raise HTTPException(status_code=404, detail="Apiary not found")
     
-    await generate_insight_for_apiary(db, apiary)
+    await generate_insight_for_apiary(db, apiary, lang=lang)
     return {"status": "success", "message": "Insight generated"}

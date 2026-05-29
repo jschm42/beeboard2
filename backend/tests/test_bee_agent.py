@@ -25,7 +25,7 @@ def _register_and_login(client: TestClient, username: str) -> tuple[str, str]:
     return token, apiary_id
 
 
-def test_bee_agent_job_crud(client: TestClient, _db: Session):
+def test_bee_agent_job_crud(client: TestClient, db: Session):
     token, apiary_id = _register_and_login(client, "beejobuser")
     headers = {"Authorization": f"Bearer {token}"}
 
@@ -154,7 +154,7 @@ def test_bee_agent_proposal_accept(client: TestClient, db: Session):
     assert second_accept.status_code == 400
 
 
-def test_bee_agent_invalid_scope(client: TestClient, _db: Session):
+def test_bee_agent_invalid_scope(client: TestClient, db: Session):
     """Creating a job with an invalid scope must return 400."""
     token, apiary_id = _register_and_login(client, "beeinvalidscope")
     headers = {"Authorization": f"Bearer {token}"}

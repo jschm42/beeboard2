@@ -654,7 +654,7 @@ import { useApiaryStore } from '../stores/apiary'
 import { useErrorStore } from '../stores/error'
 import { useConfirmStore } from '../stores/confirm'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const apiaryStore = useApiaryStore()
 const errorStore = useErrorStore()
 const confirmStore = useConfirmStore()
@@ -833,7 +833,8 @@ async function runChatQuery() {
   chatLoading.value = true
   try {
     const res = await axios.post('/api/ai/chat', {
-      query: chatPrompt.value.trim()
+      query: chatPrompt.value.trim(),
+      lang: locale.value
     }, {
       params: { apiary_id: apiaryStore.activeApiaryId }
     })
@@ -873,7 +874,12 @@ async function saveChatAsInsight() {
 async function triggerManualInsight() {
   generating.value = true
   try {
-    await axios.post('/api/ai-insights/trigger', null, { params: { apiary_id: apiaryStore.activeApiaryId } })
+    await axios.post('/api/ai-insights/trigger', null, {
+      params: {
+        apiary_id: apiaryStore.activeApiaryId,
+        lang: locale.value
+      }
+    })
     await fetchInsights()
     notifyInsightsUpdated()
   } catch (err) {
