@@ -1,30 +1,39 @@
 # 🐝 BeeBoard — Reactive Beekeeping Log & AI Assistant
 
-Welcome to **BeeBoard**, a modern beekeeping logbook (Stockkarte) with an integrated AI assistant.
+Welcome to **BeeBoard**, a modern, reactive beekeeping logbook (Stockkarte) with an integrated AI assistant.
 
 The project helps beekeepers manage apiaries (Standorte), hives (Bienenvölker), inspections (Stockkarten-Einträge), honey harvests, sales, and recurring tasks in one place.
 
 BeeBoard combines a fast **FastAPI + SQLite** backend with an intuitive **Vue 3 + Vite + Tailwind CSS** frontend. A context-aware **AI Assistant** (powered by LiteLLM) can answer questions about your data and convert natural-language notes into structured entries.
 
-> [!WARNING]
-> **Current scope:** BeeBoard is currently primarily in **German language** and aligned with **German beekeeping practices**.
-> 
-> **Planned direction:** Internationalization is planned, and most core features are already broadly applicable across regions.
-> 
-> **Community support wanted:** Help with translations, regional defaults, domain validation, and UX adaptation for non-German beekeeping workflows is very welcome.
+---
+
+## 🌍 Localization & Multi-Language Support
+
+BeeBoard is fully localized in both **German** and **English**. The user interface dynamically adapts to your language selection. We welcome feedback and contributions to adapt default terminology and calculations to other regional beekeeping practices worldwide.
+
+---
+
+## 📸 Screenshot Gallery
+
+| | |
+|:---:|:---:|
+| ![Dashboard (German)](/docs/screenshots/dashboard_de.png)<br>*Dashboard & AI Assistant* | ![Hive Details (English)](/docs/screenshots/hive_details_en.png)<br>*Hive Details & Box Stack Visualizer* |
+| ![Inspection Log (German)](/docs/screenshots/inspection_de.png)<br>*Detailed Inspection Log (Stockkarte)* | ![Admin Panel (English)](/docs/screenshots/admin_en.png)<br>*Administration & System Configuration* |
 
 ---
 
 ## 🚀 Key Features
 
 *   **🍯 Multi-Apiary & Location Management**: Manage multiple stands with addresses, geo-context, notes, and ownership information.
-*   **🐝 Hive Lifecycle Management**: Track setup date, status, frame system (e.g., Zander, Dadant), queen metadata, and per-hive history.
+*   **🐝 Hive Lifecycle Management**: Track setup date, status, box setups (Brutraum/Honigraum), queen metadata, and per-hive history.
 *   **📋 Detailed Inspection Logbook (Stockkarte)**: Capture brood/food/bee frame metrics, temperament, swarm signs, queen sightings, varroa counts, and seasonal treatments.
 *   **🧠 AI Assistant for Beekeeping Decisions**: Ask contextual questions based on your actual hive and inspection data to get practical diagnostics and suggestions.
 *   **🎙️ Natural-Language Entry Drafting**: Convert free text or dictated notes into structured logbook drafts to reduce manual input.
 *   **🍯 Honey Batch Management**: Record harvest and bottling data, batch metadata, and traceability information.
 *   **💶 Sales Tracking**: Track products, sales channels, pricing, and sales records connected to honey batches.
 *   **✅ Task Planning & Reminders**: Organize recurring and seasonal tasks for locations and hives.
+*   **🌍 Multi-Language Support (DE/EN)**: Native translation support with simple on-the-fly toggling.
 *   **📊 Statistics & Visual Analytics**: Analyze trends for yield, varroa progression, colony strength, and operational outcomes.
 *   **🔐 Secure Authentication & Roles**: JWT-based auth with role-aware access for protected areas.
 *   **🛠️ API-First Backend**: Well-structured REST endpoints with Pydantic schemas and SQLAlchemy models for maintainable integrations.
@@ -354,8 +363,26 @@ All persistent data is stored in the `backend/data/` folder:
 
 ---
 
+## 🤝 Call for Contribution
+
+We welcome contributions from developers and beekeepers globally! You can help make BeeBoard better by participating in:
+* **Localization & Translations**: Help us translate BeeBoard into more languages or refine current English/German terminology.
+* **Testing & Feedback**: Open issues, report bugs, or write automated tests for frontend and backend.
+* **International Standards**: Help adapt default hive frame systems, regional varroa treatment recommendations, and local legal requirements for your country.
+* **Feature Development**: Submit pull requests for feature additions or UI improvements.
+
+---
+
 ## 🐝 Quick Beekeeper Tips
 1.  **Create your first Apiary (Standort)** under the **Standorte** tab.
-2.  **Add a Hive (Volk)** under the **Bienenvölker** tab. Be sure to specify the frame dimensions.
+2.  **Add a Hive (Volk)** under the **Bienenvölker** tab. Be sure to specify the box settings and details.
 3.  **Start Logging** under the **Stockkarte** tab. You can type natural text and click the *AI Draft* button to let the AI auto-fill the form for you!
 4.  Ask the **AI Assistant** on the Dashboard for diagnostics: e.g. *"Is my Varroa drop rate too high for spring?"* or *"Give me a summary of Volk 1's health."*
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+
