@@ -48,25 +48,36 @@
         
         <!-- Apiary Switcher -->
         <div class="space-y-1.5">
-          <label class="text-[10px] uppercase tracking-wider font-extrabold text-gray-400 dark:text-gray-500 block px-1">
+          <label class="text-[10px] uppercase tracking-wider font-extrabold text-gray-400 dark:text-gray-505 block px-1">
             {{ $t('sidebar.active_apiary') }}
           </label>
-          <div class="relative flex items-center">
-            <select 
-              v-model="apiaryStore.activeApiaryId" 
-              @change="onApiaryChange" 
-              class="w-full bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl pl-3 pr-8 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none transition-all duration-200 animate-fade-in"
-            >
-              <option v-for="a in apiaryStore.apiaries" :key="a.id" :value="a.id" class="dark:bg-dark-card dark:text-gray-100">
-                {{ a.name }}
-              </option>
-              <option value="NEW" class="text-primary font-bold dark:bg-dark-card">+ Neue Imkerei...</option>
-            </select>
-            <div class="pointer-events-none absolute right-3 flex items-center">
-              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-              </svg>
+          <div class="flex items-center gap-1.5 w-full">
+            <div class="relative flex-grow flex items-center">
+              <select 
+                v-model="apiaryStore.activeApiaryId" 
+                @change="onApiaryChange" 
+                class="w-full bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl pl-3 pr-8 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none transition-all duration-200 animate-fade-in"
+              >
+                <option v-for="a in apiaryStore.apiaries" :key="a.id" :value="a.id" class="dark:bg-dark-card dark:text-gray-100">
+                  {{ a.name }}
+                </option>
+                <option value="NEW" class="text-primary font-bold dark:bg-dark-card">+ Neue Imkerei...</option>
+              </select>
+              <div class="pointer-events-none absolute right-3 flex items-center">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </div>
             </div>
+            <button
+              v-if="apiaryStore.activeApiaryId"
+              type="button"
+              @click="manageApiaryOpen = true"
+              class="p-2 rounded-xl border border-gray-250 dark:border-dark-border hover:bg-gray-100 dark:hover:bg-dark-border hover:text-primary dark:hover:text-primary transition-all shrink-0 cursor-pointer"
+              title="Imkerei verwalten"
+            >
+              <Settings class="w-4.5 h-4.5" />
+            </button>
           </div>
         </div>
 
@@ -227,22 +238,33 @@
           <label class="text-[10px] uppercase tracking-wider font-extrabold text-gray-400 dark:text-gray-500 block px-1">
             Aktive Imkerei
           </label>
-          <div class="relative flex items-center">
-            <select 
-              v-model="apiaryStore.activeApiaryId" 
-              @change="onApiaryChange" 
-              class="w-full bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl pl-3 pr-8 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none transition-all duration-200"
-            >
-              <option v-for="a in apiaryStore.apiaries" :key="a.id" :value="a.id" class="dark:bg-dark-card dark:text-gray-100">
-                {{ a.name }}
-              </option>
-              <option value="NEW" class="text-primary font-bold dark:bg-dark-card">+ Neue Imkerei...</option>
-            </select>
-            <div class="pointer-events-none absolute right-3 flex items-center">
-              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-              </svg>
+          <div class="flex items-center gap-1.5 w-full">
+            <div class="relative flex-grow flex items-center">
+              <select 
+                v-model="apiaryStore.activeApiaryId" 
+                @change="onApiaryChange" 
+                class="w-full bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl pl-3 pr-8 py-2 text-sm font-bold text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none transition-all duration-200"
+              >
+                <option v-for="a in apiaryStore.apiaries" :key="a.id" :value="a.id" class="dark:bg-dark-card dark:text-gray-100">
+                  {{ a.name }}
+                </option>
+                <option value="NEW" class="text-primary font-bold dark:bg-dark-card">+ Neue Imkerei...</option>
+              </select>
+              <div class="pointer-events-none absolute right-3 flex items-center">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </div>
             </div>
+            <button
+              v-if="apiaryStore.activeApiaryId"
+              type="button"
+              @click="manageApiaryOpen = true"
+              class="p-2 rounded-xl border border-gray-200 dark:border-dark-border hover:bg-gray-100 dark:hover:bg-dark-border hover:text-primary dark:hover:text-primary transition-all shrink-0 cursor-pointer"
+              title="Imkerei verwalten"
+            >
+              <Settings class="w-4.5 h-4.5" />
+            </button>
           </div>
         </div>
 
@@ -301,6 +323,7 @@
     </aside>
 
     <AboutDialog v-model="aboutOpen" />
+    <ManageApiaryModal v-model="manageApiaryOpen" />
 
   </div>
 </template>
@@ -315,6 +338,7 @@ import { APP_NAME, APP_VERSION } from '../config/app.js'
 import { useAuthStore } from '../stores/auth'
 import { useApiaryStore } from '../stores/apiary'
 import AboutDialog from './AboutDialog.vue'
+import ManageApiaryModal from './ManageApiaryModal.vue'
 import { 
   LayoutDashboard, 
   MapPin, 
@@ -333,7 +357,8 @@ import {
   ClipboardList,
   CircleHelp,
   Globe,
-  Calendar
+  Calendar,
+  Settings
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -345,6 +370,7 @@ const mobileMenuOpen = ref(false)
 const isDark = ref(false)
 const unreadInsightsCount = ref(0)
 const aboutOpen = ref(false)
+const manageApiaryOpen = ref(false)
 
 const navItems = computed(() => [
   { name: t('sidebar.dashboard'), path: '/dashboard', icon: LayoutDashboard },

@@ -32,6 +32,19 @@
     "logout": "Log Out",
     "toggle_language": "Change Language"
   },
+  "apiary": {
+    "manage_title": "Manage Apiary",
+    "name_label": "Apiary Name *",
+    "notes_label": "Notes",
+    "name_placeholder": "Name of your apiary...",
+    "notes_placeholder": "Additional information...",
+    "update_success": "Apiary successfully updated.",
+    "delete_title": "Delete Apiary",
+    "delete_warning": "Are you sure you want to delete this apiary? WARNING: This will permanently delete all locations, hives, inspection logs, honey batches, sales, tasks, and all other data associated with this apiary! This action cannot be undone.",
+    "delete_confirm": "Yes, delete apiary and all data",
+    "delete_success": "Apiary successfully deleted.",
+    "delete_btn": "Delete Apiary"
+  },
   "beeAgent": {
     "tasks": "Tasks",
     "calendar": "Calendar",

@@ -2,7 +2,7 @@
   <transition name="modal">
     <div 
       v-if="confirmStore.show" 
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-md"
+      class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/45 backdrop-blur-md"
       @click.self="cancel"
     >
       <div 

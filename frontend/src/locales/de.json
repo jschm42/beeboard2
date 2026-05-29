@@ -32,6 +32,19 @@
     "logout": "Abmelden",
     "toggle_language": "Sprache wechseln"
   },
+  "apiary": {
+    "manage_title": "Imkerei verwalten",
+    "name_label": "Imkereiname *",
+    "notes_label": "Notizen",
+    "name_placeholder": "Name deiner Imkerei...",
+    "notes_placeholder": "Zusätzliche Infos...",
+    "update_success": "Imkerei erfolgreich aktualisiert.",
+    "delete_title": "Imkerei löschen",
+    "delete_warning": "Möchtest du diese Imkerei wirklich löschen? ACHTUNG: Damit werden alle Standorte, Völker, Stockkarten-Einträge, Honig-Chargen, Verkäufe, Aufgaben und alle anderen Daten dieser Imkerei dauerhaft gelöscht! Diese Aktion kann nicht rückgängig gemacht werden.",
+    "delete_confirm": "Ja, Imkerei und alle Daten löschen",
+    "delete_success": "Imkerei erfolgreich gelöscht.",
+    "delete_btn": "Imkerei löschen"
+  },
   "beeAgent": {
     "tasks": "Aufgaben",
     "calendar": "Kalender",

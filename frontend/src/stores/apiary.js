@@ -96,6 +96,39 @@ export const useApiaryStore = defineStore('apiary', {
       } finally {
         this.loading = false
       }
+    },
+    async updateApiary(apiaryId, name, notes = '') {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await axios.put(`/api/apiaries/${apiaryId}`, { name, notes })
+        await this.fetchApiaries()
+        return response.data
+      } catch (err) {
+        console.error('Update apiary error:', err)
+        this.error = err.response?.data?.detail || 'Fehler beim Aktualisieren der Imkerei.'
+        throw err
+      } finally {
+        this.loading = false
+      }
+    },
+    async deleteApiary(apiaryId) {
+      this.loading = true
+      this.error = null
+      try {
+        await axios.delete(`/api/apiaries/${apiaryId}`)
+        if (this.activeApiaryId === apiaryId) {
+          this.activeApiaryId = null
+          localStorage.removeItem('activeApiaryId')
+        }
+        await this.fetchApiaries()
+      } catch (err) {
+        console.error('Delete apiary error:', err)
+        this.error = err.response?.data?.detail || 'Fehler beim Löschen der Imkerei.'
+        throw err
+      } finally {
+        this.loading = false
+      }
     }
   }
 })
