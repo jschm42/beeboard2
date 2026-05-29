@@ -180,83 +180,58 @@
                   class="absolute top-2.5 left-2.5 px-2 py-0.5 text-[10px] font-black rounded-full tracking-wider uppercase shadow-sm"
                   :class="hive.is_active ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'"
                 >
-                  {{ hive.is_active ? $t('common.active') : $t('common.inactive') }}
                 </span>
               </div>
 
-              <!-- Hive Info -->
-              <div class="mb-4">
-                <h3 class="font-extrabold text-lg text-gray-900 dark:text-white truncate">{{ hive.name }}</h3>
-                
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center space-x-1">
-                  <span>📍 {{ $t('hives.location_label') }}:</span>
-                  <span class="font-bold text-gray-700 dark:text-gray-300 truncate">
-                    {{ hive.location?.name || $t('hives.no_location') }}
-                  </span>
-                </p>
-                
-                <div class="flex items-center justify-between mt-2">
-                  <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-                    {{ hive.frame_type?.name }}
-                  </span>
-                  <span class="px-2 py-0.5 bg-primary/15 text-primary text-[10px] font-extrabold rounded-full">
-                    {{ $t('hives.boxes_count', { count: hive.boxes?.length || 0 }) }}
-                  </span>
-                </div>
-              </div>
+              <!-- Content below image -->
+              <div class="flex justify-between gap-4 mb-2 items-start mt-auto">
+                <!-- Left area: Name, Location, and Tasks Badge -->
+                <div class="flex-1 min-w-0 flex flex-col justify-between min-h-[90px]">
+                  <div>
+                    <h3 class="font-extrabold text-lg text-gray-900 dark:text-white truncate" :title="hive.name">{{ hive.name }}</h3>
+                    
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center space-x-1">
+                      <span>📍 {{ $t('hives.location_label') }}:</span>
+                      <span class="font-bold text-gray-700 dark:text-gray-300 truncate" :title="hive.location?.name || $t('hives.no_location')">
+                        {{ hive.location?.name || $t('hives.no_location') }}
+                      </span>
+                    </p>
+                  </div>
 
-              <!-- Tasks Section -->
-              <div v-if="getTasksForHive(hive.id).length > 0" class="mt-auto pt-3 border-t border-gray-100 dark:border-dark-border/60 w-full" @click.stop>
-                <div class="flex items-center justify-between mb-2">
-                  <span class="text-[10px] font-bold text-gray-400 dark:text-gray-505 uppercase tracking-wider">
-                    📋 {{ $t('hives.tasks_label', { count: getTasksForHive(hive.id).filter(taskItem => !taskItem.is_completed).length }) }}
-                  </span>
-                  <div class="flex items-center space-x-1.5">
+                  <!-- Tasks count/link -->
+                  <!-- Click on this links directly to TasksView filtered by hive -->
+                  <div class="mt-2.5" @click.stop>
                     <router-link 
-                      :to="{ name: 'tasks', query: { hiveId: hive.id } }" 
-                      class="text-[10px] font-extrabold text-gray-500 hover:text-primary"
+                      :to="{ name: 'tasks', query: { hiveId: hive.id } }"
+                      class="inline-flex items-center space-x-1.5 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/20 dark:hover:bg-amber-950/40 text-amber-700 dark:text-amber-450 border border-amber-200/55 dark:border-amber-900/35 rounded-xl transition-all duration-200 hover-scale shadow-sm text-[10px] font-extrabold"
                     >
-                      {{ $t('hives.action_view') }}
+                      <span>📋 {{ $t('hives.tasks_open_count', { count: getTasksForHive(hive.id).filter(taskItem => !taskItem.is_completed).length }) }}</span>
                     </router-link>
-                    <span class="text-gray-300 dark:text-gray-700">|</span>
-                    <button 
-                      type="button"
-                      @click.stop="openCreateTaskModal(hive)"
-                      class="text-[10px] font-extrabold text-primary hover:underline cursor-pointer"
-                    >
-                      + {{ $t('hives.action_create') }}
-                    </button>
                   </div>
                 </div>
-                <ul class="space-y-1.5">
-                  <li 
-                    v-for="task in getTasksForHive(hive.id).slice(0, 2)" 
-                    :key="task.id"
-                    class="text-[11px] flex items-center justify-between bg-gray-50/50 dark:bg-dark-bg/30 px-2 py-1 rounded-lg border border-gray-100 dark:border-dark-border/40"
+
+                <!-- Right area: Miniature Beutendarstellung -->
+                <div class="w-14 shrink-0 flex flex-col items-center" @click.stop>
+                  <div 
+                    v-if="hive.boxes && hive.boxes.length > 0" 
+                    class="w-full flex flex-col gap-0.5 border border-gray-200 dark:border-dark-border p-1 rounded-xl bg-gray-50/50 dark:bg-dark-bg/20 shadow-inner"
                   >
-                    <div class="flex items-center gap-1 min-w-0">
-                      <span :class="task.is_completed ? 'text-green-500' : 'text-amber-500'">
-                        {{ task.is_completed ? '✓' : '●' }}
-                      </span>
-                      <span class="font-semibold text-gray-700 dark:text-gray-300 truncate" :class="{'line-through opacity-50': task.is_completed}">
-                        {{ task.title }}
-                      </span>
+                    <div 
+                      v-for="box in [...hive.boxes].sort((a, b) => b.order - a.order)" 
+                      :key="box.id"
+                      class="h-3 w-full rounded border text-[7px] font-black flex items-center justify-center shadow-sm select-none"
+                      :class="box.box_type === 'BROOD'
+                        ? 'bg-gradient-to-r from-amber-600 to-amber-700 border-amber-800 text-white'
+                        : 'bg-gradient-to-r from-yellow-400 to-yellow-500 border-yellow-600 text-gray-900'"
+                      :title="`${box.box_type === 'BROOD' ? 'Brutraum' : 'Honigraum'} (${box.frame_count} Waben)`"
+                    >
+                      {{ box.frame_count }}
                     </div>
-                  </li>
-                  <li v-if="getTasksForHive(hive.id).length > 2" class="text-[9px] text-gray-400 italic pl-1">
-                    {{ $t('hives.tasks_more', { count: getTasksForHive(hive.id).length - 2 }) }}
-                  </li>
-                </ul>
-              </div>
-              <div v-else class="mt-auto pt-3 border-t border-gray-100 dark:border-dark-border/60 flex items-center justify-between w-full" @click.stop>
-                <span class="text-[10px] text-gray-400 italic">{{ $t('hives.no_tasks') }}</span>
-                <button 
-                  type="button"
-                  @click.stop="openCreateTaskModal(hive)"
-                  class="text-[10px] font-extrabold text-primary hover:underline cursor-pointer"
-                >
-                  + {{ $t('hives.action_create') }}
-                </button>
+                  </div>
+                  <div v-else class="w-full h-[70px] border border-dashed border-gray-300 dark:border-gray-700 rounded-xl flex items-center justify-center text-[8px] text-gray-400 italic text-center p-1 leading-tight select-none">
+                    Keine Zargen
+                  </div>
+                </div>
               </div>
 
             </div>
@@ -1296,7 +1271,9 @@ async function submitTaskForm() {
       location_id: taskForm.locationId,
       is_completed: false
     }
-    await axios.post('/api/tasks', payload)
+    await axios.post('/api/tasks', payload, {
+      params: { apiary_id: apiaryStore.activeApiaryId }
+    })
     showAlert(t('hives.success_create_task'), 'success')
     showTaskModal.value = false
     await fetchTasks()

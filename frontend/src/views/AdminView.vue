@@ -4,13 +4,13 @@
     <!-- Back to Dashboard Link -->
     <router-link to="/dashboard" class="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-hover mb-4 transition-colors duration-200">
       <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-      Zurück zum Dashboard
+      {{ $t('admin.back_to_dashboard') }}
     </router-link>
 
     <!-- Header -->
     <div class="mb-8">
-      <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">⚙️ Administration</h1>
-      <p class="text-gray-500 dark:text-gray-400 mt-1">Verwalte Benutzerkonten, passe System-Prompts an und steuere API-Integrationen.</p>
+      <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">{{ $t('admin.title') }}</h1>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">{{ $t('admin.subtitle') }}</p>
     </div>
 
     <!-- Toast Notifications -->
@@ -45,7 +45,7 @@
             : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
         ]"
       >
-        👤 Benutzerverwaltung
+        {{ $t('admin.tab_users') }}
       </button>
       <button 
         @click="activeTab = 'llm'"
@@ -56,7 +56,7 @@
             : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
         ]"
       >
-        🐝 Bee-Agent & KI
+        {{ $t('admin.tab_llm') }}
       </button>
       <button 
         @click="activeTab = 'finance'"
@@ -67,7 +67,7 @@
             : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
         ]"
       >
-        💼 Finanzen & Steuern
+        {{ $t('admin.tab_finance') }}
       </button>
       <button 
         @click="activeTab = 'frame-types'"
@@ -78,7 +78,7 @@
             : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
         ]"
       >
-        📏 Wabenmaße
+        {{ $t('admin.tab_frame_types') }}
       </button>
       <button 
         @click="activeTab = 'number-ranges'"
@@ -89,39 +89,39 @@
             : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
         ]"
       >
-        🔢 Nummernkreise
+        {{ $t('admin.tab_number_ranges') }}
       </button>
     </div>
 
     <!-- Tab Content: User Management -->
     <div v-if="activeTab === 'users'" class="space-y-6">
       <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
-        <h2 class="text-lg font-bold text-gray-900 dark:text-white">Neuen Benutzer anlegen</h2>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Als Administrator kannst du hier neue Benutzerkonten erstellen.</p>
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ $t('admin.create_user_title') }}</h2>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $t('admin.create_user_desc') }}</p>
 
         <form @submit.prevent="createUser" class="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Benutzername *</label>
+            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.username_label') }}</label>
             <input v-model="newUserForm.username" type="text" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
           </div>
           <div>
-            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">E-Mail *</label>
+            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.email_label') }}</label>
             <input v-model="newUserForm.email" type="email" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
           </div>
           <div>
-            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Vorname</label>
+            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.first_name_label') }}</label>
             <input v-model="newUserForm.first_name" type="text" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
           </div>
           <div>
-            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Nachname</label>
+            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.last_name_label') }}</label>
             <input v-model="newUserForm.last_name" type="text" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
           </div>
           <div>
-            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Passwort *</label>
+            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.password_label') }}</label>
             <input v-model="newUserForm.password" type="password" minlength="8" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
           </div>
           <div>
-            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Rolle *</label>
+            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.role_label') }}</label>
             <select v-model="newUserForm.role" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary">
               <option value="USER">USER</option>
               <option value="SYSTEM_ADMIN">SYSTEM_ADMIN</option>
@@ -129,7 +129,7 @@
           </div>
           <div class="md:col-span-2 flex justify-end">
             <button type="submit" :disabled="creatingUser" class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white text-sm font-bold rounded-xl transition duration-200 disabled:opacity-60">
-              {{ creatingUser ? 'Erstelle...' : 'Benutzer erstellen' }}
+              {{ creatingUser ? $t('admin.creating_user_loading') : $t('admin.create_user_btn') }}
             </button>
           </div>
         </form>
@@ -137,24 +137,24 @@
 
       <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl overflow-hidden shadow-sm">
         <div class="px-6 py-5 border-b border-gray-100 dark:border-dark-border">
-          <h2 class="text-lg font-bold text-gray-900 dark:text-white">Registrierte Benutzer</h2>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Aktiviere/Deaktiviere Konten und verwalte die System-Administratorrechte der Benutzer.</p>
+          <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ $t('admin.registered_users_title') }}</h2>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $t('admin.registered_users_desc') }}</p>
         </div>
 
         <div v-if="loadingUsers" class="flex flex-col items-center justify-center py-20">
           <svg class="animate-spin h-8 w-8 text-primary mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-          <span class="text-xs text-gray-400 font-bold">Lade Benutzerdaten...</span>
+          <span class="text-xs text-gray-400 font-bold">{{ $t('admin.loading_users') }}</span>
         </div>
 
         <div v-else class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
-                <th class="px-6 py-4">Benutzername</th>
-                <th class="px-6 py-4">Name</th>
-                <th class="px-6 py-4">E-Mail-Adresse</th>
-                <th class="px-6 py-4 text-center">Status</th>
-                <th class="px-6 py-4 text-center">Rolle</th>
+                <th class="px-6 py-4">{{ $t('admin.table_username') }}</th>
+                <th class="px-6 py-4">{{ $t('admin.table_name') }}</th>
+                <th class="px-6 py-4">{{ $t('admin.table_email') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('admin.table_status') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('admin.table_role') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-dark-border text-sm">
@@ -171,7 +171,7 @@
                       v-if="u.id === authStore.user?.id" 
                       class="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-black tracking-wide uppercase"
                     >
-                      Du
+                      {{ $t('admin.you_badge') }}
                     </span>
                   </div>
                 </td>
@@ -198,7 +198,7 @@
                         (u.id === authStore.user?.id) ? 'opacity-40 cursor-not-allowed' : ''
                       ]"
                     >
-                      <span class="sr-only">Status ändern</span>
+                      <span class="sr-only">{{ $t('admin.toggle_status_title') }}</span>
                       <span 
                         class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
                         :class="u.is_active ? 'translate-x-5' : 'translate-x-0'"
@@ -207,7 +207,7 @@
                     <span 
                       v-if="u.id === authStore.user?.id" 
                       class="ml-2 text-gray-400 text-xs cursor-help" 
-                      title="Du kannst dein eigenes Konto nicht deaktivieren"
+                      :title="$t('admin.cannot_deactivate_self')"
                     >
                       🔒
                     </span>
@@ -229,7 +229,7 @@
                     <span 
                       v-if="u.id === authStore.user?.id" 
                       class="ml-2 text-gray-400 text-xs cursor-help" 
-                      title="Du kannst deine eigene Administrator-Rolle nicht entziehen"
+                      :title="$t('admin.cannot_demote_self')"
                     >
                       🔒
                     </span>
@@ -247,7 +247,7 @@
       
       <div v-if="loadingLLM" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-16 flex flex-col items-center justify-center shadow-sm">
         <svg class="animate-spin h-10 w-10 text-primary mb-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-        <span class="text-sm text-gray-400 font-bold">Lade Systemkonfiguration...</span>
+        <span class="text-sm text-gray-400 font-bold">{{ $t('admin.loading_config') }}</span>
       </div>
 
       <div v-else class="grid grid-cols-1 gap-8">
@@ -257,12 +257,11 @@
           <div class="flex items-start justify-between">
             <div class="space-y-1">
               <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center">
-                <span>🌦️ Echtzeit-Wetter abrufen</span>
+                <span>{{ $t('admin.weather_title') }}</span>
                 <span class="ml-2 text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded uppercase font-black">OpenWeatherMap API</span>
               </h3>
               <p class="text-xs text-gray-500 dark:text-gray-400 max-w-2xl">
-                Wenn aktiviert, fragt der KI-Assistent bei Standortabfragen die aktuellen Wetterbedingungen an den Koordinaten der Stände ab.
-                Der API-Schlüssel wird sicher über die Server-Umgebungsvariablen (<code>.env</code>) konfiguriert.
+                {{ $t('admin.weather_desc') }}
               </p>
             </div>
             
@@ -271,7 +270,7 @@
               class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
               :class="llmConfig.enable_weather_api ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-700'"
             >
-              <span class="sr-only">Wetter aktivieren</span>
+              <span class="sr-only">{{ $t('admin.weather_title') }}</span>
               <span 
                 class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
                 :class="llmConfig.enable_weather_api ? 'translate-x-5' : 'translate-x-0'"
@@ -284,19 +283,19 @@
         <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm space-y-4">
           <div class="flex items-center justify-between">
             <div>
-              <h3 class="text-base font-bold text-gray-900 dark:text-white">🕒 KI-Insights Cron-Aufträge</h3>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Lege mehrere Zeitpläne an. Jeder aktive Auftrag erzeugt automatisch Insights für alle Imkereien.</p>
+              <h3 class="text-base font-bold text-gray-900 dark:text-white">{{ $t('admin.cron_jobs_title') }}</h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $t('admin.cron_jobs_subtitle') }}</p>
             </div>
             <button
               @click="openCreateAIInsightJob"
               class="px-3 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold"
             >
-              + Neuer Auftrag
+              {{ $t('admin.new_cron_job_btn') }}
             </button>
           </div>
 
-          <div v-if="loadingAIInsightJobs" class="text-xs text-gray-400 font-bold">Lade Cron-Aufträge...</div>
-          <div v-else-if="aiInsightJobs.length === 0" class="text-xs text-gray-500 dark:text-gray-400">Noch keine Aufträge vorhanden.</div>
+          <div v-if="loadingAIInsightJobs" class="text-xs text-gray-400 font-bold">{{ $t('admin.loading_cron_jobs') }}</div>
+          <div v-else-if="aiInsightJobs.length === 0" class="text-xs text-gray-500 dark:text-gray-400">{{ $t('admin.no_cron_jobs') }}</div>
           <div v-else class="space-y-2">
             <div
               v-for="job in aiInsightJobs"
@@ -307,11 +306,11 @@
                 <div class="text-sm font-bold text-gray-900 dark:text-white truncate">{{ job.name }}</div>
                 <div class="text-xs font-mono text-gray-500 dark:text-gray-400">{{ job.cron_expression }}</div>
                 <div class="mt-1 flex flex-wrap gap-1">
-                  <span v-if="job.inject_weather" class="px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-700 dark:text-sky-300 text-[10px] font-bold">Weather</span>
-                  <span v-if="job.inject_apiary" class="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-700 dark:text-amber-300 text-[10px] font-bold">Imkerei</span>
-                  <span v-if="job.inject_locations" class="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">Standorte</span>
-                  <span v-if="job.inject_hives" class="px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold">Voelker</span>
-                  <span v-if="job.inject_log_entries" class="px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-700 dark:text-rose-300 text-[10px] font-bold">Logs: {{ job.log_scope }} ({{ job.max_log_entries }})</span>
+                  <span v-if="job.inject_weather" class="px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-700 dark:text-sky-300 text-[10px] font-bold">{{ $t('admin.weather_badge') }}</span>
+                  <span v-if="job.inject_apiary" class="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-700 dark:text-amber-300 text-[10px] font-bold">{{ $t('admin.apiary_badge') }}</span>
+                  <span v-if="job.inject_locations" class="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">{{ $t('admin.locations_badge') }}</span>
+                  <span v-if="job.inject_hives" class="px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold">{{ $t('admin.hives_badge') }}</span>
+                  <span v-if="job.inject_log_entries" class="px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-700 dark:text-rose-300 text-[10px] font-bold">{{ $t('admin.logs_badge', { scope: job.log_scope, max: job.max_log_entries }) }}</span>
                 </div>
               </div>
               <div class="flex items-center gap-2">
@@ -319,92 +318,92 @@
                   class="px-2 py-0.5 rounded-full text-[10px] font-bold"
                   :class="job.is_active ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-gray-200 dark:bg-gray-700 text-gray-500'"
                 >
-                  {{ job.is_active ? 'Aktiv' : 'Inaktiv' }}
+                  {{ job.is_active ? $t('common.active') : $t('common.inactive') }}
                 </span>
-                <button @click="openEditAIInsightJob(job)" class="px-2 py-1 text-xs font-bold border border-gray-300 dark:border-gray-700 rounded-lg">Bearbeiten</button>
-                <button @click="deleteAIInsightJob(job)" class="px-2 py-1 text-xs font-bold border border-red-300 dark:border-red-900/60 text-red-600 dark:text-red-300 rounded-lg">Löschen</button>
+                <button @click="openEditAIInsightJob(job)" class="px-2 py-1 text-xs font-bold border border-gray-300 dark:border-gray-700 rounded-lg">{{ $t('common.edit') }}</button>
+                <button @click="deleteAIInsightJob(job)" class="px-2 py-1 text-xs font-bold border border-red-300 dark:border-red-900/60 text-red-600 dark:text-red-300 rounded-lg">{{ $t('common.delete') }}</button>
               </div>
             </div>
           </div>
 
           <div v-if="showAIInsightJobForm" class="border border-gray-200 dark:border-dark-border rounded-2xl p-4 space-y-3">
-            <div class="text-sm font-bold text-gray-900 dark:text-white">{{ editingAIInsightJobId ? 'Auftrag bearbeiten' : 'Neuen Auftrag erstellen' }}</div>
+            <div class="text-sm font-bold text-gray-900 dark:text-white">{{ editingAIInsightJobId ? $t('admin.edit_cron_job_title') : $t('admin.create_cron_job_title') }}</div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Name</label>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.cron_name_label') }}</label>
                 <input v-model="aiInsightJobForm.name" type="text" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm" />
               </div>
               <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Cron</label>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.cron_expression_label') }}</label>
                 <input v-model="aiInsightJobForm.cron_expression" type="text" placeholder="0 */12 * * *" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm font-mono" />
-                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1">Format: MINUTE STUNDE TAG MONAT WOCHENTAG</p>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1">{{ $t('admin.cron_format_hint') }}</p>
                 <p v-if="aiInsightJobForm.cron_expression.trim() && !isAIInsightCronValid" class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">
-                  Ungültiges Cron-Format. Erwartet werden 5 durch Leerzeichen getrennte Felder.
+                  {{ $t('admin.cron_format_error') }}
                 </p>
               </div>
             </div>
             <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Prompt</label>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.cron_prompt_label') }}</label>
               <textarea
                 v-model="aiInsightJobForm.prompt"
                 rows="4"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm"
-                placeholder="Beschreibe, welche Analyse dieser Cron-Auftrag erstellen soll..."
+                :placeholder="$t('admin.cron_prompt_placeholder')"
               />
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               <label class="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
                 <input v-model="aiInsightJobForm.inject_weather" type="checkbox" class="rounded" />
-                Wetter injizieren
+                {{ $t('admin.inject_weather') }}
               </label>
               <label class="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
                 <input v-model="aiInsightJobForm.inject_apiary" type="checkbox" class="rounded" />
-                Imkerei injizieren
+                {{ $t('admin.inject_apiary') }}
               </label>
               <label class="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
                 <input v-model="aiInsightJobForm.inject_locations" type="checkbox" class="rounded" />
-                Standorte injizieren
+                {{ $t('admin.inject_locations') }}
               </label>
               <label class="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
                 <input v-model="aiInsightJobForm.inject_hives" type="checkbox" class="rounded" />
-                Voelker injizieren
+                {{ $t('admin.inject_hives') }}
               </label>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
               <label class="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300 md:col-span-1">
                 <input v-model="aiInsightJobForm.inject_log_entries" type="checkbox" class="rounded" />
-                Logeintraege injizieren
+                {{ $t('admin.inject_log_entries') }}
               </label>
               <div class="md:col-span-1" v-if="aiInsightJobForm.inject_log_entries">
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Log-Scope</label>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.log_scope_label') }}</label>
                 <select v-model="aiInsightJobForm.log_scope" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm">
-                  <option value="IMKEREI">Imkerei</option>
-                  <option value="STANDORT">Standort</option>
-                  <option value="VOLK">Volk</option>
+                  <option value="IMKEREI">{{ $t('beeAgent.scope_apiary') }}</option>
+                  <option value="STANDORT">{{ $t('beeAgent.scope_location') }}</option>
+                  <option value="VOLK">{{ $t('beeAgent.scope_hive') }}</option>
                 </select>
               </div>
               <div class="md:col-span-1" v-if="aiInsightJobForm.inject_log_entries">
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Max Logs</label>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.max_logs_label') }}</label>
                 <input v-model.number="aiInsightJobForm.max_log_entries" type="number" min="1" max="500" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-xl text-sm" />
               </div>
             </div>
             <label class="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
               <input v-model="aiInsightJobForm.is_active" type="checkbox" class="rounded" />
-              Auftrag aktiv
+              {{ $t('admin.cron_job_active') }}
             </label>
             <div class="flex justify-end gap-2">
-              <button @click="cancelAIInsightJobForm" class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-semibold">Abbrechen</button>
+              <button @click="cancelAIInsightJobForm" class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-semibold">{{ $t('common.cancel') }}</button>
               <button @click="saveAIInsightJob" :disabled="savingAIInsightJob || !isAIInsightCronValid || !aiInsightJobForm.prompt.trim() || aiInsightJobForm.max_log_entries < 1 || aiInsightJobForm.max_log_entries > 500" class="px-3 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold disabled:opacity-60">
-                {{ savingAIInsightJob ? 'Speichere...' : 'Speichern' }}
+                {{ savingAIInsightJob ? $t('admin.saving_changes_loading') : $t('common.save') }}
               </button>
             </div>
           </div>
         </div>
 
         <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm space-y-2">
-          <h3 class="text-base font-bold text-gray-900 dark:text-white">🧠 Bee-Agent Prompt-Template</h3>
+          <h3 class="text-base font-bold text-gray-900 dark:text-white">{{ $t('admin.prompt_template_title') }}</h3>
           <p class="text-xs text-gray-500 dark:text-gray-400 max-w-2xl">
-            Das Basis-Template wird zentral im Backend gepflegt und ist hier bewusst nicht editierbar. Für job-spezifische Anpassungen verwende in der Bee-Agent Job-Konfiguration das Feld "Spezielle Anweisung", das zusätzlich in den Prompt injiziert wird.
+            {{ $t('admin.prompt_template_desc') }}
           </p>
         </div>
 
@@ -415,7 +414,7 @@
             class="px-5 py-3 border border-gray-300 dark:border-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-100 dark:hover:bg-dark-border text-gray-700 dark:text-gray-300 transition duration-200"
             :disabled="savingLLM"
           >
-            Zurücksetzen auf Defaults
+            {{ $t('admin.reset_to_default_btn') }}
           </button>
           
           <button 
@@ -424,7 +423,7 @@
             :disabled="savingLLM"
           >
             <svg v-if="savingLLM" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            <span>{{ savingLLM ? 'Speichere...' : 'Änderungen speichern' }}</span>
+            <span>{{ savingLLM ? $t('admin.saving_changes_loading') : $t('admin.save_changes_btn') }}</span>
           </button>
         </div>
 
@@ -435,24 +434,24 @@
     <div v-if="activeTab === 'finance'" class="space-y-6">
       <div v-if="loadingLLM" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-16 flex flex-col items-center justify-center shadow-sm">
         <svg class="animate-spin h-10 w-10 text-primary mb-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-        <span class="text-sm text-gray-400 font-bold">Lade Finanzkonfiguration...</span>
+        <span class="text-sm text-gray-400 font-bold">{{ $t('admin.loading_config') }}</span>
       </div>
 
       <div v-else class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm space-y-4">
         <div>
           <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center">
-            <span>💼 Finanzen & Steuern</span>
+            <span>{{ $t('admin.finance_title') }}</span>
           </h3>
           <p class="text-xs text-gray-500 dark:text-gray-400 max-w-2xl mt-1">
-            Konfiguriere Währung, Steuersätze und ob in Verkäufen sowie Steuerexporten Steuern berechnet werden.
+            {{ $t('admin.finance_desc') }}
           </p>
         </div>
 
         <div class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-dark-border/60">
           <div class="space-y-0.5">
-            <p class="text-sm font-semibold text-gray-700 dark:text-gray-200">Steuern berechnen</p>
+            <p class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $t('admin.calculate_taxes') }}</p>
             <p class="text-xs text-gray-500 dark:text-gray-400">
-              Wenn deaktiviert, wird in Verkäufen und im Steuerexport stets mit 0% Steuer gearbeitet.
+              {{ $t('admin.calculate_taxes_desc') }}
             </p>
           </div>
           <button
@@ -460,7 +459,7 @@
             class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ml-4"
             :class="llmConfig.calculate_taxes ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-700'"
           >
-            <span class="sr-only">Steuerberechnung umschalten</span>
+            <span class="sr-only">{{ $t('admin.calculate_taxes') }}</span>
             <span
               class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
               :class="llmConfig.calculate_taxes ? 'translate-x-5' : 'translate-x-0'"
@@ -469,8 +468,8 @@
         </div>
 
         <div class="pt-2 border-t border-gray-100 dark:border-dark-border/60">
-          <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Währung</label>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Währung für die Darstellung von Verkaufspreisen (z.B. EUR, USD, CHF, GBP).</p>
+          <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.currency_label') }}</label>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">{{ $t('admin.currency_desc') }}</p>
           <div class="flex gap-2">
             <select
               v-model="llmConfig.currency"
@@ -480,7 +479,7 @@
               <option value="USD">USD – US Dollar</option>
               <option value="CHF">CHF – Schweizer Franken</option>
               <option value="GBP">GBP – Britisches Pfund</option>
-              <option value="custom">Andere...</option>
+              <option value="custom">{{ $t('admin.currency_other') }}</option>
             </select>
             <input
               v-if="llmConfig.currency === 'custom' || !['EUR','USD','CHF','GBP'].includes(llmConfig.currency)"
@@ -494,8 +493,8 @@
         </div>
 
         <div class="pt-2 border-t border-gray-100 dark:border-dark-border/60">
-          <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Steuersätze</label>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Kommagetrennte Steuersätze in Prozent (0–100), die im Produktformular zur Auswahl stehen (z.B. <code class="bg-gray-100 dark:bg-dark-bg px-1 rounded font-mono">0.0,7.0,19.0</code>).</p>
+          <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.tax_rates_label') }}</label>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">{{ $t('admin.tax_rates_desc') }}</p>
           <input
             v-model="llmConfig.tax_rates"
             type="text"
@@ -510,7 +509,7 @@
             class="px-5 py-3 border border-gray-300 dark:border-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-100 dark:hover:bg-dark-border text-gray-700 dark:text-gray-300 transition duration-200"
             :disabled="savingLLM"
           >
-            Zurücksetzen auf Defaults
+            {{ $t('admin.reset_to_default_btn') }}
           </button>
 
           <button
@@ -519,7 +518,7 @@
             :disabled="savingLLM"
           >
             <svg v-if="savingLLM" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            <span>{{ savingLLM ? 'Speichere...' : 'Änderungen speichern' }}</span>
+            <span>{{ savingLLM ? $t('admin.saving_changes_loading') : $t('admin.save_changes_btn') }}</span>
           </button>
         </div>
       </div>
@@ -529,31 +528,31 @@
     <div v-if="activeTab === 'frame-types'" class="space-y-6">
       <div class="flex justify-between items-center bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm animate-scale">
         <div>
-          <h2 class="text-lg font-bold text-gray-900 dark:text-white">📏 Wabenmaße & Multiplikatoren</h2>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Verwalte Wabenmaße und definiere deren Umrechnungsfaktoren für Honig-, Brut- und Bienenvolumen bei der Beuteninspektion.</p>
+          <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ $t('admin.frame_types_title') }}</h2>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $t('admin.frame_types_subtitle') }}</p>
         </div>
         <button 
           @click="openCreateFrameType" 
           class="px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl shadow-md flex items-center space-x-1 hover-scale"
         >
-          <span>+ Neues Maß</span>
+          <span>{{ $t('admin.new_frame_type_btn') }}</span>
         </button>
       </div>
 
       <!-- Frame Type Form (embedded/inline) -->
       <div v-if="showFrameTypeForm" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
         <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">
-          {{ isEditFrameType ? '📏 Wabenmaß bearbeiten' : '📏 Neues Wabenmaß anlegen' }}
+          {{ isEditFrameType ? $t('admin.edit_frame_type_title') : $t('admin.create_frame_type_title') }}
         </h3>
         <form @submit.prevent="submitFrameTypeForm" class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Bezeichnung *</label>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.frame_name_label') }}</label>
               <input 
                 v-model="formFrameType.name" 
                 type="text" 
                 required 
-                placeholder="z.B. Dadant Blatt, Zander..." 
+                :placeholder="$t('admin.frame_name_placeholder')" 
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -564,14 +563,14 @@
                   type="checkbox" 
                   class="rounded text-primary focus:ring-primary h-4 w-4"
                 />
-                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Als Standard für neue Völker vorauswählen</span>
+                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $t('admin.frame_default_checkbox') }}</span>
               </label>
             </div>
           </div>
 
           <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
             <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Brut-Multiplikator *</label>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.brood_mult_label') }}</label>
               <input 
                 v-model.number="formFrameType.brood_multiplier" 
                 type="number" 
@@ -582,7 +581,7 @@
               />
             </div>
             <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Futter-Multiplikator *</label>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.food_mult_label') }}</label>
               <input 
                 v-model.number="formFrameType.food_multiplier" 
                 type="number" 
@@ -593,7 +592,7 @@
               />
             </div>
             <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Bienen-Multiplikator *</label>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.bee_mult_label') }}</label>
               <input 
                 v-model.number="formFrameType.bee_multiplier" 
                 type="number" 
@@ -604,7 +603,7 @@
               />
             </div>
             <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Drohnen-Multiplikator *</label>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.drone_mult_label') }}</label>
               <input 
                 v-model.number="formFrameType.drone_multiplier" 
                 type="number" 
@@ -615,7 +614,7 @@
               />
             </div>
             <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Dr.Brut-Multiplikator *</label>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.drone_brood_mult_label') }}</label>
               <input 
                 v-model.number="formFrameType.drone_brood_multiplier" 
                 type="number" 
@@ -626,7 +625,7 @@
               />
             </div>
             <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Pollen-Multiplikator *</label>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.pollen_mult_label') }}</label>
               <input 
                 v-model.number="formFrameType.pollen_multiplier" 
                 type="number" 
@@ -644,14 +643,14 @@
               @click="showFrameTypeForm = false" 
               class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-100 dark:hover:bg-dark-border text-gray-700 dark:text-gray-300"
             >
-              Abbrechen
+              {{ $t('common.cancel') }}
             </button>
             <button 
               type="submit" 
               class="px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl shadow-md hover-scale"
               :disabled="savingFrameType"
             >
-              Speichern
+              {{ $t('common.save') }}
             </button>
           </div>
         </form>
@@ -661,22 +660,22 @@
       <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl overflow-hidden shadow-sm">
         <div v-if="loadingFrameTypes" class="flex flex-col items-center justify-center py-20">
           <svg class="animate-spin h-8 w-8 text-primary mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-          <span class="text-xs text-gray-400 font-bold">Lade Wabenmaße...</span>
+          <span class="text-xs text-gray-400 font-bold">{{ $t('admin.loading_frame_types') }}</span>
         </div>
 
         <div v-else class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
-                <th class="px-6 py-4">Bezeichnung</th>
-                <th class="px-6 py-4 text-center">Brut-Faktor</th>
-                <th class="px-6 py-4 text-center">Futter-Faktor</th>
-                <th class="px-6 py-4 text-center">Bienen-Faktor</th>
-                <th class="px-6 py-4 text-center">Drohnen-Faktor</th>
-                <th class="px-6 py-4 text-center">Dr.Brut-Faktor</th>
-                <th class="px-6 py-4 text-center">Pollen-Faktor</th>
-                <th class="px-6 py-4 text-center">Standard</th>
-                <th class="px-6 py-4 text-right">Aktionen</th>
+                <th class="px-6 py-4">{{ $t('admin.table_frame_name') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('admin.table_brood_factor') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('admin.table_food_factor') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('admin.table_bee_factor') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('admin.table_drone_factor') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('admin.table_drone_brood_factor') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('admin.table_pollen_factor') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('admin.table_default') }}</th>
+                <th class="px-6 py-4 text-right">{{ $t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-dark-border text-sm">
@@ -707,21 +706,21 @@
                   x{{ (ft.pollen_multiplier || 1.0).toFixed(2) }}
                 </td>
                 <td class="px-6 py-4 text-center">
-                  <span v-if="ft.is_default" class="text-amber-500 font-bold text-lg" title="Standardmaß">★</span>
+                  <span v-if="ft.is_default" class="text-amber-500 font-bold text-lg" :title="$t('admin.table_default')">★</span>
                   <span v-else class="text-gray-300 dark:text-gray-700">-</span>
                 </td>
                 <td class="px-6 py-4 text-right space-x-2">
                   <button 
                     @click="openEditFrameType(ft)" 
                     class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border rounded-lg transition-all duration-150 inline-flex"
-                    title="Bearbeiten"
+                    :title="$t('admin.edit_tooltip')"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                   </button>
                   <button 
                     @click="deleteFrameType(ft)" 
                     class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all duration-150 inline-flex"
-                    title="Löschen"
+                    :title="$t('admin.delete_tooltip')"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                   </button>
@@ -737,9 +736,9 @@
     <div v-if="activeTab === 'number-ranges'" class="space-y-6">
       <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm animate-scale flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
         <div>
-          <h2 class="text-lg font-bold text-gray-900 dark:text-white">🔢 Nummernkreise</h2>
+          <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ $t('admin.number_ranges_title') }}</h2>
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Definiere hier Prefix, Stellenanzahl und Zählerstände für deine Chargen- und Rückstellproben-IDs.
+            {{ $t('admin.number_ranges_subtitle') }}
           </p>
         </div>
       </div>
@@ -747,21 +746,21 @@
       <!-- Edit Number Range Form (embedded/inline) -->
       <div v-if="showNumberRangeForm" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm animate-scale">
         <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">
-          ✏️ Nummernkreis bearbeiten: {{ formNumberRange.name }}
+          {{ $t('admin.edit_number_range_title', { name: formNumberRange.name }) }}
         </h3>
         <form @submit.prevent="submitNumberRangeForm" class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Prefix</label>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.nr_prefix_label') }}</label>
               <input 
                 v-model="formNumberRange.prefix" 
                 type="text" 
-                placeholder="z.B. LOT-" 
+                :placeholder="$t('admin.nr_prefix_placeholder')" 
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-mono"
               />
             </div>
             <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Aktueller Zählerstand *</label>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.nr_current_val_label') }}</label>
               <input 
                 v-model.number="formNumberRange.current_value" 
                 type="number" 
@@ -774,7 +773,7 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Stellenanzahl (Digits) *</label>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.nr_digits_label') }}</label>
               <input 
                 v-model.number="formNumberRange.digits" 
                 type="number" 
@@ -791,14 +790,14 @@
                   type="checkbox" 
                   class="rounded text-primary focus:ring-primary h-4 w-4"
                 />
-                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Nummernkreis aktivieren</span>
+                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $t('admin.nr_active_checkbox') }}</span>
               </label>
             </div>
           </div>
 
           <!-- Preview -->
           <div class="p-3 bg-gray-50 dark:bg-dark-bg border border-gray-100 dark:border-dark-border rounded-xl">
-            <span class="text-xs text-gray-500 dark:text-gray-400 font-bold block mb-1">Vorschau nächste Nummer:</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400 font-bold block mb-1">{{ $t('admin.nr_preview_label') }}</span>
             <span class="font-mono text-sm font-bold text-amber-500">{{ previewNextNumber }}</span>
           </div>
 
@@ -808,14 +807,14 @@
               @click="showNumberRangeForm = false" 
               class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-100 dark:hover:bg-dark-border text-gray-700 dark:text-gray-300"
             >
-              Abbrechen
+              {{ $t('common.cancel') }}
             </button>
             <button 
               type="submit" 
               class="px-5 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl shadow-md hover-scale"
               :disabled="savingNumberRange"
             >
-              Speichern
+              {{ $t('common.save') }}
             </button>
           </div>
         </form>
@@ -825,20 +824,20 @@
       <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl overflow-hidden shadow-sm">
         <div v-if="loadingNumberRanges" class="flex flex-col items-center justify-center py-20">
           <svg class="animate-spin h-8 w-8 text-primary mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-          <span class="text-xs text-gray-400 font-bold">Lade Nummernkreise...</span>
+          <span class="text-xs text-gray-400 font-bold">{{ $t('admin.loading_number_ranges') }}</span>
         </div>
 
         <div v-else class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
-                <th class="px-6 py-4">Bezeichnung</th>
-                <th class="px-6 py-4">Prefix</th>
-                <th class="px-6 py-4 text-center">Aktueller Wert</th>
-                <th class="px-6 py-4 text-center">Stellen (Digits)</th>
-                <th class="px-6 py-4 text-center">Nächste Nummer</th>
-                <th class="px-6 py-4 text-center">Status</th>
-                <th class="px-6 py-4 text-right">Aktionen</th>
+                <th class="px-6 py-4">{{ $t('admin.table_nr_name') }}</th>
+                <th class="px-6 py-4">{{ $t('admin.table_nr_prefix') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('admin.table_nr_current') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('admin.table_nr_digits') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('admin.table_nr_next') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('admin.table_status') }}</th>
+                <th class="px-6 py-4 text-right">{{ $t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-dark-border text-sm">
@@ -867,14 +866,14 @@
                     class="px-2 py-0.5 rounded-full text-[10px] font-bold"
                     :class="nr.is_active ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'"
                   >
-                    {{ nr.is_active ? 'Aktiv' : 'Inaktiv' }}
+                    {{ nr.is_active ? $t('common.active') : $t('common.inactive') }}
                   </span>
                 </td>
                 <td class="px-6 py-4 text-right">
                   <button 
                     @click="openEditNumberRange(nr)" 
                     class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border rounded-lg transition-all duration-150 inline-flex hover-scale"
-                    title="Bearbeiten"
+                    :title="$t('admin.edit_tooltip')"
                   >
                     <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                   </button>
@@ -891,10 +890,12 @@
 
 <script setup>
 import { ref, computed, onMounted, reactive } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/auth'
 import { useConfirmStore } from '../stores/confirm'
 import axios from 'axios'
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 const confirmStore = useConfirmStore()
 
@@ -970,7 +971,7 @@ async function fetchUsers() {
     users.value = res.data
   } catch (err) {
     console.error('Fetch users error:', err)
-    showToast('Fehler beim Laden der Benutzerliste', 'error')
+    showToast(t('admin.toast_users_load_error'), 'error')
   } finally {
     loadingUsers.value = false
   }
@@ -987,7 +988,7 @@ async function createUser() {
       last_name: newUserForm.last_name?.trim() || null,
       role: newUserForm.role
     })
-    showToast(`Benutzer '${newUserForm.username}' wurde erstellt.`)
+    showToast(t('admin.toast_user_created', { username: newUserForm.username }))
     newUserForm.username = ''
     newUserForm.email = ''
     newUserForm.password = ''
@@ -997,7 +998,7 @@ async function createUser() {
     await fetchUsers()
   } catch (err) {
     console.error('Create user error:', err)
-    const errDetail = err.response?.data?.detail || 'Fehler beim Erstellen des Benutzers.'
+    const errDetail = err.response?.data?.detail || t('admin.toast_users_create_error')
     showToast(errDetail, 'error')
   } finally {
     creatingUser.value = false
@@ -1012,7 +1013,7 @@ async function fetchLLMConfig() {
     llmConfig.value = res.data
   } catch (err) {
     console.error('Fetch LLM config error:', err)
-    showToast('Fehler beim Laden der System-Prompts', 'error')
+    showToast(t('admin.toast_config_load_error'), 'error')
   } finally {
     loadingLLM.value = false
   }
@@ -1025,7 +1026,7 @@ async function fetchAIInsightJobs() {
     aiInsightJobs.value = res.data
   } catch (err) {
     console.error('Fetch AI insight jobs error:', err)
-    showToast('Fehler beim Laden der KI-Insights-Cron-Aufträge', 'error')
+    showToast(t('admin.toast_cron_jobs_load_error'), 'error')
   } finally {
     loadingAIInsightJobs.value = false
   }
@@ -1070,23 +1071,23 @@ function cancelAIInsightJobForm() {
 
 async function saveAIInsightJob() {
   if (!aiInsightJobForm.name.trim()) {
-    showToast('Name darf nicht leer sein.', 'error')
+    showToast(t('admin.toast_cron_job_save_error'), 'error')
     return
   }
   if (!aiInsightJobForm.cron_expression.trim()) {
-    showToast('Cron-Ausdruck darf nicht leer sein.', 'error')
+    showToast(t('admin.toast_cron_job_save_error'), 'error')
     return
   }
   if (!aiInsightJobForm.prompt.trim()) {
-    showToast('Prompt darf nicht leer sein.', 'error')
+    showToast(t('admin.toast_cron_job_save_error'), 'error')
     return
   }
   if (!validateCronExpression(aiInsightJobForm.cron_expression)) {
-    showToast('Ungültiges Cron-Format. Bitte 5 Felder angeben.', 'error')
+    showToast(t('admin.cron_format_error'), 'error')
     return
   }
   if (aiInsightJobForm.max_log_entries < 1 || aiInsightJobForm.max_log_entries > 500) {
-    showToast('Maximale Anzahl Logeintraege muss zwischen 1 und 500 liegen.', 'error')
+    showToast(t('admin.max_logs_error'), 'error')
     return
   }
 
@@ -1107,16 +1108,16 @@ async function saveAIInsightJob() {
     }
     if (editingAIInsightJobId.value) {
       await axios.put(`/api/admin/ai-insight-jobs/${editingAIInsightJobId.value}`, payload)
-      showToast('KI-Insights-Cron-Auftrag aktualisiert.')
+      showToast(t('admin.toast_cron_job_updated'))
     } else {
       await axios.post('/api/admin/ai-insight-jobs', payload)
-      showToast('KI-Insights-Cron-Auftrag erstellt.')
+      showToast(t('admin.toast_cron_job_created'))
     }
     cancelAIInsightJobForm()
     await fetchAIInsightJobs()
   } catch (err) {
     console.error('Save AI insight job error:', err)
-    const msg = err.response?.data?.detail || 'Fehler beim Speichern des KI-Insights-Cron-Auftrags.'
+    const msg = err.response?.data?.detail || t('admin.toast_cron_job_save_error')
     showToast(msg, 'error')
   } finally {
     savingAIInsightJob.value = false
@@ -1125,20 +1126,20 @@ async function saveAIInsightJob() {
 
 async function deleteAIInsightJob(job) {
   const confirmed = await confirmStore.ask({
-    title: 'KI-Insights-Cron-Auftrag löschen',
-    message: `Möchtest du den Auftrag '${job.name}' wirklich löschen?`,
+    title: t('admin.toast_cron_job_delete_title'),
+    message: t('admin.toast_cron_job_delete_msg', { name: job.name }),
     type: 'danger',
-    confirmText: 'Ja, löschen'
+    confirmText: t('common.delete')
   })
   if (!confirmed) return
 
   try {
     await axios.delete(`/api/admin/ai-insight-jobs/${job.id}`)
-    showToast('KI-Insights-Cron-Auftrag gelöscht.')
+    showToast(t('admin.toast_cron_job_deleted'))
     await fetchAIInsightJobs()
   } catch (err) {
     console.error('Delete AI insight job error:', err)
-    const msg = err.response?.data?.detail || 'Fehler beim Löschen des KI-Insights-Cron-Auftrags.'
+    const msg = err.response?.data?.detail || t('admin.toast_cron_job_delete_error')
     showToast(msg, 'error')
   }
 }
@@ -1153,10 +1154,13 @@ async function toggleUserActive(user) {
       is_active: targetStatus
     })
     user.is_active = res.data.is_active
-    showToast(`Benutzer '${user.username}' erfolgreich ${user.is_active ? 'aktiviert' : 'deaktiviert'}.`)
+    const statusVal = user.is_active
+      ? (locale.value === 'de' ? 'aktiviert' : 'activated')
+      : (locale.value === 'de' ? 'deaktiviert' : 'deactivated')
+    showToast(t('admin.toast_user_status_updated', { username: user.username, status: statusVal }))
   } catch (err) {
     console.error('Toggle active error:', err)
-    const errDetail = err.response?.data?.detail || 'Fehler beim Ändern des Aktivitätsstatus.'
+    const errDetail = err.response?.data?.detail || t('admin.toast_user_status_error')
     showToast(errDetail, 'error')
     user.is_active = originalStatus // Rollback visual
   } finally {
@@ -1173,10 +1177,10 @@ async function changeUserRole(user) {
       role: user.role
     })
     user.role = res.data.role
-    showToast(`Rolle von '${user.username}' auf ${user.role} geändert.`)
+    showToast(t('admin.toast_user_role_updated', { username: user.username, role: user.role }))
   } catch (err) {
     console.error('Change role error:', err)
-    const errDetail = err.response?.data?.detail || 'Fehler beim Ändern der Rolle.'
+    const errDetail = err.response?.data?.detail || t('admin.toast_user_role_error')
     showToast(errDetail, 'error')
     user.role = originalRole // Rollback visual
   } finally {
@@ -1195,10 +1199,10 @@ async function saveLLMConfig() {
       tax_rates: llmConfig.value.tax_rates
     })
     llmConfig.value = res.data
-    showToast('KI- und Wettereinstellungen erfolgreich aktualisiert.')
+    showToast(t('admin.toast_config_updated'))
   } catch (err) {
     console.error('Save config error:', err)
-    const msg = err.response?.data?.detail || 'Fehler beim Aktualisieren der Einstellungen.'
+    const msg = err.response?.data?.detail || t('admin.toast_config_save_error')
     showToast(msg, 'error')
   } finally {
     savingLLM.value = false
@@ -1212,10 +1216,10 @@ async function saveBeeAgentConfig() {
       enable_weather_api: llmConfig.value.enable_weather_api
     })
     llmConfig.value = res.data
-    showToast('Bee-Agent Einstellungen erfolgreich aktualisiert.')
+    showToast(t('admin.toast_beeagent_config_updated'))
   } catch (err) {
     console.error('Save bee-agent config error:', err)
-    const msg = err.response?.data?.detail || 'Fehler beim Aktualisieren der Bee-Agent Einstellungen.'
+    const msg = err.response?.data?.detail || t('admin.toast_beeagent_config_save_error')
     showToast(msg, 'error')
   } finally {
     savingLLM.value = false
@@ -1224,7 +1228,7 @@ async function saveBeeAgentConfig() {
 
 function resetBeeAgentConfigToDefault() {
   llmConfig.value.enable_weather_api = false
-  showToast('Bee-Agent Standardwerte temporär geladen. Zum Übernehmen "Änderungen speichern" klicken.', 'success')
+  showToast(t('admin.reset_defaults_toast'), 'success')
 }
 
 // Restore editable admin settings to defaults
@@ -1234,7 +1238,7 @@ function resetConfigToDefault() {
   llmConfig.value.currency = 'EUR'
   llmConfig.value.tax_rates = '0.0,7.0,19.0'
 
-  showToast('Standardwerte temporär geladen. Zum Übernehmen "Änderungen speichern" klicken.', 'success')
+  showToast(t('admin.reset_defaults_toast'), 'success')
 }
 
 // Order users: admins first, then by username
@@ -1272,7 +1276,7 @@ async function fetchFrameTypes() {
     frameTypes.value = res.data
   } catch (err) {
     console.error('Fetch frame types error:', err)
-    showToast('Fehler beim Laden der Wabenmaße', 'error')
+    showToast(t('admin.toast_frame_types_load_error'), 'error')
   } finally {
     loadingFrameTypes.value = false
   }
@@ -1321,16 +1325,16 @@ async function submitFrameTypeForm() {
     }
     if (isEditFrameType.value) {
       await axios.put(`/api/admin/frame-types/${editingFrameTypeId.value}`, payload)
-      showToast(`Wabenmaß '${payload.name}' erfolgreich aktualisiert.`)
+      showToast(t('admin.toast_frame_type_updated', { name: payload.name }))
     } else {
       await axios.post('/api/admin/frame-types', payload)
-      showToast(`Wabenmaß '${payload.name}' erfolgreich erstellt.`)
+      showToast(t('admin.toast_frame_type_created', { name: payload.name }))
     }
     showFrameTypeForm.value = false
     await fetchFrameTypes()
   } catch (err) {
     console.error('Save frame type error:', err)
-    const errDetail = err.response?.data?.detail || 'Fehler beim Speichern des Wabenmaßes.'
+    const errDetail = err.response?.data?.detail || t('admin.toast_frame_type_save_error')
     showToast(errDetail, 'error')
   } finally {
     savingFrameType.value = false
@@ -1339,21 +1343,21 @@ async function submitFrameTypeForm() {
 
 async function deleteFrameType(ft) {
   const confirmed = await confirmStore.ask({
-    title: 'Wabenmaß löschen',
-    message: `Möchtest du das Wabenmaß '${ft.name}' wirklich löschen?`,
+    title: t('admin.toast_frame_type_delete_title'),
+    message: t('admin.toast_frame_type_delete_msg', { name: ft.name }),
     type: 'danger',
-    confirmText: 'Ja, löschen'
+    confirmText: t('common.delete')
   })
   if (!confirmed) {
     return
   }
   try {
     await axios.delete(`/api/admin/frame-types/${ft.id}`)
-    showToast(`Wabenmaß '${ft.name}' erfolgreich gelöscht.`)
+    showToast(t('admin.toast_frame_type_deleted', { name: ft.name }))
     await fetchFrameTypes()
   } catch (err) {
     console.error('Delete frame type error:', err)
-    const errDetail = err.response?.data?.detail || 'Fehler beim Löschen des Wabenmaßes.'
+    const errDetail = err.response?.data?.detail || t('admin.toast_frame_type_delete_error')
     showToast(errDetail, 'error')
   }
 }
@@ -1386,7 +1390,7 @@ async function fetchNumberRanges() {
     numberRanges.value = res.data
   } catch (err) {
     console.error('Fetch number ranges error:', err)
-    showToast('Fehler beim Laden der Nummernkreise', 'error')
+    showToast(t('admin.toast_number_ranges_load_error'), 'error')
   } finally {
     loadingNumberRanges.value = false
   }
@@ -1413,12 +1417,12 @@ async function submitNumberRangeForm() {
       is_active: formNumberRange.is_active
     }
     await axios.put(`/api/admin/number-ranges/${formNumberRange.id}`, payload)
-    showToast(`Nummernkreis '${payload.name}' erfolgreich aktualisiert.`)
+    showToast(t('admin.toast_number_range_updated', { name: payload.name }))
     showNumberRangeForm.value = false
     await fetchNumberRanges()
   } catch (err) {
     console.error('Save number range error:', err)
-    const errDetail = err.response?.data?.detail || 'Fehler beim Speichern des Nummernkreises.'
+    const errDetail = err.response?.data?.detail || t('admin.toast_number_range_save_error')
     showToast(errDetail, 'error')
   } finally {
     savingNumberRange.value = false
