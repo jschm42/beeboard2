@@ -77,6 +77,17 @@
       >
         🍯 {{ $t('sales.tab_products') }}
       </button>
+      <button 
+        @click="activeTab = 'inventory'"
+        class="pb-4 text-sm font-bold tracking-wide border-b-2 transition-all duration-200"
+        :class="[
+          activeTab === 'inventory' 
+            ? 'border-primary text-primary' 
+            : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+        ]"
+      >
+        📦 {{ $t('sales.tab_inventory') }}
+      </button>
     </div>
 
     <!-- TAB 1: SALES LEDGER -->
@@ -245,6 +256,7 @@
                 <th class="px-6 py-4 text-right">{{ $t('sales.table_default_price') }}</th>
                 <th class="px-6 py-4 text-center">{{ $t('sales.table_tax_rate') }}</th>
                 <th class="px-6 py-4 text-center">{{ $t('sales.table_requires_batch') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('sales.table_stock') }}</th>
                 <th class="px-6 py-4 text-center">{{ $t('common.status') }}</th>
                 <th class="px-6 py-4 text-right">{{ $t('common.actions') }}</th>
               </tr>
@@ -290,6 +302,22 @@
                   </span>
                 </td>
 
+                <!-- Stock -->
+                <td class="px-6 py-4 text-center">
+                  <span v-if="!p.manage_stock" class="text-xs text-gray-400 dark:text-gray-600">
+                    -
+                  </span>
+                  <span v-else-if="p.stock <= 0" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                    🔴 0 ({{ $t('sales.stock_none_badge') }})
+                  </span>
+                  <span v-else-if="p.stock <= p.min_stock" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" :title="`${$t('sales.table_min_stock')}: ${p.min_stock}`">
+                    ⚠️ {{ p.stock }} ({{ $t('sales.stock_alert_badge') }})
+                  </span>
+                  <span v-else class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                    📦 {{ p.stock }}
+                  </span>
+                </td>
+
                 <!-- Status -->
                 <td class="px-6 py-4 text-center">
                   <span 
@@ -315,6 +343,136 @@
                     :title="$t('common.delete')"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: INVENTORY MANAGEMENT -->
+    <div v-else-if="activeTab === 'inventory'" class="space-y-6">
+      <!-- Inventory Filters Card -->
+      <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm flex flex-col md:flex-row gap-4 items-end animate-scale">
+        <div class="flex-1 w-full">
+          <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('sales.table_name') }} / {{ $t('sales.table_honey_type') }}</label>
+          <input 
+            v-model="inventoryFilters.searchQuery" 
+            type="text" 
+            :placeholder="$t('sales.product_name_placeholder')"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
+        <div class="flex-1 w-full">
+          <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('sales.filter_stock_status') }}</label>
+          <select 
+            v-model="inventoryFilters.status" 
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <option value="all">{{ $t('sales.stock_filter_all') }}</option>
+            <option value="low">{{ $t('sales.stock_filter_low') }}</option>
+            <option value="empty">{{ $t('sales.stock_filter_empty') }}</option>
+            <option value="ok">{{ $t('sales.stock_filter_ok') }}</option>
+          </select>
+        </div>
+        <div class="flex items-center space-x-2 pb-2 h-[38px]">
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <input
+              v-model="inventoryFilters.showUnmanaged"
+              type="checkbox"
+              class="rounded text-primary focus:ring-primary h-4 w-4"
+            />
+            <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $t('sales.filter_show_unmanaged') }}</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Inventory Table -->
+      <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl overflow-hidden shadow-sm">
+        <div v-if="loadingProducts" class="flex flex-col items-center justify-center py-20">
+          <svg class="animate-spin h-8 w-8 text-primary mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span class="text-xs text-gray-400 font-bold">{{ $t('sales.loading_products') }}</span>
+        </div>
+
+        <div v-else-if="filteredInventory.length === 0" class="flex flex-col items-center justify-center py-20 text-center px-4">
+          <span class="text-4xl mb-3">📦</span>
+          <h3 class="text-base font-bold text-gray-900 dark:text-white">{{ $t('sales.empty_products_title') }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-sm">{{ $t('sales.empty_products_desc') }}</p>
+        </div>
+
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
+                <th class="px-6 py-4">{{ $t('sales.table_name') }}</th>
+                <th class="px-6 py-4">{{ $t('sales.table_honey_type') }}</th>
+                <th class="px-6 py-4 text-right">{{ $t('sales.table_default_price') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('sales.table_stock') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('sales.table_min_stock') }}</th>
+                <th class="px-6 py-4 text-right">{{ $t('common.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-dark-border text-sm">
+              <tr 
+                v-for="p in filteredInventory" 
+                :key="p.id" 
+                class="hover:bg-gray-50/50 dark:hover:bg-dark-bg/30 transition-colors duration-150"
+              >
+                <!-- Name -->
+                <td class="px-6 py-4 font-bold text-gray-800 dark:text-gray-200">
+                  {{ p.name }}
+                </td>
+                
+                <!-- Honey Type -->
+                <td class="px-6 py-4 text-gray-600 dark:text-gray-300">
+                  {{ p.honey_type || '-' }}
+                </td>
+                
+                <!-- Price -->
+                <td class="px-6 py-4 text-right font-bold text-gray-800 dark:text-gray-200">
+                  {{ formatCurrency(p.price) }}
+                </td>
+                
+                <!-- Stock -->
+                <td class="px-6 py-4 text-center">
+                  <span v-if="!p.manage_stock" class="text-xs text-gray-400 dark:text-gray-600">
+                    -
+                  </span>
+                  <span v-else-if="p.stock <= 0" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                    🔴 0 ({{ $t('sales.stock_none_badge') }})
+                  </span>
+                  <span v-else-if="p.stock <= p.min_stock" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" :title="`${$t('sales.table_min_stock')}: ${p.min_stock}`">
+                    ⚠️ {{ p.stock }} ({{ $t('sales.stock_alert_badge') }})
+                  </span>
+                  <span v-else class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                    📦 {{ p.stock }}
+                  </span>
+                </td>
+
+                <!-- Min Stock -->
+                <td class="px-6 py-4 text-center text-gray-600 dark:text-gray-300">
+                  {{ p.manage_stock ? p.min_stock : '-' }}
+                </td>
+
+                <!-- Actions -->
+                <td class="px-6 py-4 text-right space-x-2">
+                  <button 
+                    v-if="p.manage_stock"
+                    @click="openAdjustStockModal(p)" 
+                    class="px-2.5 py-1.5 bg-primary/10 hover:bg-primary/20 dark:bg-primary/20 dark:hover:bg-primary/30 text-primary text-xs font-bold rounded-lg transition-all duration-150 hover-scale inline-flex items-center space-x-1"
+                    :title="$t('sales.adjust_stock_btn')"
+                  >
+                    <span>🔄</span>
+                    <span class="hidden md:inline">{{ $t('sales.adjust_stock_btn') }}</span>
+                  </button>
+                  <button 
+                    @click="openEditProductModal(p)" 
+                    class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border rounded-lg transition-all duration-150 inline-flex hover-scale"
+                    :title="$t('common.edit')"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                   </button>
                 </td>
               </tr>
@@ -355,6 +513,19 @@
               <p v-if="activeProducts.length === 0" class="text-[11px] text-red-500 font-bold mt-1">
                 ⚠️ {{ $t('sales.no_active_products_warning') }}
               </p>
+              
+              <!-- Stock Info Banner -->
+              <div v-if="selectedProduct && selectedProduct.manage_stock" class="mt-2 text-xs animate-scale">
+                <span v-if="selectedProduct.stock <= 0" class="inline-flex items-center px-2.5 py-1 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold border border-rose-500/20">
+                  🔴 {{ $t('sales.stock_none_badge') }} (0 Stk. verfügbar)
+                </span>
+                <span v-else-if="selectedProduct.stock <= selectedProduct.min_stock" class="inline-flex items-center px-2.5 py-1 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold border border-amber-500/20">
+                  ⚠️ {{ $t('sales.stock_alert_badge') }}: {{ selectedProduct.stock }} Stk. verfügbar (Mindestbestand: {{ selectedProduct.min_stock }} Stk.)
+                </span>
+                <span v-else class="inline-flex items-center px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/20">
+                  📦 {{ $t('sales.stock_ok_badge') }}: {{ selectedProduct.stock }} Stk. verfügbar
+                </span>
+              </div>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
@@ -369,6 +540,16 @@
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
                   @input="recalculateTotalPrice"
                 />
+                
+                <!-- Stock warnings -->
+                <div v-if="selectedProduct && selectedProduct.manage_stock" class="mt-1.5 text-[11px] font-bold animate-scale">
+                  <p v-if="saleForm.quantity > selectedProduct.stock" class="text-rose-600 dark:text-rose-400">
+                    ⚠️ {{ $t('sales.warning_insufficient_stock', { qty: saleForm.quantity, stock: selectedProduct.stock }) }}
+                  </p>
+                  <p v-else-if="selectedProduct.stock - saleForm.quantity < selectedProduct.min_stock" class="text-amber-600 dark:text-amber-400">
+                    ⚠️ {{ $t('sales.warning_low_stock', { min: selectedProduct.min_stock }) }}
+                  </p>
+                </div>
               </div>
 
               <!-- Total Price -->
@@ -556,6 +737,44 @@
               </label>
             </div>
 
+            <!-- Manage Stock -->
+            <div class="flex items-center pt-1">
+              <label class="flex items-center space-x-2 cursor-pointer">
+                <input
+                  v-model="productForm.manage_stock"
+                  type="checkbox"
+                  class="rounded text-primary focus:ring-primary h-4 w-4"
+                />
+                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $t('sales.product_manage_stock_checkbox') }}</span>
+              </label>
+            </div>
+
+            <!-- Stock Details -->
+            <div v-if="productForm.manage_stock" class="grid grid-cols-2 gap-4 pt-1 animate-scale">
+              <div>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('sales.product_stock_label') }}</label>
+                <input 
+                  v-model.number="productForm.stock" 
+                  type="number" 
+                  step="any"
+                  min="0"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('sales.product_min_stock_label') }}</label>
+                <input 
+                  v-model.number="productForm.min_stock" 
+                  type="number" 
+                  step="any"
+                  min="0"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
+                />
+              </div>
+            </div>
+
             <!-- Is Active -->
             <div class="flex items-center pt-1">
               <label class="flex items-center space-x-2 cursor-pointer">
@@ -573,6 +792,103 @@
             <button 
               type="button" 
               @click="closeProductModal" 
+              class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-100 dark:hover:bg-dark-border text-gray-700 dark:text-gray-300"
+            >
+              {{ $t('common.cancel') }}
+            </button>
+            <button 
+              type="submit" 
+              class="px-5 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl shadow-md hover-scale"
+            >
+              {{ $t('common.save') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- STOCK ADJUSTMENT MODAL -->
+    <div v-if="showAdjustStockModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl shadow-xl w-full max-w-md p-6 animate-scale">
+        <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100 dark:border-dark-border">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+            🔄 {{ $t('sales.adjust_stock_title') }}
+          </h3>
+          <button @click="closeAdjustStockModal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div v-if="adjustingProduct" class="mb-4 p-3 bg-gray-50 dark:bg-dark-bg border border-gray-100 dark:border-dark-border rounded-2xl text-xs">
+          <span class="font-bold text-gray-800 dark:text-gray-200 block mb-1">{{ adjustingProduct.name }}</span>
+          <span class="text-gray-500 dark:text-gray-400">Aktueller Bestand: <strong>{{ adjustingProduct.stock }} Stk.</strong> (Min: {{ adjustingProduct.min_stock }} Stk.)</span>
+        </div>
+
+        <form @submit.prevent="submitAdjustStockForm">
+          <div class="space-y-4">
+            <!-- Action selection -->
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">{{ $t('sales.adjust_type_label') }}</label>
+              <div class="grid grid-cols-3 gap-2">
+                <label 
+                  class="flex flex-col items-center justify-center p-3 border rounded-xl cursor-pointer text-center select-none transition-all duration-150 hover:bg-gray-50 dark:hover:bg-dark-bg"
+                  :class="adjustStockForm.type === 'add' ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 dark:border-gray-700'"
+                >
+                  <input type="radio" v-model="adjustStockForm.type" value="add" class="sr-only" />
+                  <span class="text-lg mb-1">📈</span>
+                  <span class="text-[10px] font-bold uppercase tracking-wider">{{ $t('sales.adjust_type_add') }}</span>
+                </label>
+                <label 
+                  class="flex flex-col items-center justify-center p-3 border rounded-xl cursor-pointer text-center select-none transition-all duration-150 hover:bg-gray-50 dark:hover:bg-dark-bg"
+                  :class="adjustStockForm.type === 'sub' ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 dark:border-gray-700'"
+                >
+                  <input type="radio" v-model="adjustStockForm.type" value="sub" class="sr-only" />
+                  <span class="text-lg mb-1">📉</span>
+                  <span class="text-[10px] font-bold uppercase tracking-wider">{{ $t('sales.adjust_type_sub') }}</span>
+                </label>
+                <label 
+                  class="flex flex-col items-center justify-center p-3 border rounded-xl cursor-pointer text-center select-none transition-all duration-150 hover:bg-gray-50 dark:hover:bg-dark-bg"
+                  :class="adjustStockForm.type === 'set' ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 dark:border-gray-700'"
+                >
+                  <input type="radio" v-model="adjustStockForm.type" value="set" class="sr-only" />
+                  <span class="text-lg mb-1">🎯</span>
+                  <span class="text-[10px] font-bold uppercase tracking-wider">{{ $t('sales.adjust_type_set') }}</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Amount Input -->
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('sales.adjust_amount_label') }}</label>
+              <input 
+                v-model.number="adjustStockForm.amount" 
+                type="number" 
+                step="any"
+                min="0"
+                required
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
+              />
+            </div>
+
+            <!-- Resulting Stock Preview -->
+            <div v-if="adjustingProduct" class="p-3 bg-primary/5 border border-primary/10 rounded-2xl text-xs flex justify-between items-center">
+              <span class="font-bold text-gray-600 dark:text-gray-400">Neuer berechneter Bestand:</span>
+              <span class="text-base font-extrabold" :class="resultingStockClass">
+                {{ resultingStock }} Stk.
+              </span>
+            </div>
+
+            <!-- Warning if resulting stock is low -->
+            <div v-if="resultingStockWarning" class="p-3 bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 rounded-2xl text-[11px] font-bold flex items-center space-x-1.5 animate-scale">
+              <span>⚠️</span>
+              <span>{{ resultingStockWarning }}</span>
+            </div>
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-6 border-t border-gray-100 dark:border-dark-border mt-6">
+            <button 
+              type="button" 
+              @click="closeAdjustStockModal" 
               class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-100 dark:hover:bg-dark-border text-gray-700 dark:text-gray-300"
             >
               {{ $t('common.cancel') }}
@@ -643,7 +959,23 @@ const productForm = reactive({
   price: 0,
   tax_rate: 7.0,
   is_active: true,
-  requires_batch_selection: false
+  requires_batch_selection: false,
+  manage_stock: false,
+  stock: 0,
+  min_stock: 0
+})
+
+const inventoryFilters = reactive({
+  searchQuery: '',
+  status: 'all',
+  showUnmanaged: false
+})
+
+const showAdjustStockModal = ref(false)
+const adjustingProduct = ref(null)
+const adjustStockForm = reactive({
+  type: 'add',
+  amount: 0
 })
 
 function showAlert(message, type = 'success') {
@@ -658,6 +990,84 @@ function showAlert(message, type = 'success') {
 
 const activeProducts = computed(() => {
   return products.value.filter(p => p.is_active)
+})
+
+const selectedProduct = computed(() => {
+  if (!saleForm.product_id) return null
+  return products.value.find(p => p.id === saleForm.product_id) || null
+})
+
+const filteredInventory = computed(() => {
+  return products.value.filter(p => {
+    // 1. Filter by showUnmanaged
+    if (!inventoryFilters.showUnmanaged && !p.manage_stock) {
+      return false
+    }
+
+    // 2. Filter by searchQuery (product name or honey type)
+    if (inventoryFilters.searchQuery) {
+      const q = inventoryFilters.searchQuery.toLowerCase()
+      const nameMatch = p.name.toLowerCase().includes(q)
+      const typeMatch = p.honey_type ? p.honey_type.toLowerCase().includes(q) : false
+      if (!nameMatch && !typeMatch) return false
+    }
+
+    // 3. Filter by stock status
+    if (p.manage_stock) {
+      if (inventoryFilters.status === 'low') {
+        return p.stock <= p.min_stock && p.stock > 0
+      }
+      if (inventoryFilters.status === 'empty') {
+        return p.stock <= 0
+      }
+      if (inventoryFilters.status === 'ok') {
+        return p.stock > p.min_stock
+      }
+    } else {
+      if (inventoryFilters.status !== 'all') return false
+    }
+
+    return true
+  })
+})
+
+const resultingStock = computed(() => {
+  if (!adjustingProduct.value) return 0
+  const current = Number(adjustingProduct.value.stock) || 0
+  const amount = Number(adjustStockForm.amount) || 0
+  if (adjustStockForm.type === 'add') {
+    return current + amount
+  } else if (adjustStockForm.type === 'sub') {
+    return Math.max(0, current - amount)
+  } else {
+    return amount
+  }
+})
+
+const resultingStockClass = computed(() => {
+  if (!adjustingProduct.value) return 'text-gray-800 dark:text-white'
+  const finalStock = resultingStock.value
+  const minStock = adjustingProduct.value.min_stock || 0
+  if (finalStock <= 0) {
+    return 'text-rose-600 dark:text-rose-400'
+  } else if (finalStock <= minStock) {
+    return 'text-amber-600 dark:text-amber-400'
+  } else {
+    return 'text-emerald-600 dark:text-emerald-400'
+  }
+})
+
+const resultingStockWarning = computed(() => {
+  if (!adjustingProduct.value) return ''
+  const finalStock = resultingStock.value
+  const minStock = adjustingProduct.value.min_stock || 0
+  
+  if (adjustStockForm.type === 'sub' && adjustStockForm.amount > adjustingProduct.value.stock) {
+    return t('sales.warning_insufficient_stock', { qty: adjustStockForm.amount, stock: adjustingProduct.value.stock })
+  } else if (finalStock <= minStock) {
+    return t('sales.warning_low_stock', { min: minStock })
+  }
+  return ''
 })
 
 const selectedProductRequiresBatch = computed(() => {
@@ -910,6 +1320,9 @@ function openCreateProductModal() {
   productForm.tax_rate = 7.0
   productForm.is_active = true
   productForm.requires_batch_selection = false
+  productForm.manage_stock = false
+  productForm.stock = 0
+  productForm.min_stock = 0
 
   showProductModal.value = true
 }
@@ -924,6 +1337,9 @@ function openEditProductModal(p) {
   productForm.tax_rate = p.tax_rate
   productForm.is_active = p.is_active
   productForm.requires_batch_selection = p.requires_batch_selection ?? false
+  productForm.manage_stock = p.manage_stock ?? false
+  productForm.stock = p.stock ?? 0
+  productForm.min_stock = p.min_stock ?? 0
   
   showProductModal.value = true
 }
@@ -941,7 +1357,10 @@ async function submitProductForm() {
       price: Number(productForm.price),
       tax_rate: taxSettings.value.calculate_taxes ? Number(productForm.tax_rate) : 0.0,
       is_active: productForm.is_active,
-      requires_batch_selection: productForm.requires_batch_selection
+      requires_batch_selection: productForm.requires_batch_selection,
+      manage_stock: productForm.manage_stock,
+      stock: productForm.manage_stock ? Number(productForm.stock) : 0.0,
+      min_stock: productForm.manage_stock ? Number(productForm.min_stock) : 0.0
     }
 
     if (isEditMode.value) {
@@ -975,6 +1394,35 @@ async function deleteProduct(p) {
   } catch (err) {
     console.error('Delete product error:', err)
     showAlert(err.response?.data?.detail || t('sales.error_product_delete'), 'error')
+  }
+}
+
+function openAdjustStockModal(p) {
+  adjustingProduct.value = p
+  adjustStockForm.type = 'add'
+  adjustStockForm.amount = 0
+  showAdjustStockModal.value = true
+}
+
+function closeAdjustStockModal() {
+  showAdjustStockModal.value = false
+  adjustingProduct.value = null
+}
+
+async function submitAdjustStockForm() {
+  if (!adjustingProduct.value) return
+  try {
+    const finalVal = resultingStock.value
+    const payload = {
+      stock: Number(finalVal)
+    }
+    await axios.put(`/api/sales/products/${adjustingProduct.value.id}`, payload)
+    showAlert(t('sales.success_stock_adjust'), 'success')
+    showAdjustStockModal.value = false
+    await fetchProducts()
+  } catch (err) {
+    console.error('Adjust stock error:', err)
+    showAlert(err.response?.data?.detail || t('sales.error_product_save'), 'error')
   }
 }
 

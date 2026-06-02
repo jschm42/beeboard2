@@ -64,6 +64,9 @@ echo ""
 printf "\033[1;36mAktualisiere BeeBoard2 Unified Docker Stack (Rebuild + Restart)...\033[0m\n"
 echo ""
 
+echo "Updating repository from git..."
+git -C "$PARENT_DIR" pull || echo "Warning: git pull failed, building with current local files."
+
 cd "$SCRIPT_DIR"
 docker compose -f ./docker-compose.yml pull
 docker compose -f ./docker-compose.yml up -d --build

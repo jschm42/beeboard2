@@ -253,3 +253,95 @@ def test_requires_batch_selection_enforcement(client, db):
     }, headers=headers)
     assert resp2.status_code == 201
     assert resp2.json()['batch']['batch_number'] == 'L-BATCH-ENF-01'
+
+
+def test_product_stock_management(client: TestClient, db: Session):
+    # 1. Register and login
+    client.post("/api/auth/register", json={
+        "username": "stocktester",
+        "email": "stocktester@example.com",
+        "password": "strongpassword123",
+        "first_name": "Stock",
+        "last_name": "Tester"
+    })
+    login_resp = client.post("/api/auth/login", data={
+        "username": "stocktester",
+        "password": "strongpassword123"
+    })
+    headers = {"Authorization": f"Bearer {login_resp.json()['access_token']}"}
+
+    # 2. Create product A (manage_stock=True, stock=10.0, min_stock=2.0)
+    prodA_resp = client.post("/api/sales/products", json={
+        "name": "Honig Glas A",
+        "price": 6.00,
+        "tax_rate": 7.0,
+        "is_active": True,
+        "manage_stock": True,
+        "stock": 10.0,
+        "min_stock": 2.0
+    }, headers=headers)
+    assert prodA_resp.status_code == 201
+    prodA = prodA_resp.json()
+    assert prodA["stock"] == 10.0
+
+    # 3. Create product B (manage_stock=True, stock=5.0, min_stock=1.0)
+    prodB_resp = client.post("/api/sales/products", json={
+        "name": "Honig Glas B",
+        "price": 8.00,
+        "tax_rate": 7.0,
+        "is_active": True,
+        "manage_stock": True,
+        "stock": 5.0,
+        "min_stock": 1.0
+    }, headers=headers)
+    assert prodB_resp.status_code == 201
+    prodB = prodB_resp.json()
+
+    # 4. Create sale for product A with quantity 3.0
+    sale_resp = client.post("/api/sales", json={
+        "product_id": prodA["id"],
+        "quantity": 3.0,
+        "sales_channel": "direktverkauf"
+    }, headers=headers)
+    assert sale_resp.status_code == 201
+    sale = sale_resp.json()
+
+    # Verify stock of A decreased to 7.0
+    db.expire_all()
+    get_prodA = client.get(f"/api/sales/products", headers=headers).json()
+    prodA_fetched = next(p for p in get_prodA if p["id"] == prodA["id"])
+    assert prodA_fetched["stock"] == 7.0
+
+    # 5. Update sale: quantity change to 4.0
+    update_resp = client.put(f"/api/sales/{sale['id']}", json={
+        "quantity": 4.0
+    }, headers=headers)
+    assert update_resp.status_code == 200
+
+    # Verify stock of A is now 6.0
+    get_prodA = client.get(f"/api/sales/products", headers=headers).json()
+    prodA_fetched = next(p for p in get_prodA if p["id"] == prodA["id"])
+    assert prodA_fetched["stock"] == 6.0
+
+    # 6. Update sale: product change to product B, quantity 4.0
+    update_prod_resp = client.put(f"/api/sales/{sale['id']}", json={
+        "product_id": prodB["id"],
+        "quantity": 4.0
+    }, headers=headers)
+    assert update_prod_resp.status_code == 200
+
+    # Verify stock of A is restored to 10.0 and B is decreased to 1.0
+    get_products = client.get(f"/api/sales/products", headers=headers).json()
+    prodA_fetched = next(p for p in get_products if p["id"] == prodA["id"])
+    prodB_fetched = next(p for p in get_products if p["id"] == prodB["id"])
+    assert prodA_fetched["stock"] == 10.0
+    assert prodB_fetched["stock"] == 1.0
+
+    # 7. Delete sale
+    del_resp = client.delete(f"/api/sales/{sale['id']}", headers=headers)
+    assert del_resp.status_code == 204
+
+    # Verify stock of B is restored to 5.0
+    get_products = client.get(f"/api/sales/products", headers=headers).json()
+    prodB_fetched = next(p for p in get_products if p["id"] == prodB["id"])
+    assert prodB_fetched["stock"] == 5.0

@@ -15,6 +15,9 @@ class ProductConfig(UUIDTimeStampedModel, CreatedByModel):
     tax_rate: Mapped[float] = mapped_column(Float, default=7.0)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     requires_batch_selection: Mapped[bool] = mapped_column(Boolean, default=False)
+    manage_stock: Mapped[bool] = mapped_column(Boolean, default=False)
+    stock: Mapped[float] = mapped_column(Float, default=0.0)
+    min_stock: Mapped[float] = mapped_column(Float, default=0.0)
 
 class HoneySale(UUIDTimeStampedModel, CreatedByModel):
     __tablename__ = "honey_sales"

@@ -47,6 +47,9 @@ def create_product(
         tax_rate=product_in.tax_rate,
         is_active=product_in.is_active,
         requires_batch_selection=product_in.requires_batch_selection,
+        manage_stock=product_in.manage_stock,
+        stock=product_in.stock,
+        min_stock=product_in.min_stock,
         created_by_id=current_user.id
     )
     db.add(new_product)
@@ -154,6 +157,10 @@ def create_sale(
     if total_price is None:
         total_price = product.price * sale_in.quantity
 
+    # Deduct stock if manage_stock is True
+    if product.manage_stock:
+        product.stock -= sale_in.quantity
+
     new_sale = HoneySale(
         sale_date=sale_in.sale_date or datetime.now(),
         product_id=sale_in.product_id,
@@ -211,6 +218,26 @@ def update_sale(
             detail=f"Für das Produkt '{effective_product.name}' ist die Angabe einer Losnummer (Charge) zwingend erforderlich."
         )
 
+    # Calculate stock adjustments before updating the sale
+    old_product_id = sale.product_id
+    new_product_id = sale_in.product_id or old_product_id
+    old_quantity = sale.quantity
+    new_quantity = sale_in.quantity if sale_in.quantity is not None else old_quantity
+
+    if old_product_id == new_product_id:
+        if old_quantity != new_quantity:
+            product = db.query(ProductConfig).filter(ProductConfig.id == old_product_id).first()
+            if product and product.manage_stock:
+                product.stock += (old_quantity - new_quantity)
+    else:
+        old_product = db.query(ProductConfig).filter(ProductConfig.id == old_product_id).first()
+        if old_product and old_product.manage_stock:
+            old_product.stock += old_quantity
+
+        new_product = db.query(ProductConfig).filter(ProductConfig.id == new_product_id).first()
+        if new_product and new_product.manage_stock:
+            new_product.stock -= new_quantity
+
     for field, value in sale_in.model_dump(exclude_unset=True).items():
         setattr(sale, field, value)
 
@@ -231,6 +258,11 @@ def delete_sale(
     ).first()
     if not sale:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Verkaufstransaktion nicht gefunden")
+
+    # Restore stock if product has manage_stock
+    product = db.query(ProductConfig).filter(ProductConfig.id == sale.product_id).first()
+    if product and product.manage_stock:
+        product.stock += sale.quantity
 
     db.delete(sale)
     db.commit()

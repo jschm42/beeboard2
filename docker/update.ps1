@@ -61,6 +61,13 @@ Write-Host ""
 Write-Host "Aktualisiere BeeBoard2 Unified Docker Stack (Rebuild + Restart)..." -ForegroundColor Cyan
 Write-Host ""
 
+Write-Host "Updating repository from git..." -ForegroundColor Cyan
+try {
+    git -C $rootDir pull
+} catch {
+    Write-Host "Warning: git pull failed, building with current local files." -ForegroundColor Yellow
+}
+
 Push-Location $PSScriptRoot
 try {
     docker compose -f .\docker-compose.yml pull

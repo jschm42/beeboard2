@@ -66,6 +66,13 @@ Write-Host ""
 Write-Host "SSL-Zertifikate werden bei Bedarf automatisch im Container generiert und in 'docker/certs/' gespeichert." -ForegroundColor Green
 Write-Host ""
 
+Write-Host "Updating repository from git..." -ForegroundColor Cyan
+try {
+    git -C $rootDir pull
+} catch {
+    Write-Host "Warning: git pull failed, building with current local files." -ForegroundColor Yellow
+}
+
 Push-Location $PSScriptRoot
 try {
     docker compose -f .\docker-compose.yml up -d --build

@@ -11,6 +11,9 @@ class ProductConfigBase(BaseModel):
     tax_rate: float
     is_active: bool = True
     requires_batch_selection: bool = False
+    manage_stock: bool = False
+    stock: float = 0.0
+    min_stock: float = 0.0
 
 class ProductConfigCreate(ProductConfigBase):
     pass
@@ -22,6 +25,9 @@ class ProductConfigUpdate(BaseModel):
     tax_rate: Optional[float] = None
     is_active: Optional[bool] = None
     requires_batch_selection: Optional[bool] = None
+    manage_stock: Optional[bool] = None
+    stock: Optional[float] = None
+    min_stock: Optional[float] = None
 
 class ProductConfigOut(ProductConfigBase):
     id: str

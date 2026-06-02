@@ -69,5 +69,8 @@ echo ""
 printf "\033[1;32mSSL-Zertifikate werden bei Bedarf automatisch im Container generiert und in 'docker/certs/' gespeichert.\033[0m\n"
 echo ""
 
+echo "Updating repository from git..."
+git -C "$PARENT_DIR" pull || echo "Warning: git pull failed, building with current local files."
+
 cd "$SCRIPT_DIR"
 docker compose -f ./docker-compose.yml up -d --build
