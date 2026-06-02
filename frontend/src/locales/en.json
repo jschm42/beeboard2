@@ -757,6 +757,8 @@
     "adjust_type_set": "Set Absolute (=)",
     "adjust_amount_label": "Amount",
     "success_stock_adjust": "Product stock successfully adjusted!",
+    "edit_stock_config_title": "Configure Stock Settings",
+    "success_stock_config_update": "Stock configuration successfully updated!",
     "channel_direct": "Direct Sale",
     "channel_online": "Online",
     "channel_email": "E-Mail",

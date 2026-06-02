@@ -468,7 +468,7 @@
                     <span class="hidden md:inline">{{ $t('sales.adjust_stock_btn') }}</span>
                   </button>
                   <button 
-                    @click="openEditProductModal(p)" 
+                    @click="openStockConfigModal(p)" 
                     class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border rounded-lg transition-all duration-150 inline-flex hover-scale"
                     :title="$t('common.edit')"
                   >
@@ -904,6 +904,83 @@
       </div>
     </div>
 
+    <!-- STOCK CONFIGURATION MODAL -->
+    <div v-if="showStockConfigModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl shadow-xl w-full max-w-md p-6 animate-scale">
+        <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100 dark:border-dark-border">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+            ⚙️ {{ $t('sales.edit_stock_config_title') }}
+          </h3>
+          <button @click="closeStockConfigModal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div v-if="configuringProduct" class="mb-4 p-3 bg-gray-50 dark:bg-dark-bg border border-gray-100 dark:border-dark-border rounded-2xl text-xs">
+          <span class="font-bold text-gray-800 dark:text-gray-200 block mb-1">{{ configuringProduct.name }}</span>
+          <span class="text-gray-500 dark:text-gray-400" v-if="configuringProduct.honey_type">{{ configuringProduct.honey_type }}</span>
+        </div>
+
+        <form @submit.prevent="submitStockConfigForm">
+          <div class="space-y-4">
+            <!-- Manage Stock Toggle -->
+            <div class="flex items-center pt-1">
+              <label class="flex items-center space-x-2 cursor-pointer">
+                <input
+                  v-model="stockConfigForm.manage_stock"
+                  type="checkbox"
+                  class="rounded text-primary focus:ring-primary h-4 w-4"
+                />
+                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $t('sales.product_manage_stock_checkbox') }}</span>
+              </label>
+            </div>
+
+            <!-- Stock Details (Visible only when managing stock) -->
+            <div v-if="stockConfigForm.manage_stock" class="grid grid-cols-2 gap-4 pt-1 animate-scale">
+              <div>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('sales.product_stock_label') }}</label>
+                <input 
+                  v-model.number="stockConfigForm.stock" 
+                  type="number" 
+                  step="any"
+                  min="0"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('sales.product_min_stock_label') }}</label>
+                <input 
+                  v-model.number="stockConfigForm.min_stock" 
+                  type="number" 
+                  step="any"
+                  min="0"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-6 border-t border-gray-100 dark:border-dark-border mt-6">
+            <button 
+              type="button" 
+              @click="closeStockConfigModal" 
+              class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-100 dark:hover:bg-dark-border text-gray-700 dark:text-gray-300"
+            >
+              {{ $t('common.cancel') }}
+            </button>
+            <button 
+              type="submit" 
+              class="px-5 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl shadow-md hover-scale"
+            >
+              {{ $t('common.save') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -976,6 +1053,14 @@ const adjustingProduct = ref(null)
 const adjustStockForm = reactive({
   type: 'add',
   amount: 0
+})
+
+const showStockConfigModal = ref(false)
+const configuringProduct = ref(null)
+const stockConfigForm = reactive({
+  manage_stock: false,
+  stock: 0,
+  min_stock: 0
 })
 
 function showAlert(message, type = 'success') {
@@ -1422,6 +1507,37 @@ async function submitAdjustStockForm() {
     await fetchProducts()
   } catch (err) {
     console.error('Adjust stock error:', err)
+    showAlert(err.response?.data?.detail || t('sales.error_product_save'), 'error')
+  }
+}
+
+function openStockConfigModal(p) {
+  configuringProduct.value = p
+  stockConfigForm.manage_stock = p.manage_stock ?? false
+  stockConfigForm.stock = p.stock ?? 0
+  stockConfigForm.min_stock = p.min_stock ?? 0
+  showStockConfigModal.value = true
+}
+
+function closeStockConfigModal() {
+  showStockConfigModal.value = false
+  configuringProduct.value = null
+}
+
+async function submitStockConfigForm() {
+  if (!configuringProduct.value) return
+  try {
+    const payload = {
+      manage_stock: stockConfigForm.manage_stock,
+      stock: stockConfigForm.manage_stock ? Number(stockConfigForm.stock) : 0.0,
+      min_stock: stockConfigForm.manage_stock ? Number(stockConfigForm.min_stock) : 0.0
+    }
+    await axios.put(`/api/sales/products/${configuringProduct.value.id}`, payload)
+    showAlert(t('sales.success_stock_config_update'), 'success')
+    showStockConfigModal.value = false
+    await fetchProducts()
+  } catch (err) {
+    console.error('Submit stock config error:', err)
     showAlert(err.response?.data?.detail || t('sales.error_product_save'), 'error')
   }
 }
