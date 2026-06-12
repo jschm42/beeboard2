@@ -340,15 +340,15 @@
     </div>
 
     <!-- CREATE TASK DIALOG MODAL -->
-    <div v-if="showTaskModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <!-- Backdrop -->
-        <div @click="showTaskModal = false" class="fixed inset-0 z-0 bg-black/45 transition-opacity" aria-hidden="true"></div>
-
-        <!-- Center modal contents -->
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-        <div class="relative z-10 inline-block align-bottom bg-white dark:bg-dark-card rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-100 dark:border-dark-border animate-scale">
+    <div 
+      v-if="showTaskModal" 
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45"
+      @click.self="showTaskModal = false"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+    >
+      <div class="bg-white dark:bg-dark-card rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:max-w-lg sm:w-full border border-gray-100 dark:border-dark-border animate-scale">
           <!-- Header -->
           <div class="px-6 py-4 border-b border-gray-100 dark:border-dark-border flex justify-between items-center bg-gray-50/50 dark:bg-dark-bg/25">
             <h3 class="text-lg font-extrabold text-gray-900 dark:text-white" id="modal-title">
@@ -473,19 +473,17 @@
           </form>
         </div>
       </div>
-    </div>
 
     <!-- HIVE EDIT/CREATE DIALOG MODAL -->
-    <div v-if="showModal" class="fixed inset-0 z-50 overflow-y-auto font-sans" role="dialog" aria-modal="true">
-      <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <!-- Backdrop -->
-        <div @click="closeModal" class="fixed inset-0 z-0 bg-black/50 dark:bg-black/75 backdrop-blur-sm transition-opacity animate-fade-in" aria-hidden="true"></div>
-
-        <!-- Center modal contents -->
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-        <!-- Modal Box -->
-        <div class="relative z-10 inline-block align-bottom bg-white dark:bg-dark-card rounded-[2rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl sm:w-full border border-gray-150/40 dark:border-dark-border animate-scale">
+    <div 
+      v-if="showModal" 
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/75 backdrop-blur-sm"
+      @click.self="closeModal"
+      role="dialog"
+      aria-modal="true"
+    >
+      <!-- Modal Box -->
+      <div class="bg-white dark:bg-dark-card rounded-[2rem] text-left overflow-hidden shadow-2xl transform transition-all sm:max-w-5xl sm:w-full border border-gray-150/40 dark:border-dark-border animate-scale">
           <!-- Header -->
           <div class="px-8 py-5 border-b border-gray-100 dark:border-dark-border flex justify-between items-center bg-gray-50/50 dark:bg-dark-bg/25">
             <h3 class="text-xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2" id="modal-title">
@@ -752,7 +750,6 @@
           </form>
         </div>
       </div>
-    </div>
 
   </div>
 </template>

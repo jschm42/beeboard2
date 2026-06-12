@@ -1,18 +1,21 @@
 <template>
-  <div v-if="showModal && reminderTasks.length > 0" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <!-- Backdrop -->
-      <div @click="closeModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" aria-hidden="true"></div>
-
-      <!-- Center modal contents -->
-      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-      <div class="inline-block align-bottom bg-white dark:bg-dark-card rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-red-500/20 dark:border-red-500/10 animate-scale">
+  <transition name="modal">
+    <div 
+      v-if="showModal && reminderTasks.length > 0" 
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      @click.self="closeModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+    >
+      <div 
+        class="bg-white dark:bg-dark-card rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:max-w-lg sm:w-full border border-red-500/20 dark:border-red-500/10 flex flex-col max-h-[85vh]"
+      >
         <!-- Header -->
-        <div class="px-6 py-4 bg-red-500/10 dark:bg-red-950/20 border-b border-red-100 dark:border-red-950/30 flex justify-between items-center">
+        <div class="px-6 py-4 bg-red-500/10 dark:bg-red-950/20 border-b border-red-100 dark:border-red-950/30 flex justify-between items-center shrink-0">
           <div class="flex items-center space-x-2">
             <span class="text-xl">🔔</span>
-            <h3 class="text-base font-extrabold text-red-700 dark:text-red-400 uppercase tracking-wider">
+            <h3 class="text-base font-extrabold text-red-700 dark:text-red-400 uppercase tracking-wider" id="modal-title">
               Erinnerung: Fällige Aufgaben
             </h3>
           </div>
@@ -22,7 +25,7 @@
         </div>
 
         <!-- Task List Body -->
-        <div class="p-6 max-h-[350px] overflow-y-auto space-y-4">
+        <div class="p-6 overflow-y-auto space-y-4 flex-grow">
           <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed font-medium">
             Du hast anstehende oder überfällige Arbeiten an deinen Bienenständen. Erledige sie gleich hier mit einem Klick!
           </p>
@@ -77,7 +80,7 @@
         </div>
 
         <!-- Footer -->
-        <div class="px-6 py-4 bg-gray-50 dark:bg-dark-bg/25 border-t border-gray-100 dark:border-dark-border flex justify-end gap-2">
+        <div class="px-6 py-4 bg-gray-50 dark:bg-dark-bg/25 border-t border-gray-100 dark:border-dark-border flex justify-end gap-2 shrink-0">
           <button 
             type="button" 
             @click="snoozeReminders" 
@@ -95,7 +98,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </transition>
 </template>
 
 <script setup>
@@ -212,4 +215,29 @@ function isOverdue(dateStr) {
 
 <style scoped>
 @reference "../style.css";
+
+/* Modal Transition Styles */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-enter-active .bg-white,
+.modal-leave-active .bg-white,
+.modal-enter-active .dark\:bg-dark-card,
+.modal-leave-active .dark\:bg-dark-card {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-from .bg-white,
+.modal-leave-to .bg-white,
+.modal-enter-from .dark\:bg-dark-card,
+.modal-leave-to .dark\:bg-dark-card {
+  transform: scale(0.95) translateY(12px);
+}
 </style>
