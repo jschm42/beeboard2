@@ -86,17 +86,100 @@
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs"
               />
             </div>
+            <!-- Scope Type Segmented Buttons -->
             <div>
-              <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('logbook.session_hive') }}</label>
-              <select 
-                v-model="sessionForm.hiveId" 
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs"
-              >
-                <option value="">{{ $t('logbook.no_hive_global') }}</option>
-                <option v-for="hive in hives" :key="hive.id" :value="hive.id">
-                  {{ hive.name }}
-                </option>
-              </select>
+              <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                {{ $t('logbook.session_scope') }}
+              </label>
+              <div class="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  @click="sessionForm.scopeType = 'APIARY'"
+                  class="flex flex-col items-center justify-center p-3 rounded-2xl border text-xs font-bold transition-all duration-200"
+                  :class="sessionForm.scopeType === 'APIARY' ? 'bg-primary/5 border-primary text-primary shadow-sm' : 'border-gray-200 hover:border-gray-300 dark:border-dark-border dark:text-gray-300'"
+                >
+                  <span class="text-base mb-1">🏢</span>
+                  <span>{{ $t('beeAgent.scope_apiary') }}</span>
+                </button>
+                <button
+                  type="button"
+                  @click="sessionForm.scopeType = 'LOCATION'"
+                  class="flex flex-col items-center justify-center p-3 rounded-2xl border text-xs font-bold transition-all duration-200"
+                  :class="sessionForm.scopeType === 'LOCATION' ? 'bg-primary/5 border-primary text-primary shadow-sm' : 'border-gray-200 hover:border-gray-300 dark:border-dark-border dark:text-gray-300'"
+                >
+                  <span class="text-base mb-1">📍</span>
+                  <span>{{ $t('beeAgent.scope_location') }}</span>
+                </button>
+                <button
+                  type="button"
+                  @click="sessionForm.scopeType = 'HIVE'"
+                  class="flex flex-col items-center justify-center p-3 rounded-2xl border text-xs font-bold transition-all duration-200"
+                  :class="sessionForm.scopeType === 'HIVE' ? 'bg-primary/5 border-primary text-primary shadow-sm' : 'border-gray-200 hover:border-gray-300 dark:border-dark-border dark:text-gray-300'"
+                >
+                  <span class="text-base mb-1">🐝</span>
+                  <span>{{ $t('beeAgent.scope_hive') }}</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Apiaries Multi-Select Checklist -->
+            <div v-if="sessionForm.scopeType === 'APIARY'">
+              <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                {{ $t('logbook.select_apiaries') }}
+              </label>
+              <div class="max-h-40 overflow-y-auto border border-gray-200 dark:border-dark-border rounded-2xl p-3 space-y-2 bg-gray-50 dark:bg-dark-bg">
+                <label v-for="apiary in apiaryStore.apiaries" :key="apiary.id" class="flex items-center space-x-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer hover:text-primary transition-colors">
+                  <input
+                    type="checkbox"
+                    :value="apiary.id"
+                    v-model="sessionForm.linkedApiaryIds"
+                    class="rounded text-primary focus:ring-primary border-gray-300 dark:border-dark-border"
+                  />
+                  <span class="font-bold">{{ apiary.name }}</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Locations Multi-Select Checklist -->
+            <div v-if="sessionForm.scopeType === 'LOCATION'">
+              <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                {{ $t('logbook.select_locations') }}
+              </label>
+              <div v-if="locations.length === 0" class="text-xs text-gray-400 italic bg-gray-50 dark:bg-dark-bg p-3 rounded-2xl border">
+                {{ $t('logbook.no_locations') }}
+              </div>
+              <div v-else class="max-h-40 overflow-y-auto border border-gray-200 dark:border-dark-border rounded-2xl p-3 space-y-2 bg-gray-50 dark:bg-dark-bg">
+                <label v-for="loc in locations" :key="loc.id" class="flex items-center space-x-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer hover:text-primary transition-colors">
+                  <input
+                    type="checkbox"
+                    :value="loc.id"
+                    v-model="sessionForm.linkedLocationIds"
+                    class="rounded text-primary focus:ring-primary border-gray-300 dark:border-dark-border"
+                  />
+                  <span class="font-bold">{{ loc.name }}</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Hives Multi-Select Checklist -->
+            <div v-if="sessionForm.scopeType === 'HIVE'">
+              <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                {{ $t('logbook.select_hives') }}
+              </label>
+              <div v-if="hives.length === 0" class="text-xs text-gray-400 italic bg-gray-50 dark:bg-dark-bg p-3 rounded-2xl border">
+                {{ $t('logbook.no_hives') }}
+              </div>
+              <div v-else class="max-h-40 overflow-y-auto border border-gray-200 dark:border-dark-border rounded-2xl p-3 space-y-2 bg-gray-50 dark:bg-dark-bg">
+                <label v-for="hive in hives" :key="hive.id" class="flex items-center space-x-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer hover:text-primary transition-colors">
+                  <input
+                    type="checkbox"
+                    :value="hive.id"
+                    v-model="sessionForm.linkedHiveIds"
+                    class="rounded text-primary focus:ring-primary border-gray-300 dark:border-dark-border"
+                  />
+                  <span class="font-bold">{{ hive.name }} <span class="text-[10px] text-gray-400 font-medium">({{ hive.location?.name || $t('logbook.no_location') }})</span></span>
+                </label>
+              </div>
             </div>
             <div class="flex justify-end space-x-2 pt-2">
               <button type="button" @click="showSessionModal = false" class="px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">{{ $t('common.cancel') }}</button>
@@ -148,12 +231,41 @@
                 <h4 class="font-extrabold text-base text-gray-900 dark:text-white mt-3 line-clamp-2">
                   {{ session.title }}
                 </h4>
-                <span 
-                  v-if="session.hive" 
-                  class="inline-block mt-2 px-2 py-0.5 bg-amber-500/10 text-primary text-[10px] font-bold rounded"
-                >
-                  {{ $t('logbook.hive_label', { name: session.hive.name }) }}
-                </span>
+                <div class="mt-2 flex flex-wrap gap-1">
+                  <span 
+                    v-if="session.scope_type === 'APIARY'" 
+                    class="px-2 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-bold rounded flex items-center space-x-1"
+                  >
+                    <span>🏢 Imkerei:</span>
+                    <span class="font-medium max-w-[150px] truncate">
+                      {{ session.linked_apiaries?.map(a => a.name).join(', ') || 'Alle' }}
+                    </span>
+                  </span>
+                  <span 
+                    v-else-if="session.scope_type === 'LOCATION'" 
+                    class="px-2 py-0.5 bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] font-bold rounded flex items-center space-x-1"
+                  >
+                    <span>📍 Standorte:</span>
+                    <span class="font-medium max-w-[150px] truncate">
+                      {{ session.linked_locations?.map(l => l.name).join(', ') || 'Keine' }}
+                    </span>
+                  </span>
+                  <span 
+                    v-else-if="session.scope_type === 'HIVE'" 
+                    class="px-2 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px] font-bold rounded flex items-center space-x-1"
+                  >
+                    <span>🐝 Völker:</span>
+                    <span class="font-medium max-w-[150px] truncate">
+                      {{ session.linked_hives?.map(h => h.name).join(', ') || 'Keine' }}
+                    </span>
+                  </span>
+                  <span 
+                    v-else-if="session.hive" 
+                    class="px-2 py-0.5 bg-amber-500/10 text-primary text-[10px] font-bold rounded"
+                  >
+                    {{ $t('logbook.hive_label', { name: session.hive.name }) }}
+                  </span>
+                </div>
               </div>
               <div class="text-[10px] text-gray-400 font-mono mt-4">
                 {{ $t('logbook.last_active', { time: formatDateTime(session.updated_at) }) }}
@@ -190,7 +302,24 @@
                       <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                     </button>
                   </div>
-                  <p v-if="selectedSession.hive" class="text-xs text-gray-500 mt-1">{{ $t('hives.table_hive') }}: <span class="font-bold text-primary">{{ selectedSession.hive.name }}</span></p>
+                  <div class="text-xs text-gray-500 mt-1 space-y-0.5">
+                    <div v-if="selectedSession.scope_type === 'APIARY'" class="flex items-center space-x-1">
+                      <span>🏢 Imkereien:</span>
+                      <span class="font-bold text-primary">{{ selectedSession.linked_apiaries?.map(a => a.name).join(', ') || 'Alle' }}</span>
+                    </div>
+                    <div v-else-if="selectedSession.scope_type === 'LOCATION'" class="flex items-center space-x-1">
+                      <span>📍 Standorte:</span>
+                      <span class="font-bold text-primary">{{ selectedSession.linked_locations?.map(l => l.name).join(', ') || 'Keine' }}</span>
+                    </div>
+                    <div v-else-if="selectedSession.scope_type === 'HIVE'" class="flex items-center space-x-1">
+                      <span>🐝 Völker:</span>
+                      <span class="font-bold text-primary">{{ selectedSession.linked_hives?.map(h => h.name).join(', ') || 'Keine' }}</span>
+                    </div>
+                    <div v-else-if="selectedSession.hive" class="flex items-center space-x-1">
+                      <span>🐝 Volk:</span>
+                      <span class="font-bold text-primary">{{ selectedSession.hive.name }}</span>
+                    </div>
+                  </div>
                 </div>
                 
                 <button 
@@ -223,7 +352,7 @@
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer"
                       >
                         <option value="" disabled>{{ $t('logbook.select_hive_placeholder') }}</option>
-                        <option v-for="hive in hives" :key="hive.id" :value="hive.id">
+                        <option v-for="hive in filteredHivesForEntry" :key="hive.id" :value="hive.id">
                           {{ hive.name }}
                         </option>
                       </select>
@@ -1242,6 +1371,7 @@ const confirmStore = useConfirmStore()
 // Sessions & stream data
 const sessions = ref([])
 const hives = ref([])
+const locations = ref([])
 const entries = ref([])
 
 const sessionsLoading = ref(false)
@@ -1275,7 +1405,11 @@ const editingEntryId = ref(null)
 
 const sessionForm = reactive({
   title: '',
-  hiveId: ''
+  scopeType: 'APIARY',
+  hiveId: '',
+  linkedApiaryIds: [],
+  linkedLocationIds: [],
+  linkedHiveIds: []
 })
 
 const entryForm = reactive({
@@ -1304,7 +1438,8 @@ onMounted(async () => {
   if (apiaryStore.activeApiaryId) {
     await Promise.all([
       fetchSessions(),
-      fetchHives()
+      fetchHives(),
+      fetchLocations()
     ])
   }
 })
@@ -1316,7 +1451,8 @@ watch(() => apiaryStore.activeApiaryId, async (newVal) => {
     resetTableFilters()
     await Promise.all([
       fetchSessions(),
-      fetchHives()
+      fetchHives(),
+      fetchLocations()
     ])
     if (viewMode.value === 'table') {
       await fetchAllEntries()
@@ -1332,6 +1468,23 @@ watch(viewMode, async (newVal) => {
 
 // Dropdown unique filter computed values
 const activeHive = computed(() => hives.value.find(h => h.id === entryForm.hiveId))
+
+const filteredHivesForEntry = computed(() => {
+  if (!selectedSession.value) return hives.value
+  
+  const scope = selectedSession.value.scope_type || 'APIARY'
+  if (scope === 'HIVE') {
+    const linkedIds = selectedSession.value.linked_hives?.map(h => h.id) || []
+    return hives.value.filter(h => linkedIds.includes(h.id))
+  } else if (scope === 'LOCATION') {
+    const linkedIds = selectedSession.value.linked_locations?.map(l => l.id) || []
+    return hives.value.filter(h => linkedIds.includes(h.location_id))
+  } else if (scope === 'APIARY') {
+    const linkedIds = selectedSession.value.linked_apiaries?.map(a => a.id) || []
+    return hives.value.filter(h => linkedIds.includes(h.apiary_id))
+  }
+  return hives.value
+})
 
 const uniqueLocations = computed(() => {
   const map = new Map()
@@ -1473,6 +1626,17 @@ async function fetchHives() {
   }
 }
 
+async function fetchLocations() {
+  try {
+    const response = await axios.get('/api/locations', {
+      params: { apiary_id: apiaryStore.activeApiaryId }
+    })
+    locations.value = response.data
+  } catch (err) {
+    console.error('Fetch locations failed:', err)
+  }
+}
+
 async function fetchEntries() {
   if (!selectedSession.value) return
   entriesLoading.value = true
@@ -1520,7 +1684,11 @@ function openCreateSessionModal() {
   isEditSessionMode.value = false
   editingSessionId.value = null
   sessionForm.title = ''
+  sessionForm.scopeType = 'APIARY'
   sessionForm.hiveId = ''
+  sessionForm.linkedApiaryIds = apiaryStore.activeApiaryId ? [apiaryStore.activeApiaryId] : []
+  sessionForm.linkedLocationIds = []
+  sessionForm.linkedHiveIds = []
   showSessionModal.value = true
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
@@ -1529,7 +1697,11 @@ function openEditSessionModal(session) {
   isEditSessionMode.value = true
   editingSessionId.value = session.id
   sessionForm.title = session.title
+  sessionForm.scopeType = session.scope_type || 'APIARY'
   sessionForm.hiveId = session.hive_id || ''
+  sessionForm.linkedApiaryIds = session.linked_apiaries?.map(a => a.id) || []
+  sessionForm.linkedLocationIds = session.linked_locations?.map(l => l.id) || []
+  sessionForm.linkedHiveIds = session.linked_hives?.map(h => h.id) || []
   showSessionModal.value = true
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
@@ -1544,12 +1716,34 @@ async function submitSessionForm() {
     }
     return
   }
+
+  // Validate at least one selection
+  let hasSelection = false
+  if (sessionForm.scopeType === 'APIARY' && sessionForm.linkedApiaryIds.length > 0) hasSelection = true
+  if (sessionForm.scopeType === 'LOCATION' && sessionForm.linkedLocationIds.length > 0) hasSelection = true
+  if (sessionForm.scopeType === 'HIVE' && sessionForm.linkedHiveIds.length > 0) hasSelection = true
+
+  if (!hasSelection) {
+    if (errorStore && typeof errorStore.showError === 'function') {
+      errorStore.showError(t('logbook.error_select_at_least_one'))
+    } else {
+      alert(t('logbook.error_select_at_least_one'))
+    }
+    return
+  }
+
+  const payload = {
+    title: sessionForm.title.trim(),
+    scope_type: sessionForm.scopeType,
+    hive_id: sessionForm.hiveId || null,
+    linked_apiary_ids: sessionForm.scopeType === 'APIARY' ? sessionForm.linkedApiaryIds : [],
+    linked_location_ids: sessionForm.scopeType === 'LOCATION' ? sessionForm.linkedLocationIds : [],
+    linked_hive_ids: sessionForm.scopeType === 'HIVE' ? sessionForm.linkedHiveIds : []
+  }
+
   try {
     if (isEditSessionMode.value) {
-      const response = await axios.put(`/api/logbook/sessions/${editingSessionId.value}`, {
-        title: sessionForm.title.trim(),
-        hive_id: sessionForm.hiveId || null
-      })
+      const response = await axios.put(`/api/logbook/sessions/${editingSessionId.value}`, payload)
       
       // Update selectedSession if it is the one being renamed
       if (selectedSession.value?.id === editingSessionId.value) {
@@ -1559,10 +1753,7 @@ async function submitSessionForm() {
       showSessionModal.value = false
       await fetchSessions()
     } else {
-      const session = await axios.post('/api/logbook/sessions', {
-        title: sessionForm.title.trim(),
-        hive_id: sessionForm.hiveId || null
-      }, {
+      const session = await axios.post('/api/logbook/sessions', payload, {
         params: { apiary_id: apiaryStore.activeApiaryId }
       })
       
@@ -1599,7 +1790,7 @@ function openCreateEntryModal() {
   isEditEntryMode.value = false
   editingEntryId.value = null
   
-  entryForm.hiveId = selectedSession.value?.hive_id || (hives.value[0]?.id || '')
+  entryForm.hiveId = selectedSession.value?.hive_id || (filteredHivesForEntry.value[0]?.id || '')
   entryForm.date = new Date().toISOString().substring(0, 10)
   entryForm.entryType = 'INSPECTION'
   entryForm.notes = ''

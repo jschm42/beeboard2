@@ -87,6 +87,37 @@ with engine.connect() as conn:
         if "max_log_entries" not in ai_insight_cron_job_columns:
             conn.execute(text("ALTER TABLE ai_insight_cron_jobs ADD COLUMN max_log_entries INTEGER DEFAULT 20"))
             conn.commit()
+
+        # Log Session Scope Type and association table migrations
+        result = conn.execute(text("PRAGMA table_info(log_sessions)"))
+        log_session_columns = [row[1] for row in result.fetchall()]
+        if "scope_type" not in log_session_columns:
+            conn.execute(text("ALTER TABLE log_sessions ADD COLUMN scope_type VARCHAR(20) DEFAULT 'APIARY'"))
+            conn.commit()
+
+        # Migrate existing log_sessions with hive_id to scope_type='HIVE' and populate log_session_hives
+        conn.execute(text("""
+            UPDATE log_sessions 
+            SET scope_type = 'HIVE' 
+            WHERE hive_id IS NOT NULL AND (scope_type IS NULL OR scope_type = 'APIARY')
+        """))
+        conn.commit()
+        
+        # Now populate log_session_hives for existing sessions
+        result = conn.execute(text("""
+            SELECT id, hive_id FROM log_sessions 
+            WHERE hive_id IS NOT NULL
+        """))
+        for row in result.fetchall():
+            session_id, hive_id = row[0], row[1]
+            exists = conn.execute(text(
+                "SELECT 1 FROM log_session_hives WHERE log_session_id = :sid AND hive_id = :hid"
+            ), {"sid": session_id, "hid": hive_id}).fetchone()
+            if not exists:
+                conn.execute(text(
+                    "INSERT INTO log_session_hives (log_session_id, hive_id) VALUES (:sid, :hid)"
+                ), {"sid": session_id, "hid": hive_id})
+        conn.commit()
     except (RuntimeError, ValueError, TypeError) as e:
         print(f"Error running database migration: {e}")
 

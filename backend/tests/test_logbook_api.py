@@ -60,6 +60,55 @@ def test_logbook_session_renaming_and_validation(client: TestClient, db: Session
     assert rename_fail_resp.status_code == 422
     assert "value_error.any_str.max_length" in str(rename_fail_resp.json()["detail"]) or "string_too_long" in str(rename_fail_resp.json()["detail"])
 
+    # 6. Create scoped sessions (APIARY, LOCATION, HIVE) and test list query
+    # Retrieve default frame type first
+    ft_resp = client.get("/api/hives/frame-types", headers=headers)
+    zander_ft = ft_resp.json()[0]
+
+    # Create location
+    loc_resp = client.post(f"/api/locations?apiary_id={apiary_id}", json={
+        "name": "Test Location",
+        "address": "Testweg 1"
+    }, headers=headers)
+    assert loc_resp.status_code == 201
+    loc_id = loc_resp.json()["id"]
+
+    # Create hive
+    hive_resp = client.post(f"/api/hives?apiary_id={apiary_id}", json={
+        "name": "Test Hive",
+        "location_id": loc_id,
+        "frame_type_id": zander_ft["id"],
+        "queen_year": 2026,
+        "is_active": True
+    }, headers=headers)
+    assert hive_resp.status_code == 201
+    hive_id = hive_resp.json()["id"]
+
+    # Create Hive scoped session
+    hive_session_resp = client.post(f"/api/logbook/sessions?apiary_id={apiary_id}", json={
+        "title": "Hive Session",
+        "scope_type": "HIVE",
+        "linked_hive_ids": [hive_id]
+    }, headers=headers)
+    assert hive_session_resp.status_code == 201
+    hive_session_data = hive_session_resp.json()
+    assert hive_session_data["scope_type"] == "HIVE"
+    assert len(hive_session_data["linked_hives"]) == 1
+    assert hive_session_data["linked_hives"][0]["id"] == hive_id
+
+    # Create Location scoped session
+    loc_session_resp = client.post(f"/api/logbook/sessions?apiary_id={apiary_id}", json={
+        "title": "Location Session",
+        "scope_type": "LOCATION",
+        "linked_location_ids": [loc_id]
+    }, headers=headers)
+    assert loc_session_resp.status_code == 201
+    loc_session_data = loc_session_resp.json()
+    assert loc_session_data["scope_type"] == "LOCATION"
+    assert len(loc_session_data["linked_locations"]) == 1
+    assert loc_session_data["linked_locations"][0]["id"] == loc_id
+
+
 def test_logbook_box_creation_and_stats(client: TestClient, db: Session):
     # 1. Register and login
     reg_response = client.post("/api/auth/register", json={

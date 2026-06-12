@@ -1,15 +1,38 @@
 from __future__ import annotations
-from sqlalchemy import String, ForeignKey, Integer, Float, Text, Date
+from sqlalchemy import String, ForeignKey, Integer, Float, Text, Date, Table, Column
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import date
 from typing import List, Optional
 
 from app.models.base import UUIDTimeStampedModel, CreatedByModel, ApiaryScopedModel
+from app.core.database import Base
+
+log_session_apiaries = Table(
+    "log_session_apiaries",
+    Base.metadata,
+    Column("log_session_id", String(36), ForeignKey("log_sessions.id", ondelete="CASCADE"), primary_key=True),
+    Column("apiary_id", String(36), ForeignKey("apiaries.id", ondelete="CASCADE"), primary_key=True)
+)
+
+log_session_locations = Table(
+    "log_session_locations",
+    Base.metadata,
+    Column("log_session_id", String(36), ForeignKey("log_sessions.id", ondelete="CASCADE"), primary_key=True),
+    Column("location_id", String(36), ForeignKey("locations.id", ondelete="CASCADE"), primary_key=True)
+)
+
+log_session_hives = Table(
+    "log_session_hives",
+    Base.metadata,
+    Column("log_session_id", String(36), ForeignKey("log_sessions.id", ondelete="CASCADE"), primary_key=True),
+    Column("hive_id", String(36), ForeignKey("hives.id", ondelete="CASCADE"), primary_key=True)
+)
 
 class LogSession(UUIDTimeStampedModel, CreatedByModel, ApiaryScopedModel):
     __tablename__ = "log_sessions"
 
     title: Mapped[str] = mapped_column(String(160))
+    scope_type: Mapped[str] = mapped_column(String(20), nullable=True, default="APIARY")
     hive_id: Mapped[Optional[str]] = mapped_column(ForeignKey("hives.id", ondelete="SET NULL"), nullable=True)
 
     # Relationships
@@ -19,6 +42,19 @@ class LogSession(UUIDTimeStampedModel, CreatedByModel, ApiaryScopedModel):
         back_populates="session",
         cascade="all, delete-orphan",
         order_by="LogEntry.date.desc()"
+    )
+
+    linked_apiaries: Mapped[List["Apiary"]] = relationship(
+        "Apiary",
+        secondary=log_session_apiaries
+    )
+    linked_locations: Mapped[List["Location"]] = relationship(
+        "Location",
+        secondary=log_session_locations
+    )
+    linked_hives: Mapped[List["Hive"]] = relationship(
+        "Hive",
+        secondary=log_session_hives
     )
 
 class LogEntry(UUIDTimeStampedModel, CreatedByModel, ApiaryScopedModel):

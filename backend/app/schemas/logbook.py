@@ -4,19 +4,13 @@ from datetime import date, datetime
 
 class LogSessionBase(BaseModel):
     title: str = Field(..., max_length=30)
+    scope_type: str = "APIARY"
     hive_id: Optional[str] = None
 
 class LogSessionCreate(LogSessionBase):
-    pass
-
-class LogSessionOut(LogSessionBase):
-    id: str
-    apiary_id: str
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        from_attributes = True
+    linked_apiary_ids: List[str] = []
+    linked_location_ids: List[str] = []
+    linked_hive_ids: List[str] = []
 
 class InspectionBoxBase(BaseModel):
     box_index: int
@@ -154,6 +148,18 @@ class LogEntryOut(LogEntryBase):
     images: List[LogEntryImageOut] = []
     created_at: datetime
     updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class LogSessionOut(LogSessionBase):
+    id: str
+    apiary_id: str
+    created_at: datetime
+    updated_at: datetime
+    linked_apiaries: List[LogEntryApiaryOut] = []
+    linked_locations: List[LogEntryLocationOut] = []
+    linked_hives: List[LogEntryHiveOut] = []
 
     class Config:
         from_attributes = True

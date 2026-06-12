@@ -66,7 +66,21 @@ def list_sessions(
 ):
     """Lists all working sessions inside an authorized apiary."""
     check_access(apiary_id, current_user, db)
-    return db.query(LogSession).filter(LogSession.apiary_id == apiary_id).order_by(LogSession.updated_at.desc()).all()
+    from app.models.apiary import Apiary
+    from app.models.location import Location
+    from sqlalchemy import or_
+    return db.query(LogSession).options(
+        joinedload(LogSession.linked_apiaries),
+        joinedload(LogSession.linked_locations),
+        joinedload(LogSession.linked_hives)
+    ).filter(
+        or_(
+            LogSession.apiary_id == apiary_id,
+            LogSession.linked_apiaries.any(id=apiary_id),
+            LogSession.linked_locations.any(apiary_id=apiary_id),
+            LogSession.linked_hives.any(apiary_id=apiary_id)
+        )
+    ).order_by(LogSession.updated_at.desc()).all()
 
 @router.post("/sessions", response_model=LogSessionOut, status_code=status.HTTP_201_CREATED)
 def create_session(
@@ -78,11 +92,29 @@ def create_session(
     """Creates a new working session scoped to an apiary."""
     check_access(apiary_id, current_user, db)
     
+    from app.models.apiary import Apiary
+    from app.models.location import Location
+
+    apiaries = []
+    locations = []
+    hives = []
+    
+    if session_in.scope_type == "APIARY":
+        apiaries = db.query(Apiary).filter(Apiary.id.in_(session_in.linked_apiary_ids)).all()
+    elif session_in.scope_type == "LOCATION":
+        locations = db.query(Location).filter(Location.id.in_(session_in.linked_location_ids)).all()
+    elif session_in.scope_type == "HIVE":
+        hives = db.query(Hive).filter(Hive.id.in_(session_in.linked_hive_ids)).all()
+
     new_session = LogSession(
         title=session_in.title,
+        scope_type=session_in.scope_type,
         hive_id=session_in.hive_id,
         apiary_id=apiary_id,
-        created_by_id=current_user.id
+        created_by_id=current_user.id,
+        linked_apiaries=apiaries,
+        linked_locations=locations,
+        linked_hives=hives
     )
     db.add(new_session)
     db.commit()
@@ -103,8 +135,26 @@ def update_session(
     
     check_access(session.apiary_id, current_user, db)
     
+    from app.models.apiary import Apiary
+    from app.models.location import Location
+
+    apiaries = []
+    locations = []
+    hives = []
+    
+    if session_in.scope_type == "APIARY":
+        apiaries = db.query(Apiary).filter(Apiary.id.in_(session_in.linked_apiary_ids)).all()
+    elif session_in.scope_type == "LOCATION":
+        locations = db.query(Location).filter(Location.id.in_(session_in.linked_location_ids)).all()
+    elif session_in.scope_type == "HIVE":
+        hives = db.query(Hive).filter(Hive.id.in_(session_in.linked_hive_ids)).all()
+
     session.title = session_in.title
+    session.scope_type = session_in.scope_type
     session.hive_id = session_in.hive_id
+    session.linked_apiaries = apiaries
+    session.linked_locations = locations
+    session.linked_hives = hives
     
     db.commit()
     db.refresh(session)
