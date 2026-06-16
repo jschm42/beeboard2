@@ -348,8 +348,9 @@
                       <select 
                         v-model="entryForm.hiveId" 
                         required
+                        :disabled="isHiveSelectorDisabled"
                         @change="onHiveSelected"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                       >
                         <option value="" disabled>{{ $t('logbook.select_hive_placeholder') }}</option>
                         <option v-for="hive in filteredHivesForEntry" :key="hive.id" :value="hive.id">
@@ -390,9 +391,63 @@
                     <textarea 
                       v-model="entryForm.notes" 
                       :placeholder="$t('logbook.notes_placeholder')"
-                      rows="2"
+                      rows="6"
                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                     ></textarea>
+                  </div>
+
+                  <!-- Image Upload Section -->
+                  <div class="space-y-3">
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
+                      {{ $t('logbook.table_images') }}
+                    </label>
+                    <div 
+                      @dragover.prevent="dragOver = true"
+                      @dragleave.prevent="dragOver = false"
+                      @drop.prevent="onFileDrop"
+                      @click="triggerFileInput"
+                      class="border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-200"
+                      :class="dragOver ? 'border-primary bg-primary/5' : 'border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-dark-bg/30 hover:border-primary/50'"
+                    >
+                      <input 
+                        type="file" 
+                        ref="modalFileInput" 
+                        multiple 
+                        accept="image/*" 
+                        class="hidden" 
+                        @change="onFileSelect" 
+                      />
+                      <div class="text-2xl mb-1">📸</div>
+                      <p class="text-xs font-bold text-gray-700 dark:text-gray-300">
+                        {{ $t('logbook.drag_drop_area') }}
+                      </p>
+                      <p class="text-[10px] text-gray-400 mt-1">
+                        {{ $t('logbook.drag_drop_hint') }}
+                      </p>
+                    </div>
+
+                    <!-- Image Preview Grid -->
+                    <div v-if="entryFiles.length > 0" class="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-3">
+                      <div 
+                        v-for="(img, idx) in entryFiles" 
+                        :key="idx"
+                        class="relative aspect-square rounded-2xl overflow-hidden border border-gray-100 dark:border-dark-border group bg-gray-50 dark:bg-dark-card"
+                      >
+                        <img 
+                          :src="img.isExisting ? `/uploads/${img.thumbnail_path || img.image_path}` : img.previewUrl" 
+                          alt="Preview" 
+                          class="w-full h-full object-cover"
+                        />
+                        <button 
+                          type="button"
+                          @click="removeEntryFile(idx)"
+                          class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-lg shadow opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+                          :title="$t('logbook.delete_image')"
+                        >
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
                   <!-- SUB-FORM: INSPECTION DETAILS (nur Zargen-weise) -->
@@ -431,7 +486,7 @@
                       <!-- Boxes List -->
                       <div class="space-y-3">
                         <div 
-                          v-for="(box, idx) in entryForm.inspectionDetail.boxes" 
+                          v-for="box in entryForm.inspectionDetail.boxes" 
                           :key="box.id"
                           class="p-4 bg-white dark:bg-dark-card border rounded-2xl shadow-sm space-y-3 border-gray-200 dark:border-dark-border"
                         >
@@ -919,8 +974,9 @@
                 <select 
                   v-model="entryForm.hiveId" 
                   required
+                  :disabled="isHiveSelectorDisabled"
                   @change="onHiveSelected"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   <option value="" disabled>{{ $t('logbook.select_hive_placeholder') }}</option>
                   <option v-for="hive in hives" :key="hive.id" :value="hive.id">
@@ -961,9 +1017,63 @@
               <textarea 
                 v-model="entryForm.notes" 
                 :placeholder="$t('logbook.notes_placeholder')"
-                rows="2"
+                rows="6"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
               ></textarea>
+            </div>
+
+            <!-- Image Upload Section -->
+            <div class="space-y-3">
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
+                {{ $t('logbook.table_images') }}
+              </label>
+              <div 
+                @dragover.prevent="dragOver = true"
+                @dragleave.prevent="dragOver = false"
+                @drop.prevent="onFileDrop"
+                @click="triggerFileInput"
+                class="border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-200"
+                :class="dragOver ? 'border-primary bg-primary/5' : 'border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-dark-bg/30 hover:border-primary/50'"
+              >
+                <input 
+                  type="file" 
+                  ref="modalFileInputTable" 
+                  multiple 
+                  accept="image/*" 
+                  class="hidden" 
+                  @change="onFileSelect" 
+                />
+                <div class="text-2xl mb-1">📸</div>
+                <p class="text-xs font-bold text-gray-700 dark:text-gray-300">
+                  {{ $t('logbook.drag_drop_area') }}
+                </p>
+                <p class="text-[10px] text-gray-400 mt-1">
+                  {{ $t('logbook.drag_drop_hint') }}
+                </p>
+              </div>
+
+              <!-- Image Preview Grid -->
+              <div v-if="entryFiles.length > 0" class="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-3">
+                <div 
+                  v-for="(img, idx) in entryFiles" 
+                  :key="idx"
+                  class="relative aspect-square rounded-2xl overflow-hidden border border-gray-100 dark:border-dark-border group bg-gray-50 dark:bg-dark-card"
+                >
+                  <img 
+                    :src="img.isExisting ? `/uploads/${img.thumbnail_path || img.image_path}` : img.previewUrl" 
+                    alt="Preview" 
+                    class="w-full h-full object-cover"
+                  />
+                  <button 
+                    type="button"
+                    @click="removeEntryFile(idx)"
+                    class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-lg shadow opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+                    :title="$t('logbook.delete_image')"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  </button>
+                </div>
+              </div>
             </div>
 
             <!-- SUB-FORM: INSPECTION DETAILS -->
@@ -1415,7 +1525,7 @@ const sessionForm = reactive({
 const entryForm = reactive({
   hiveId: '',
   date: new Date().toISOString().substring(0, 10),
-  entryType: 'INSPECTION',
+  entryType: 'GENERAL',
   notes: '',
   inspectionDetail: {
     assessmentMode: 'boxes', // only simplified box mode
@@ -1432,6 +1542,11 @@ const entryForm = reactive({
     treatmentNotes: ''
   }
 })
+
+const entryFiles = ref([])
+const dragOver = ref(false)
+const modalFileInput = ref(null)
+const modalFileInputTable = ref(null)
 
 // Lifecycle
 onMounted(async () => {
@@ -1466,8 +1581,21 @@ watch(viewMode, async (newVal) => {
   }
 })
 
+watch(showEntryModal, (newVal) => {
+  if (!newVal) {
+    clearEntryFormFiles()
+  }
+})
+
 // Dropdown unique filter computed values
 const activeHive = computed(() => hives.value.find(h => h.id === entryForm.hiveId))
+
+const isHiveSelectorDisabled = computed(() => {
+  if (!selectedSession.value) return false
+  if (selectedSession.value.hive_id) return true
+  if (selectedSession.value.scope_type === 'HIVE' && selectedSession.value.linked_hives?.length === 1) return true
+  return false
+})
 
 const filteredHivesForEntry = computed(() => {
   if (!selectedSession.value) return hives.value
@@ -1792,7 +1920,7 @@ function openCreateEntryModal() {
   
   entryForm.hiveId = selectedSession.value?.hive_id || (filteredHivesForEntry.value[0]?.id || '')
   entryForm.date = new Date().toISOString().substring(0, 10)
-  entryForm.entryType = 'INSPECTION'
+  entryForm.entryType = 'GENERAL'
   entryForm.notes = ''
   entryForm.inspectionDetail.assessmentMode = 'boxes'
   entryForm.inspectionDetail.boxMode = 'exact'
@@ -1802,6 +1930,7 @@ function openCreateEntryModal() {
   entryForm.varroaTreatmentDetail.treatmentNotes = ''
   
   onHiveSelected()
+  clearEntryFormFiles()
   showEntryModal.value = true
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
@@ -1814,6 +1943,16 @@ function openEditEntryModal(entry) {
   entryForm.date = entry.date
   entryForm.entryType = entry.entry_type
   entryForm.notes = entry.notes || ''
+  
+  clearEntryFormFiles()
+  if (entry.images) {
+    entryFiles.value = entry.images.map(img => ({
+      id: img.id,
+      image_path: img.image_path,
+      thumbnail_path: img.thumbnail_path,
+      isExisting: true
+    }))
+  }
   
   if (entry.entry_type === 'INSPECTION' && entry.inspection_detail) {
     const hive = hives.value.find(h => h.id === entry.hive_id)
@@ -1915,7 +2054,6 @@ async function submitEntryForm() {
           const droneBroodVal = Number(box.drone_brood || 0)
           const pollenVal = Number(box.pollen || 0)
 
-          const C = box.frame_count || 0
           const M = box.multiplier || 1.0
 
           // Eingabe = Achtel, Summen = Achtel * 400 * Multiplikator
@@ -1968,11 +2106,24 @@ async function submitEntryForm() {
       } : null
     }
 
+    let response
     if (isEditEntryMode.value) {
-      await axios.put(`/api/logbook/entries/${editingEntryId.value}`, payload)
+      response = await axios.put(`/api/logbook/entries/${editingEntryId.value}`, payload)
     } else {
-      await axios.post('/api/logbook/entries', payload, {
+      response = await axios.post('/api/logbook/entries', payload, {
         params: { apiary_id: apiaryStore.activeApiaryId }
+      })
+    }
+
+    const entryId = response.data?.id || editingEntryId.value
+    const uploads = entryFiles.value.filter(f => !f.isExisting)
+    for (const uf of uploads) {
+      const formData = new FormData()
+      formData.append('file', uf.file)
+      await axios.post(`/api/logbook/entries/${entryId}/images`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
       })
     }
 
@@ -2110,10 +2261,6 @@ function getEntryTypeName(type) {
   }
 }
 
-function sortedFrames(frames) {
-  return [...frames].sort((a, b) => a.frame_number - b.frame_number)
-}
-
 function getBoxTotalsForEntry(entry) {
   if (!entry.inspection_detail || !entry.inspection_detail.boxes) return null
   const boxes = [...entry.inspection_detail.boxes]
@@ -2145,6 +2292,78 @@ function getBoxTotalsForEntry(entry) {
   return {
     boxes,
     hive: hiveTotal
+  }
+}
+
+function clearEntryFormFiles() {
+  entryFiles.value.forEach(img => {
+    if (!img.isExisting && img.previewUrl) {
+      URL.revokeObjectURL(img.previewUrl)
+    }
+  })
+  entryFiles.value = []
+}
+
+function handleFilesAdd(files) {
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+  const currentCount = entryFiles.value.length
+  let addedCount = 0
+  
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]
+    if (!allowedTypes.includes(file.type.toLowerCase())) {
+      errorStore.showError(t('logbook.error_unsupported_format') || 'Dateiformat nicht unterstützt')
+      continue
+    }
+    
+    if (currentCount + addedCount >= 5) {
+      errorStore.showError(t('logbook.max_images_reached'))
+      break
+    }
+    
+    const previewUrl = URL.createObjectURL(file)
+    entryFiles.value.push({
+      file,
+      previewUrl,
+      isExisting: false
+    })
+    addedCount++
+  }
+}
+
+function onFileSelect(event) {
+  const files = event.target.files
+  if (files && files.length > 0) {
+    handleFilesAdd(files)
+  }
+}
+
+function onFileDrop(event) {
+  dragOver.value = false
+  const files = event.dataTransfer?.files
+  if (files && files.length > 0) {
+    handleFilesAdd(files)
+  }
+}
+
+function triggerFileInput() {
+  if (viewMode.value === 'table') {
+    modalFileInputTable.value?.click()
+  } else {
+    modalFileInput.value?.click()
+  }
+}
+
+async function removeEntryFile(index) {
+  const img = entryFiles.value[index]
+  if (img.isExisting) {
+    await deleteEntryImage(img.id)
+    entryFiles.value.splice(index, 1)
+  } else {
+    if (img.previewUrl) {
+      URL.revokeObjectURL(img.previewUrl)
+    }
+    entryFiles.value.splice(index, 1)
   }
 }
 </script>
