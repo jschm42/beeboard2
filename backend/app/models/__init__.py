@@ -14,7 +14,7 @@ from app.models.logbook import (
     LogEntryImage
 )
 from app.models.ai_insight import AIInsight, AIInsightCronJob
-from app.models.honey_batch import HoneyBatch
+from app.models.honey_batch import HoneyBatch, HoneyBatchDIBRange
 from app.models.sales import ProductConfig, HoneySale
 from app.models.task import Task
 from app.models.bee_agent import BeeAgentJob, BeeAgentProposal
@@ -42,6 +42,7 @@ __all__ = [
     "AIInsight",
     "AIInsightCronJob",
     "HoneyBatch",
+    "HoneyBatchDIBRange",
     "ProductConfig",
     "HoneySale",
     "Task",

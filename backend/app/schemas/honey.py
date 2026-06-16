@@ -1,7 +1,19 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, model_validator
 from datetime import date, datetime
 from app.schemas.user import UserOut
+
+class HoneyBatchDIBRangeBase(BaseModel):
+    dib_label_start: Optional[str] = None
+    dib_label_end: Optional[str] = None
+
+class HoneyBatchDIBRangeCreate(HoneyBatchDIBRangeBase):
+    pass
+
+class HoneyBatchDIBRangeOut(HoneyBatchDIBRangeBase):
+    id: str
+    class Config:
+        from_attributes = True
 
 class HoneyBatchBase(BaseModel):
     batch_number: Optional[str] = None
@@ -15,12 +27,15 @@ class HoneyBatchBase(BaseModel):
     is_exact_date: bool = False
     dib_label_start: Optional[str] = None
     dib_label_end: Optional[str] = None
+    dib_ranges: List[HoneyBatchDIBRangeOut] = []
     reserve_sample_taken: bool = False
     reserve_sample_date: Optional[date] = None
     reserve_sample_id: Optional[str] = None
     notes: Optional[str] = None
 
 class HoneyBatchCreate(HoneyBatchBase):
+    dib_ranges: Optional[List[HoneyBatchDIBRangeCreate]] = None
+
     @model_validator(mode='after')
     def validate_batch_number(self):
         if not self.is_exact_date and (not self.batch_number or not self.batch_number.strip()):
@@ -39,6 +54,7 @@ class HoneyBatchUpdate(BaseModel):
     is_exact_date: Optional[bool] = None
     dib_label_start: Optional[str] = None
     dib_label_end: Optional[str] = None
+    dib_ranges: Optional[List[HoneyBatchDIBRangeCreate]] = None
     reserve_sample_taken: Optional[bool] = None
     reserve_sample_date: Optional[date] = None
     reserve_sample_id: Optional[str] = None
@@ -61,3 +77,4 @@ class HoneyBatchOut(HoneyBatchBase):
 
     class Config:
         from_attributes = True
+

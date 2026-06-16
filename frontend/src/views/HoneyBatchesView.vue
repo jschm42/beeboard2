@@ -254,28 +254,64 @@
           <!-- Section 4: D.I.B. Gewährverschlüsse -->
           <div>
             <h4 class="text-sm font-bold text-amber-500 uppercase tracking-wider mb-3">{{ $t('honey_batches.section_dib_labels') }}</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('honey_batches.dib_label_start_label') }}</label>
-                <input 
-                  v-model="form.dib_label_start" 
-                  type="text" 
-                  :placeholder="$t('honey_batches.dib_label_start_placeholder')"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
-                />
-              </div>
+            
+            <div class="space-y-4">
+              <div 
+                v-for="(range, idx) in form.dib_ranges" 
+                :key="idx" 
+                class="bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-gray-800 rounded-2xl p-4 relative"
+              >
+                <!-- Title & Delete Button -->
+                <div class="flex justify-between items-center mb-3">
+                  <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    {{ $t('honey_batches.dib_range_title', { index: idx + 1 }) }}
+                  </span>
+                  <button 
+                    v-if="form.dib_ranges.length > 1" 
+                    type="button" 
+                    @click="removeDIBRange(idx)" 
+                    class="text-red-500 hover:text-red-600 p-1 rounded hover:bg-red-500/10 transition-colors"
+                    :title="$t('honey_batches.remove_dib_range_tooltip')"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
 
-              <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('honey_batches.dib_label_end_label') }}</label>
-                <input 
-                  v-model="form.dib_label_end" 
-                  type="text" 
-                  :placeholder="$t('honey_batches.dib_label_end_placeholder')"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
-                />
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('honey_batches.dib_label_start_label') }}</label>
+                    <input 
+                      v-model="range.dib_label_start" 
+                      type="text" 
+                      :placeholder="$t('honey_batches.dib_label_start_placeholder')"
+                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('honey_batches.dib_label_end_label') }}</label>
+                    <input 
+                      v-model="range.dib_label_end" 
+                      type="text" 
+                      :placeholder="$t('honey_batches.dib_label_end_placeholder')"
+                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-            <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1.5 italic">
+
+            <button 
+              type="button" 
+              @click="addDIBRange" 
+              class="mt-3 px-4 py-2 border border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center space-x-1.5 w-full md:w-auto hover-scale"
+            >
+              <span>{{ $t('honey_batches.add_dib_range_btn') }}</span>
+            </button>
+
+            <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-2 italic">
               {{ $t('honey_batches.dib_label_desc') }}
             </p>
           </div>
@@ -457,10 +493,12 @@
 
               <!-- D.I.B. Labels -->
               <td class="px-6 py-4 whitespace-nowrap text-xs">
-                <div v-if="b.dib_label_start || b.dib_label_end" class="font-mono text-gray-700 dark:text-gray-300">
-                  {{ b.dib_label_start || '?' }} &rarr; {{ b.dib_label_end || '?' }}
+                <div v-if="b.dib_ranges && b.dib_ranges.length > 0" class="flex flex-col space-y-1">
+                  <div v-for="r in b.dib_ranges" :key="r.id" class="font-mono text-gray-700 dark:text-gray-300">
+                    {{ r.dib_label_start || '?' }} &rarr; {{ r.dib_label_end || '?' }}
+                  </div>
                   <div class="text-[10px] text-gray-500 dark:text-gray-400 font-bold mt-0.5">
-                    {{ $t('honey_batches.dib_count_suffix', { count: getDIBCount(b.dib_label_start, b.dib_label_end) }) }}
+                    {{ $t('honey_batches.dib_count_suffix', { count: getDIBTotalCount(b.dib_ranges) }) }}
                   </div>
                 </div>
                 <span v-else class="text-gray-400 dark:text-gray-600 italic">{{ $t('honey_batches.no_dib_data') }}</span>
@@ -582,8 +620,7 @@ const form = reactive({
   heating_temperature_celsius: null,
   best_before_date: '',
   is_exact_date: false,
-  dib_label_start: '',
-  dib_label_end: '',
+  dib_ranges: [{ dib_label_start: '', dib_label_end: '' }],
   reserve_sample_taken: false,
   reserve_sample_date: '',
   reserve_sample_id: '',
@@ -670,8 +707,19 @@ onMounted(async () => {
       form.heating_temperature_celsius = draft.heating_temperature_celsius
       form.best_before_date = draft.best_before_date ? draft.best_before_date.substring(0, 10) : ''
       form.is_exact_date = draft.is_exact_date || false
-      form.dib_label_start = draft.dib_label_start || ''
-      form.dib_label_end = draft.dib_label_end || ''
+      if (draft.dib_ranges && draft.dib_ranges.length > 0) {
+        form.dib_ranges = draft.dib_ranges.map(r => ({
+          dib_label_start: r.dib_label_start || '',
+          dib_label_end: r.dib_label_end || ''
+        }))
+      } else if (draft.dib_label_start || draft.dib_label_end) {
+        form.dib_ranges = [{
+          dib_label_start: draft.dib_label_start || '',
+          dib_label_end: draft.dib_label_end || ''
+        }]
+      } else {
+        form.dib_ranges = [{ dib_label_start: '', dib_label_end: '' }]
+      }
       form.reserve_sample_taken = draft.reserve_sample_taken || false
       form.reserve_sample_date = draft.reserve_sample_date ? draft.reserve_sample_date.substring(0, 10) : ''
       form.reserve_sample_id = draft.reserve_sample_id || ''
@@ -732,8 +780,7 @@ function openCreateModal() {
   form.water_content_percent = null
   form.heating_temperature_celsius = null
   form.is_exact_date = false
-  form.dib_label_start = ''
-  form.dib_label_end = ''
+  form.dib_ranges = [{ dib_label_start: '', dib_label_end: '' }]
   form.reserve_sample_taken = false
   form.reserve_sample_date = ''
   form.reserve_sample_id = ''
@@ -762,8 +809,14 @@ function openEditModal(b) {
   form.heating_temperature_celsius = b.heating_temperature_celsius
   form.best_before_date = b.best_before_date ? b.best_before_date.substring(0, 10) : ''
   form.is_exact_date = b.is_exact_date
-  form.dib_label_start = b.dib_label_start || ''
-  form.dib_label_end = b.dib_label_end || ''
+  if (b.dib_ranges && b.dib_ranges.length > 0) {
+    form.dib_ranges = b.dib_ranges.map(r => ({
+      dib_label_start: r.dib_label_start || '',
+      dib_label_end: r.dib_label_end || ''
+    }))
+  } else {
+    form.dib_ranges = [{ dib_label_start: '', dib_label_end: '' }]
+  }
   form.reserve_sample_taken = b.reserve_sample_taken
   form.reserve_sample_date = b.reserve_sample_date ? b.reserve_sample_date.substring(0, 10) : ''
   form.reserve_sample_id = b.reserve_sample_id || ''
@@ -789,6 +842,13 @@ async function submitForm() {
   }
 
   try {
+    const cleaned_dib_ranges = form.dib_ranges
+      .map(r => ({
+        dib_label_start: r.dib_label_start.trim() || null,
+        dib_label_end: r.dib_label_end.trim() || null
+      }))
+      .filter(r => r.dib_label_start !== null || r.dib_label_end !== null)
+
     const payload = {
       batch_number: form.batch_number.trim() || null,
       honey_type: form.honey_type.trim(),
@@ -799,8 +859,7 @@ async function submitForm() {
       heating_temperature_celsius: form.heating_temperature_celsius !== null ? parseFloat(form.heating_temperature_celsius) : null,
       best_before_date: form.best_before_date,
       is_exact_date: form.is_exact_date,
-      dib_label_start: form.dib_label_start.trim() || null,
-      dib_label_end: form.dib_label_end.trim() || null,
+      dib_ranges: cleaned_dib_ranges,
       reserve_sample_taken: form.reserve_sample_taken,
       reserve_sample_date: form.reserve_sample_taken ? form.reserve_sample_date : null,
       reserve_sample_id: form.reserve_sample_taken ? form.reserve_sample_id.trim() || null : null,
@@ -864,8 +923,19 @@ async function generateAIDraft() {
       form.heating_temperature_celsius = draft.heating_temperature_celsius
       form.best_before_date = draft.best_before_date ? draft.best_before_date.substring(0, 10) : ''
       form.is_exact_date = draft.is_exact_date || false
-      form.dib_label_start = draft.dib_label_start || ''
-      form.dib_label_end = draft.dib_label_end || ''
+      if (draft.dib_ranges && draft.dib_ranges.length > 0) {
+        form.dib_ranges = draft.dib_ranges.map(r => ({
+          dib_label_start: r.dib_label_start || '',
+          dib_label_end: r.dib_label_end || ''
+        }))
+      } else if (draft.dib_label_start || draft.dib_label_end) {
+        form.dib_ranges = [{
+          dib_label_start: draft.dib_label_start || '',
+          dib_label_end: draft.dib_label_end || ''
+        }]
+      } else {
+        form.dib_ranges = [{ dib_label_start: '', dib_label_end: '' }]
+      }
       form.reserve_sample_taken = draft.reserve_sample_taken || false
       form.reserve_sample_date = draft.reserve_sample_date ? draft.reserve_sample_date.substring(0, 10) : ''
       form.reserve_sample_id = draft.reserve_sample_id || ''
@@ -946,6 +1016,21 @@ function getDIBCount(start, end) {
   const eNum = parseInt(end.replace(/\D/g, ''))
   if (isNaN(sNum) || isNaN(eNum)) return 0
   return Math.max(0, eNum - sNum + 1)
+}
+
+function addDIBRange() {
+  form.dib_ranges.push({ dib_label_start: '', dib_label_end: '' })
+}
+
+function removeDIBRange(index) {
+  if (form.dib_ranges.length > 1) {
+    form.dib_ranges.splice(index, 1)
+  }
+}
+
+function getDIBTotalCount(ranges) {
+  if (!ranges || !ranges.length) return 0
+  return ranges.reduce((acc, r) => acc + getDIBCount(r.dib_label_start, r.dib_label_end), 0)
 }
 
 function showAlert(message, type = 'success') {

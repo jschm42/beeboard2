@@ -737,6 +737,22 @@
               </label>
             </div>
 
+            <!-- Default Batch (Optional) -->
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
+                {{ $t('sales.product_default_batch_label') }} <span class="text-gray-400 font-normal">({{ $t('sales.optional_badge') }})</span>
+              </label>
+              <select
+                v-model="productForm.default_batch_id"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+              >
+                <option :value="null">{{ $t('sales.no_default_batch') }}</option>
+                <option v-for="b in batches" :key="b.id" :value="b.id">
+                  {{ b.batch_number || `MHD: ${formatDate(b.best_before_date)}` }} - {{ b.honey_type }} ({{ b.quantity_kg }} kg)
+                </option>
+              </select>
+            </div>
+
             <!-- Manage Stock -->
             <div class="flex items-center pt-1">
               <label class="flex items-center space-x-2 cursor-pointer">
@@ -985,7 +1001,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, computed, onMounted, reactive, watch } from 'vue'
 import axios from 'axios'
 import { useI18n } from 'vue-i18n'
 import { useApiaryStore } from '../stores/apiary'
@@ -1039,7 +1055,8 @@ const productForm = reactive({
   requires_batch_selection: false,
   manage_stock: false,
   stock: 0,
-  min_stock: 0
+  min_stock: 0,
+  default_batch_id: null
 })
 
 const inventoryFilters = reactive({
@@ -1254,21 +1271,24 @@ async function fetchProducts() {
 
 async function fetchBatches() {
   batches.value = []
-  // We need apiaries list loaded to fetch batches for each
-  if (apiaryStore.apiaries.length === 0) {
+  if (!apiaryStore.activeApiaryId) {
     await apiaryStore.fetchApiaries()
   }
-  for (const apiary of apiaryStore.apiaries) {
-    try {
-      const response = await axios.get('/api/honey-batches', {
-        params: { apiary_id: apiary.id }
-      })
-      batches.value.push(...response.data)
-    } catch (err) {
-      console.error(`Error fetching batches for apiary ${apiary.id}:`, err)
-    }
+  if (!apiaryStore.activeApiaryId) return
+
+  try {
+    const response = await axios.get('/api/honey-batches', {
+      params: { apiary_id: apiaryStore.activeApiaryId }
+    })
+    batches.value = response.data
+  } catch (err) {
+    console.error(`Error fetching batches for active apiary ${apiaryStore.activeApiaryId}:`, err)
   }
 }
+
+watch(() => apiaryStore.activeApiaryId, () => {
+  fetchBatches()
+})
 
 function resetFilters() {
   filters.startDate = ''
@@ -1294,7 +1314,7 @@ function openCreateSaleModal() {
   saleForm.notes = ''
   saleForm.buyer = ''
   
-  recalculateTotalPrice()
+  onProductChange()
   showSaleModal.value = true
 }
 
@@ -1328,6 +1348,12 @@ function closeSaleModal() {
 
 function onProductChange() {
   recalculateTotalPrice()
+  const prod = products.value.find(p => p.id === saleForm.product_id)
+  if (prod && prod.default_batch_id) {
+    saleForm.batch_id = prod.default_batch_id
+  } else {
+    saleForm.batch_id = null
+  }
 }
 
 function recalculateTotalPrice() {
@@ -1408,6 +1434,7 @@ function openCreateProductModal() {
   productForm.manage_stock = false
   productForm.stock = 0
   productForm.min_stock = 0
+  productForm.default_batch_id = null
 
   showProductModal.value = true
 }
@@ -1425,6 +1452,7 @@ function openEditProductModal(p) {
   productForm.manage_stock = p.manage_stock ?? false
   productForm.stock = p.stock ?? 0
   productForm.min_stock = p.min_stock ?? 0
+  productForm.default_batch_id = p.default_batch_id ?? null
   
   showProductModal.value = true
 }
@@ -1445,7 +1473,8 @@ async function submitProductForm() {
       requires_batch_selection: productForm.requires_batch_selection,
       manage_stock: productForm.manage_stock,
       stock: productForm.manage_stock ? Number(productForm.stock) : 0.0,
-      min_stock: productForm.manage_stock ? Number(productForm.min_stock) : 0.0
+      min_stock: productForm.manage_stock ? Number(productForm.min_stock) : 0.0,
+      default_batch_id: productForm.default_batch_id || null
     }
 
     if (isEditMode.value) {

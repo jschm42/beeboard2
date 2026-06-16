@@ -345,3 +345,76 @@ def test_product_stock_management(client: TestClient, db: Session):
     get_products = client.get(f"/api/sales/products", headers=headers).json()
     prodB_fetched = next(p for p in get_products if p["id"] == prodB["id"])
     assert prodB_fetched["stock"] == 5.0
+
+
+def test_product_default_batch(client: TestClient, db: Session):
+    # 1. Register and login
+    client.post("/api/auth/register", json={
+        "username": "batchprodtester",
+        "email": "batchprodtester@example.com",
+        "password": "strongpassword123",
+        "first_name": "BatchProd",
+        "last_name": "Tester"
+    })
+    login_resp = client.post("/api/auth/login", data={
+        "username": "batchprodtester",
+        "password": "strongpassword123"
+    })
+    headers = {"Authorization": f"Bearer {login_resp.json()['access_token']}"}
+
+    # 2. Create apiary & batch
+    apiary_resp = client.post("/api/apiaries", json={
+        "name": "Default Batch Apiary",
+        "address": "Apiary Lane 1"
+    }, headers=headers)
+    assert apiary_resp.status_code == 201
+    apiary_id = apiary_resp.json()["id"]
+
+    batch_resp = client.post(f"/api/honey-batches?apiary_id={apiary_id}", json={
+        "batch_number": "L-DBATCH-99",
+        "honey_type": "Kleehonig",
+        "harvest_date": "2026-06-01",
+        "quantity_kg": 100.0,
+        "best_before_date": "2028-06-01"
+    }, headers=headers)
+    assert batch_resp.status_code == 201
+    batch = batch_resp.json()
+    batch_id = batch["id"]
+
+    # 3. Create product with default batch id
+    prod_resp = client.post("/api/sales/products", json={
+        "name": "Kleehonig Premium 500g",
+        "honey_type": "Kleehonig",
+        "price": 7.99,
+        "tax_rate": 7.0,
+        "is_active": True,
+        "default_batch_id": batch_id
+    }, headers=headers)
+    assert prod_resp.status_code == 201
+    prod = prod_resp.json()
+    assert prod["default_batch_id"] == batch_id
+    assert prod["default_batch"]["batch_number"] == "L-DBATCH-99"
+
+    # 4. Update product default batch to None
+    upd_resp = client.put(f"/api/sales/products/{prod['id']}", json={
+        "default_batch_id": None
+    }, headers=headers)
+    assert upd_resp.status_code == 200
+    assert upd_resp.json()["default_batch_id"] is None
+    assert upd_resp.json()["default_batch"] is None
+
+    # Link it back
+    client.put(f"/api/sales/products/{prod['id']}", json={
+        "default_batch_id": batch_id
+    }, headers=headers)
+
+    # 5. Delete the honey batch and assert that default_batch_id goes to None
+    del_batch_resp = client.delete(f"/api/honey-batches/{batch_id}", headers=headers)
+    assert del_batch_resp.status_code == 204
+
+    # Fetch product config to verify SET NULL triggered
+    get_prod_resp = client.get("/api/sales/products", headers=headers).json()
+    prod_fetched = next(p for p in get_prod_resp if p["id"] == prod["id"])
+    assert prod_fetched["default_batch_id"] is None
+    assert prod_fetched["default_batch"] is None
+

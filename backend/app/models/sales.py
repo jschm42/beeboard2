@@ -1,10 +1,13 @@
 from __future__ import annotations
 from sqlalchemy import String, Float, Boolean, Text, ForeignKey, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from datetime import datetime
 
 from app.models.base import UUIDTimeStampedModel, CreatedByModel, get_utc_now
+
+if TYPE_CHECKING:
+    from app.models.honey_batch import HoneyBatch
 
 class ProductConfig(UUIDTimeStampedModel, CreatedByModel):
     __tablename__ = "product_configs"
@@ -18,6 +21,10 @@ class ProductConfig(UUIDTimeStampedModel, CreatedByModel):
     manage_stock: Mapped[bool] = mapped_column(Boolean, default=False)
     stock: Mapped[float] = mapped_column(Float, default=0.0)
     min_stock: Mapped[float] = mapped_column(Float, default=0.0)
+    default_batch_id: Mapped[Optional[str]] = mapped_column(ForeignKey("honey_batches.id", ondelete="SET NULL"), nullable=True)
+
+    # Relationships
+    default_batch: Mapped[Optional[HoneyBatch]] = relationship("HoneyBatch", foreign_keys=[default_batch_id])
 
 class HoneySale(UUIDTimeStampedModel, CreatedByModel):
     __tablename__ = "honey_sales"

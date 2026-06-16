@@ -222,13 +222,19 @@ async def test_bee_agent_prompt_builder_with_weather(db: Session):
     """If include_weather_data is True, weather data context must be appended."""
     from app.models.bee_agent import BeeAgentJob
     from app.models.location import Location
+    from app.models.apiary import Apiary
     from app.services.bee_agent_prompt_builder import BeeAgentPromptBuilder
+
+    # Setup apiary
+    apiary = Apiary(id="test-apiary-id-weather", name="Test Apiary")
+    db.add(apiary)
+    db.commit()
 
     # Setup location with coordinates
     loc = Location(
         name="Test Stand",
         address="Test Address",
-        apiary_id="fake-apiary-id",
+        apiary_id=apiary.id,
         latitude=48.208,
         longitude=16.373,
     )
@@ -239,7 +245,7 @@ async def test_bee_agent_prompt_builder_with_weather(db: Session):
 
     job = BeeAgentJob(
         name="Weather Job",
-        apiary_id="fake-apiary-id",
+        apiary_id=apiary.id,
         scope="IMKEREI",
         include_weather_data=True,
         include_journal_entries=False,
@@ -263,6 +269,7 @@ async def test_bee_agent_prompt_builder_with_weather(db: Session):
 
     # Cleanup
     db.delete(loc)
+    db.delete(apiary)
     db.commit()
 
 

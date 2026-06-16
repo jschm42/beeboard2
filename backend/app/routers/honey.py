@@ -9,7 +9,7 @@ from datetime import datetime
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.models.user import User
-from app.models.honey_batch import HoneyBatch
+from app.models.honey_batch import HoneyBatch, HoneyBatchDIBRange
 from app.schemas.honey import HoneyBatchCreate, HoneyBatchUpdate, HoneyBatchOut
 from app.routers.apiaries import check_access
 from app.models.administration import NumberRange
@@ -86,8 +86,6 @@ def create_honey_batch(
         heating_temperature_celsius=batch_in.heating_temperature_celsius,
         best_before_date=batch_in.best_before_date,
         is_exact_date=batch_in.is_exact_date,
-        dib_label_start=batch_in.dib_label_start,
-        dib_label_end=batch_in.dib_label_end,
         reserve_sample_taken=batch_in.reserve_sample_taken,
         reserve_sample_date=batch_in.reserve_sample_date,
         reserve_sample_id=batch_in.reserve_sample_id,
@@ -95,6 +93,27 @@ def create_honey_batch(
         apiary_id=apiary_id,
         created_by_id=current_user.id
     )
+
+    # Process DIB ranges
+    dib_ranges_to_create = []
+    if batch_in.dib_ranges is not None and len(batch_in.dib_ranges) > 0:
+        for r in batch_in.dib_ranges:
+            if r.dib_label_start or r.dib_label_end:
+                dib_ranges_to_create.append(
+                    HoneyBatchDIBRange(
+                        dib_label_start=r.dib_label_start,
+                        dib_label_end=r.dib_label_end
+                    )
+                )
+    elif batch_in.dib_label_start or batch_in.dib_label_end:
+        dib_ranges_to_create.append(
+            HoneyBatchDIBRange(
+                dib_label_start=batch_in.dib_label_start,
+                dib_label_end=batch_in.dib_label_end
+            )
+        )
+
+    new_batch.dib_ranges = dib_ranges_to_create
     db.add(new_batch)
     db.commit()
     db.refresh(new_batch)
@@ -164,7 +183,47 @@ def update_honey_batch(
     if sample_taken and batch_in.reserve_sample_id:
         check_and_increment_range(db, "reserve_sample_id", batch_in.reserve_sample_id)
 
-    for field, value in batch_in.model_dump(exclude_unset=True).items():
+    update_data = batch_in.model_dump(exclude_unset=True)
+
+    # Handle DIB ranges updates
+    if "dib_ranges" in update_data:
+        db.query(HoneyBatchDIBRange).filter(HoneyBatchDIBRange.honey_batch_id == batch.id).delete()
+        
+        new_ranges = []
+        if batch_in.dib_ranges is not None:
+            for r in batch_in.dib_ranges:
+                if r.dib_label_start or r.dib_label_end:
+                    new_ranges.append(
+                        HoneyBatchDIBRange(
+                            honey_batch_id=batch.id,
+                            dib_label_start=r.dib_label_start,
+                            dib_label_end=r.dib_label_end
+                        )
+                    )
+        batch.dib_ranges = new_ranges
+        del update_data["dib_ranges"]
+    elif "dib_label_start" in update_data or "dib_label_end" in update_data:
+        start = batch_in.dib_label_start if "dib_label_start" in update_data else (batch.dib_ranges[0].dib_label_start if batch.dib_ranges else None)
+        end = batch_in.dib_label_end if "dib_label_end" in update_data else (batch.dib_ranges[0].dib_label_end if batch.dib_ranges else None)
+        
+        db.query(HoneyBatchDIBRange).filter(HoneyBatchDIBRange.honey_batch_id == batch.id).delete()
+        if start or end:
+            batch.dib_ranges = [
+                HoneyBatchDIBRange(
+                    honey_batch_id=batch.id,
+                    dib_label_start=start,
+                    dib_label_end=end
+                )
+            ]
+        else:
+            batch.dib_ranges = []
+
+    if "dib_label_start" in update_data:
+        del update_data["dib_label_start"]
+    if "dib_label_end" in update_data:
+        del update_data["dib_label_end"]
+
+    for field, value in update_data.items():
         setattr(batch, field, value)
 
     db.commit()
@@ -222,6 +281,16 @@ def export_honey_book_csv(
     ])
 
     for b in batches:
+        notes_parts = []
+        if b.notes:
+            notes_parts.append(b.notes)
+        if b.dib_ranges and len(b.dib_ranges) > 1:
+            extra_ranges = []
+            for r in b.dib_ranges[1:]:
+                extra_ranges.append(f"{r.dib_label_start or '?'} bis {r.dib_label_end or '?'}")
+            notes_parts.append(f"[Weitere Gewährverschlüsse: {', '.join(extra_ranges)}]")
+        notes_str = " — ".join(notes_parts)
+
         writer.writerow([
             b.batch_number or "MHD-Ausnahme",
             b.honey_type,
@@ -237,7 +306,7 @@ def export_honey_book_csv(
             "Ja" if b.reserve_sample_taken else "Nein",
             b.reserve_sample_date.strftime("%d.%m.%Y") if b.reserve_sample_date else "",
             b.reserve_sample_id or "",
-            b.notes or ""
+            notes_str
         ])
 
     csv_data = output.getvalue()

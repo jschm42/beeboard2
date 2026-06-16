@@ -168,3 +168,38 @@ def test_honey_batch_lifecycle_and_validation(client: TestClient, db: Session):
     assert duplicate_sample_resp.status_code == 400
     assert "Rückstellproben-ID wird bereits verwendet" in duplicate_sample_resp.json()["detail"]
 
+    # 14. Create batch with multiple DIB ranges and test retrieval + update
+    multi_range_resp = client.post(f"/api/honey-batches?apiary_id={apiary_id}", json={
+        "batch_number": "LOT-MULTI",
+        "honey_type": "Lindenhonig",
+        "harvest_date": "2026-06-01",
+        "quantity_kg": 80.0,
+        "best_before_date": "2028-06-01",
+        "is_exact_date": False,
+        "dib_ranges": [
+            {"dib_label_start": "200100", "dib_label_end": "200199"},
+            {"dib_label_start": "200300", "dib_label_end": "200349"}
+        ]
+    }, headers=headers)
+    assert multi_range_resp.status_code == 201
+    created_multi = multi_range_resp.json()
+    assert len(created_multi["dib_ranges"]) == 2
+    assert created_multi["dib_ranges"][0]["dib_label_start"] == "200100"
+    assert created_multi["dib_ranges"][1]["dib_label_end"] == "200349"
+    # Legacy property compat assertion
+    assert created_multi["dib_label_start"] == "200100"
+    assert created_multi["dib_label_end"] == "200199"
+
+    # Update with new ranges
+    update_multi_resp = client.put(f"/api/honey-batches/{created_multi['id']}", json={
+        "dib_ranges": [
+            {"dib_label_start": "500000", "dib_label_end": "500050"}
+        ]
+    }, headers=headers)
+    assert update_multi_resp.status_code == 200
+    updated_multi = update_multi_resp.json()
+    assert len(updated_multi["dib_ranges"]) == 1
+    assert updated_multi["dib_ranges"][0]["dib_label_start"] == "500000"
+    assert updated_multi["dib_label_start"] == "500000"
+
+

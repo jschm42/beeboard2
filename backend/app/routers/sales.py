@@ -50,6 +50,7 @@ def create_product(
         manage_stock=product_in.manage_stock,
         stock=product_in.stock,
         min_stock=product_in.min_stock,
+        default_batch_id=product_in.default_batch_id,
         created_by_id=current_user.id
     )
     db.add(new_product)

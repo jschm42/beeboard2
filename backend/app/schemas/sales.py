@@ -14,6 +14,7 @@ class ProductConfigBase(BaseModel):
     manage_stock: bool = False
     stock: float = 0.0
     min_stock: float = 0.0
+    default_batch_id: Optional[str] = None
 
 class ProductConfigCreate(ProductConfigBase):
     pass
@@ -28,12 +29,14 @@ class ProductConfigUpdate(BaseModel):
     manage_stock: Optional[bool] = None
     stock: Optional[float] = None
     min_stock: Optional[float] = None
+    default_batch_id: Optional[str] = None
 
 class ProductConfigOut(ProductConfigBase):
     id: str
     created_by_id: Optional[str] = None
     created_at: datetime
     updated_at: datetime
+    default_batch: Optional[HoneyBatchOut] = None
 
     class Config:
         from_attributes = True
