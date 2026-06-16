@@ -1567,13 +1567,24 @@ const modalFileInput = ref(null)
 const modalFileInputTable = ref(null)
 const selectedTypeOption = ref('GENERAL')
 
+const CATEGORIES_STORAGE_KEY = 'beeboard_active_categories'
+
+function loadSavedCategories() {
+  try {
+    const saved = localStorage.getItem(CATEGORIES_STORAGE_KEY)
+    if (saved) return JSON.parse(saved)
+  } catch {}
+  return null
+}
+
+const _savedCats = loadSavedCategories()
 const activeCategories = reactive({
-  brood: true,
-  bees: true,
-  drones: true,
-  drone_brood: true,
-  pollen: true,
-  food: true
+  brood: _savedCats ? _savedCats.brood !== false : true,
+  bees: _savedCats ? _savedCats.bees !== false : true,
+  drones: _savedCats ? _savedCats.drones !== false : true,
+  drone_brood: _savedCats ? _savedCats.drone_brood !== false : true,
+  pollen: _savedCats ? _savedCats.pollen !== false : true,
+  food: _savedCats ? _savedCats.food !== false : true
 })
 
 // Lifecycle
@@ -1614,6 +1625,12 @@ watch(showEntryModal, (newVal) => {
     clearEntryFormFiles()
   }
 })
+
+watch(activeCategories, (newVal) => {
+  try {
+    localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify({ ...newVal }))
+  } catch {}
+}, { deep: true })
 
 watch(selectedTypeOption, (newVal) => {
   if (newVal === 'INSPECTION_EXACT') {
@@ -1977,12 +1994,13 @@ function openCreateEntryModal() {
   entryForm.varroaTreatmentDetail.dosage = ''
   entryForm.varroaTreatmentDetail.treatmentNotes = ''
   
-  activeCategories.brood = true
-  activeCategories.bees = true
-  activeCategories.drones = true
-  activeCategories.drone_brood = true
-  activeCategories.pollen = true
-  activeCategories.food = true
+  const saved = loadSavedCategories()
+  activeCategories.brood = saved ? saved.brood !== false : true
+  activeCategories.bees = saved ? saved.bees !== false : true
+  activeCategories.drones = saved ? saved.drones !== false : true
+  activeCategories.drone_brood = saved ? saved.drone_brood !== false : true
+  activeCategories.pollen = saved ? saved.pollen !== false : true
+  activeCategories.food = saved ? saved.food !== false : true
   
   onHiveSelected()
   clearEntryFormFiles()
