@@ -22,7 +22,7 @@ class Task(UUIDTimeStampedModel, CreatedByModel, ApiaryScopedModel):
     hive_id: Mapped[Optional[str]] = mapped_column(ForeignKey("hives.id", ondelete="CASCADE"), nullable=True)
     
     is_recurring: Mapped[bool] = mapped_column(Boolean, default=False)
-    recurrence_interval: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)  # DAILY, WEEKLY, BIWEEKLY, MONTHLY, YEARLY
+    recurrence_interval: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)  # DAILY, WEEKLY, BIWEEKLY, MONTHLY, YEARLY, EVERY_N_DAYS
 
     # Relationships
     location: Mapped[Optional["Location"]] = relationship("Location", foreign_keys=[location_id])

@@ -648,19 +648,33 @@
                   />
                 </div>
 
-                <div v-if="taskForm.isRecurring" class="animate-scale">
-                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.task_recurrence_interval') }}</label>
-                  <select 
-                    v-model="taskForm.recurrenceInterval" 
-                    required
-                    class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs cursor-pointer font-bold"
-                  >
-                    <option value="DAILY">{{ $t('hives.recurrence_daily') }}</option>
-                    <option value="WEEKLY">{{ $t('hives.recurrence_weekly') }}</option>
-                    <option value="BIWEEKLY">{{ $t('hives.recurrence_biweekly') }}</option>
-                    <option value="MONTHLY">{{ $t('hives.recurrence_monthly') }}</option>
-                    <option value="YEARLY">{{ $t('hives.recurrence_yearly') }}</option>
-                  </select>
+                <div v-if="taskForm.isRecurring" class="animate-scale space-y-3">
+                  <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.task_recurrence_interval') }}</label>
+                    <select 
+                      v-model="taskForm.recurrenceInterval" 
+                      required
+                      class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs cursor-pointer font-bold"
+                    >
+                      <option value="DAILY">{{ $t('hives.recurrence_daily') }}</option>
+                      <option value="WEEKLY">{{ $t('hives.recurrence_weekly') }}</option>
+                      <option value="BIWEEKLY">{{ $t('hives.recurrence_biweekly') }}</option>
+                      <option value="MONTHLY">{{ $t('hives.recurrence_monthly') }}</option>
+                      <option value="YEARLY">{{ $t('hives.recurrence_yearly') }}</option>
+                      <option value="EVERY_X_DAYS">{{ $t('hives.recurrence_every_x_days') }}</option>
+                    </select>
+                  </div>
+                  <div v-if="taskForm.recurrenceInterval === 'EVERY_X_DAYS'">
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.recurrence_days_label') }}</label>
+                    <input
+                      v-model.number="taskForm.customDays"
+                      type="number"
+                      min="2"
+                      max="365"
+                      required
+                      class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-semibold"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -782,7 +796,8 @@ const taskForm = ref({
   priority: 'MEDIUM',
   dueDate: '',
   isRecurring: false,
-  recurrenceInterval: 'WEEKLY'
+  recurrenceInterval: 'WEEKLY',
+  customDays: 14
 })
 
 // Filter hives based on selected location
@@ -1123,7 +1138,8 @@ function openCreateTaskModal(overrideHiveId = null) {
     priority: 'MEDIUM',
     dueDate: '',
     isRecurring: false,
-    recurrenceInterval: 'WEEKLY'
+    recurrenceInterval: 'WEEKLY',
+    customDays: 14
   }
   showTaskModal.value = true
 }
@@ -1131,6 +1147,14 @@ function openCreateTaskModal(overrideHiveId = null) {
 function openEditTaskModal(task) {
   isEditMode.value = true
   editingTaskId.value = task.id
+  const existingInterval = task.recurrence_interval || 'WEEKLY'
+  let recurrenceInterval = existingInterval
+  let customDays = 14
+  if (existingInterval.startsWith('EVERY_') && existingInterval.endsWith('_DAYS')) {
+    recurrenceInterval = 'EVERY_X_DAYS'
+    const n = parseInt(existingInterval.split('_')[1])
+    if (!Number.isNaN(n)) customDays = n
+  }
   taskForm.value = {
     title: task.title,
     description: task.description || '',
@@ -1139,13 +1163,17 @@ function openEditTaskModal(task) {
     priority: task.priority,
     dueDate: task.due_date || '',
     isRecurring: task.is_recurring,
-    recurrenceInterval: task.recurrence_interval || 'WEEKLY'
+    recurrenceInterval,
+    customDays
   }
   showTaskModal.value = true
 }
 
 async function submitTaskForm() {
   try {
+    const interval = taskForm.value.recurrenceInterval === 'EVERY_X_DAYS'
+      ? `EVERY_${taskForm.value.customDays}_DAYS`
+      : taskForm.value.recurrenceInterval
     const payload = {
       title: taskForm.value.title.trim(),
       description: taskForm.value.description.trim() || null,
@@ -1154,7 +1182,7 @@ async function submitTaskForm() {
       location_id: taskForm.value.locationId || null,
       hive_id: taskForm.value.hiveId || null,
       is_recurring: taskForm.value.isRecurring,
-      recurrence_interval: taskForm.value.isRecurring ? taskForm.value.recurrenceInterval : null
+      recurrence_interval: taskForm.value.isRecurring ? interval : null
     }
 
     if (isEditMode.value) {
@@ -1211,13 +1239,20 @@ function getPriorityBadgeClass(prio) {
 }
 
 function getRecurrenceIntervalText(interval) {
-  switch (interval?.toUpperCase()) {
+  if (!interval) return ''
+  const up = interval.toUpperCase()
+  switch (up) {
     case 'DAILY': return t('hives.recurrence_daily')
     case 'WEEKLY': return t('hives.recurrence_weekly')
     case 'BIWEEKLY': return t('hives.recurrence_biweekly')
     case 'MONTHLY': return t('hives.recurrence_monthly')
     case 'YEARLY': return t('hives.recurrence_yearly')
-    default: return interval
+    default:
+      if (up.startsWith('EVERY_') && up.endsWith('_DAYS')) {
+        const n = up.split('_')[1]
+        return t('hives.recurrence_every_n_days', { n })
+      }
+      return interval
   }
 }
 </script>

@@ -436,19 +436,33 @@
                   />
                 </div>
 
-                <div v-if="taskForm.isRecurring" class="animate-scale">
-                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.task_recurrence_interval') }}</label>
-                  <select 
-                    v-model="taskForm.recurrenceInterval" 
-                    required
-                    class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs cursor-pointer font-bold"
-                  >
-                    <option value="DAILY">{{ $t('hives.recurrence_daily') }}</option>
-                    <option value="WEEKLY">{{ $t('hives.recurrence_weekly') }}</option>
-                    <option value="BIWEEKLY">{{ $t('hives.recurrence_biweekly') }}</option>
-                    <option value="MONTHLY">{{ $t('hives.recurrence_monthly') }}</option>
-                    <option value="YEARLY">{{ $t('hives.recurrence_yearly') }}</option>
-                  </select>
+                <div v-if="taskForm.isRecurring" class="animate-scale space-y-3">
+                  <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.task_recurrence_interval') }}</label>
+                    <select 
+                      v-model="taskForm.recurrenceInterval" 
+                      required
+                      class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs cursor-pointer font-bold"
+                    >
+                      <option value="DAILY">{{ $t('hives.recurrence_daily') }}</option>
+                      <option value="WEEKLY">{{ $t('hives.recurrence_weekly') }}</option>
+                      <option value="BIWEEKLY">{{ $t('hives.recurrence_biweekly') }}</option>
+                      <option value="MONTHLY">{{ $t('hives.recurrence_monthly') }}</option>
+                      <option value="YEARLY">{{ $t('hives.recurrence_yearly') }}</option>
+                      <option value="EVERY_X_DAYS">{{ $t('hives.recurrence_every_x_days') }}</option>
+                    </select>
+                  </div>
+                  <div v-if="taskForm.recurrenceInterval === 'EVERY_X_DAYS'">
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.recurrence_days_label') }}</label>
+                    <input
+                      v-model.number="taskForm.customDays"
+                      type="number"
+                      min="2"
+                      max="365"
+                      required
+                      class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-semibold"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -1225,6 +1239,7 @@ const taskForm = reactive({
   dueDate: '',
   isRecurring: false,
   recurrenceInterval: 'WEEKLY',
+  customDays: 14,
   hiveId: null,
   hiveName: '',
   locationId: null,
@@ -1245,6 +1260,7 @@ function openCreateTaskModal(hive) {
   
   taskForm.isRecurring = false
   taskForm.recurrenceInterval = 'WEEKLY'
+  taskForm.customDays = 14
   taskForm.hiveId = hive.id
   taskForm.hiveName = hive.name
   taskForm.locationId = hive.location_id
@@ -1257,13 +1273,16 @@ async function submitTaskForm() {
   if (!taskForm.title.trim()) return
   submittingTask.value = true
   try {
+    const interval = taskForm.recurrenceInterval === 'EVERY_X_DAYS'
+      ? `EVERY_${taskForm.customDays}_DAYS`
+      : taskForm.recurrenceInterval
     const payload = {
       title: taskForm.title.trim(),
       description: taskForm.description.trim() || null,
       priority: taskForm.priority,
       due_date: taskForm.dueDate || null,
       is_recurring: taskForm.isRecurring,
-      recurrence_interval: taskForm.isRecurring ? taskForm.recurrenceInterval : null,
+      recurrence_interval: taskForm.isRecurring ? interval : null,
       hive_id: taskForm.hiveId,
       location_id: taskForm.locationId,
       is_completed: false

@@ -25,6 +25,12 @@ def calculate_next_due_date(current_due_date: Optional[date], interval: str) -> 
         return current_due_date + timedelta(weeks=1)
     elif interval == "BIWEEKLY":
         return current_due_date + timedelta(weeks=2)
+    elif interval.startswith("EVERY_") and interval.endswith("_DAYS"):
+        try:
+            days = int(interval.split("_")[1])
+            return current_due_date + timedelta(days=days)
+        except (IndexError, ValueError):
+            return current_due_date + timedelta(weeks=1)
     elif interval == "MONTHLY":
         year = current_due_date.year
         month = current_due_date.month + 1

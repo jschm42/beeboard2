@@ -1573,7 +1573,7 @@ function loadSavedCategories() {
   try {
     const saved = localStorage.getItem(CATEGORIES_STORAGE_KEY)
     if (saved) return JSON.parse(saved)
-  } catch {}
+  } catch { /* ignore parse error, use defaults */ }
   return null
 }
 
@@ -1629,7 +1629,7 @@ watch(showEntryModal, (newVal) => {
 watch(activeCategories, (newVal) => {
   try {
     localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify({ ...newVal }))
-  } catch {}
+  } catch { /* ignore storage write error */ }
 }, { deep: true })
 
 watch(selectedTypeOption, (newVal) => {
