@@ -373,15 +373,16 @@
                     <div>
                       <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('logbook.entry_type_required') }}</label>
                       <select 
-                        v-model="entryForm.entryType" 
+                        v-model="selectedTypeOption" 
                         required
                         :disabled="isEditEntryMode"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer"
                       >
-                        <option value="INSPECTION">{{ $t('logbook.type_inspection') }}</option>
+                        <option value="GENERAL">{{ $t('logbook.type_general') }}</option>
+                        <option value="INSPECTION_EXACT">{{ $t('logbook.type_inspection_exact') }}</option>
+                        <option value="INSPECTION_EIGHTHS">{{ $t('logbook.type_inspection_eighths') }}</option>
                         <option value="VARROA_COUNT">{{ $t('logbook.type_varroa_count') }}</option>
                         <option value="VARROA_TREATMENT">{{ $t('logbook.type_varroa_treatment') }}</option>
-                        <option value="GENERAL">{{ $t('logbook.type_general') }}</option>
                       </select>
                     </div>
                   </div>
@@ -460,28 +461,6 @@
 
                     <!-- Zargen-weise Vereinfachte Assessment -->
                     <div class="space-y-4 animate-scale">
-                      <!-- Box Mode Switcher: Exact vs Eighths -->
-                      <div class="flex justify-between items-center bg-gray-50 dark:bg-dark-bg p-3 rounded-2xl border">
-                        <span class="text-[10px] font-bold text-gray-500 uppercase">{{ $t('logbook.box_mode_label') }}</span>
-                        <div class="inline-flex rounded-lg p-0.5 bg-gray-200 dark:bg-dark-border">
-                          <button 
-                            type="button"
-                            @click="entryForm.inspectionDetail.boxMode = 'exact'" 
-                            class="px-2.5 py-1 rounded text-[10px] font-bold transition-all"
-                            :class="entryForm.inspectionDetail.boxMode === 'exact' ? 'bg-white dark:bg-dark-card text-primary shadow-sm' : 'text-gray-500'"
-                          >
-                            {{ $t('logbook.mode_exact') }}
-                          </button>
-                          <button 
-                            type="button"
-                            @click="entryForm.inspectionDetail.boxMode = 'eighths'" 
-                            class="px-2.5 py-1 rounded text-[10px] font-bold transition-all"
-                            :class="entryForm.inspectionDetail.boxMode === 'eighths' ? 'bg-white dark:bg-dark-card text-primary shadow-sm' : 'text-gray-500'"
-                          >
-                            {{ $t('logbook.mode_eighths') }}
-                          </button>
-                        </div>
-                      </div>
 
                       <!-- Boxes List -->
                       <div class="space-y-3">
@@ -508,7 +487,7 @@
                                 type="number" 
                                 step="any"
                                 min="0" 
-                                :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 8 : undefined" 
+                                :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 300 : undefined" 
                                 class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
                                 :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
                               />
@@ -522,7 +501,7 @@
                                 type="number" 
                                 step="any"
                                 min="0" 
-                                :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 8 : undefined" 
+                                :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 300 : undefined" 
                                 class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
                                 :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
                               />
@@ -536,7 +515,7 @@
                                 type="number" 
                                 step="any"
                                 min="0" 
-                                :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 8 : undefined" 
+                                :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 300 : undefined" 
                                 class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
                                 :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
                               />
@@ -550,7 +529,7 @@
                                 type="number" 
                                 step="any"
                                 min="0" 
-                                :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 8 : undefined" 
+                                :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 300 : undefined" 
                                 class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
                                 :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
                               />
@@ -564,7 +543,7 @@
                                 type="number" 
                                 step="any"
                                 min="0" 
-                                :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 8 : undefined" 
+                                :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 300 : undefined" 
                                 class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
                                 :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_g') : $t('logbook.eighths_placeholder')"
                               />
@@ -578,7 +557,7 @@
                                 type="number" 
                                 step="any"
                                 min="0" 
-                                :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 8 : undefined" 
+                                :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 300 : undefined" 
                                 class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
                                 :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_g') : $t('logbook.eighths_placeholder')"
                               />
@@ -668,7 +647,7 @@
                   <div class="flex justify-between items-start">
                     <div class="flex items-center space-x-3">
                       <span class="text-[10px] font-black uppercase rounded tracking-wider bg-gray-100 dark:bg-dark-bg text-gray-500 px-2 py-0.5">
-                        {{ getEntryTypeName(entry.entry_type) }}
+                        {{ getEntryTypeName(entry) }}
                       </span>
                       <span class="text-xs font-bold text-primary">{{ $t('logbook.hive_label', { name: entry.hive?.name || $t('logbook.unknown') }) }}</span>
                       <span class="text-[10px] text-gray-400 font-mono">{{ formatDate(entry.date) }}</span>
@@ -999,15 +978,16 @@
               <div>
                 <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('logbook.entry_type_required') }}</label>
                 <select 
-                  v-model="entryForm.entryType" 
+                  v-model="selectedTypeOption" 
                   required
                   :disabled="isEditEntryMode"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer"
                 >
-                  <option value="INSPECTION">{{ $t('logbook.type_inspection') }}</option>
+                  <option value="GENERAL">{{ $t('logbook.type_general') }}</option>
+                  <option value="INSPECTION_EXACT">{{ $t('logbook.type_inspection_exact') }}</option>
+                  <option value="INSPECTION_EIGHTHS">{{ $t('logbook.type_inspection_eighths') }}</option>
                   <option value="VARROA_COUNT">{{ $t('logbook.type_varroa_count') }}</option>
                   <option value="VARROA_TREATMENT">{{ $t('logbook.type_varroa_treatment') }}</option>
-                  <option value="GENERAL">{{ $t('logbook.type_general') }}</option>
                 </select>
               </div>
             </div>
@@ -1094,28 +1074,6 @@
 
               <!-- Zargen-weise Vereinfachte Assessment (Standard, einzige Variante) -->
               <div class="space-y-4 animate-scale">
-                <!-- Box Mode Switcher: Exact vs Eighths -->
-                <div class="flex justify-between items-center bg-gray-50 dark:bg-dark-bg p-3 rounded-2xl border">
-                  <span class="text-[10px] font-bold text-gray-500 uppercase">{{ $t('logbook.box_mode_label') }}</span>
-                  <div class="inline-flex rounded-lg p-0.5 bg-gray-200 dark:bg-dark-border">
-                    <button 
-                      type="button"
-                      @click="entryForm.inspectionDetail.boxMode = 'exact'" 
-                      class="px-2.5 py-1 rounded text-[10px] font-bold transition-all"
-                      :class="entryForm.inspectionDetail.boxMode === 'exact' ? 'bg-white dark:bg-dark-card text-primary shadow-sm' : 'text-gray-500'"
-                    >
-                      {{ $t('logbook.mode_exact') }}
-                    </button>
-                    <button 
-                      type="button"
-                      @click="entryForm.inspectionDetail.boxMode = 'eighths'" 
-                      class="px-2.5 py-1 rounded text-[10px] font-bold transition-all"
-                      :class="entryForm.inspectionDetail.boxMode === 'eighths' ? 'bg-white dark:bg-dark-card text-primary shadow-sm' : 'text-gray-500'"
-                    >
-                      {{ $t('logbook.mode_eighths') }}
-                    </button>
-                  </div>
-                </div>
 
                 <!-- Boxes List -->
                 <div class="space-y-3">
@@ -1142,7 +1100,7 @@
                           type="number" 
                           step="any"
                           min="0" 
-                          :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 8" 
+                          :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 300" 
                           class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
                           :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
                         />
@@ -1159,7 +1117,7 @@
                           type="number" 
                           step="any"
                           min="0" 
-                          :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 8" 
+                          :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 300" 
                           class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
                           :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
                         />
@@ -1176,7 +1134,7 @@
                           type="number" 
                           step="any"
                           min="0" 
-                          :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 8" 
+                          :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 300" 
                           class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
                           :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
                         />
@@ -1193,7 +1151,7 @@
                           type="number" 
                           step="any"
                           min="0" 
-                          :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 8" 
+                          :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 300" 
                           class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
                           :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
                         />
@@ -1210,7 +1168,7 @@
                           type="number" 
                           step="any"
                           min="0" 
-                          :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 8" 
+                          :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 300" 
                           class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
                           :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_g') : $t('logbook.eighths_placeholder')"
                         />
@@ -1227,7 +1185,7 @@
                           type="number" 
                           step="any"
                           min="0" 
-                          :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 8" 
+                          :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 300" 
                           class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
                           :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_g') : $t('logbook.eighths_placeholder')"
                         />
@@ -1352,7 +1310,7 @@
                   <!-- Type -->
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span class="px-2 py-0.5 text-[9px] font-black uppercase rounded tracking-wider bg-gray-100 dark:bg-dark-bg text-gray-500">
-                      {{ getEntryTypeName(entry.entry_type) }}
+                      {{ getEntryTypeName(entry) }}
                     </span>
                   </td>
                   
@@ -1547,6 +1505,7 @@ const entryFiles = ref([])
 const dragOver = ref(false)
 const modalFileInput = ref(null)
 const modalFileInputTable = ref(null)
+const selectedTypeOption = ref('GENERAL')
 
 // Lifecycle
 onMounted(async () => {
@@ -1584,6 +1543,22 @@ watch(viewMode, async (newVal) => {
 watch(showEntryModal, (newVal) => {
   if (!newVal) {
     clearEntryFormFiles()
+  }
+})
+
+watch(selectedTypeOption, (newVal) => {
+  if (newVal === 'INSPECTION_EXACT') {
+    entryForm.entryType = 'INSPECTION'
+    entryForm.inspectionDetail.boxMode = 'exact'
+  } else if (newVal === 'INSPECTION_EIGHTHS') {
+    entryForm.entryType = 'INSPECTION'
+    entryForm.inspectionDetail.boxMode = 'eighths'
+  } else {
+    entryForm.entryType = newVal
+  }
+  
+  if (entryForm.entryType === 'INSPECTION') {
+    onHiveSelected()
   }
 })
 
@@ -1677,9 +1652,6 @@ const calculatedBoxTotals = computed(() => {
   if (entryForm.entryType !== 'INSPECTION' || entryForm.inspectionDetail.assessmentMode !== 'boxes') return null
   
   return entryForm.inspectionDetail.boxes.map(box => {
-    const C = box.frame_count
-    const M = box.multiplier || 1.0
-    
     let broodVal = 0
     let beeVal = 0
     let foodVal = 0
@@ -1695,12 +1667,19 @@ const calculatedBoxTotals = computed(() => {
       droneBroodVal = Number(box.drone_brood || 0)
       pollenVal = Number(box.pollen || 0)
     } else {
-      broodVal = (Number(box.brood || 0) / 8) * C * M
-      beeVal = (Number(box.bees || 0) / 8) * C * M
-      foodVal = (Number(box.food || 0) / 8) * C * M
-      droneVal = (Number(box.drones || 0) / 8) * C * M
-      droneBroodVal = (Number(box.drone_brood || 0) / 8) * C * M
-      pollenVal = (Number(box.pollen || 0) / 8) * C * M
+      const broodMult = box.brood_multiplier || 400.0
+      const beeMult = box.bee_multiplier || 125.0
+      const foodMult = box.food_multiplier || 125.0
+      const droneMult = box.drone_multiplier || 100.0
+      const droneBroodMult = box.drone_brood_multiplier || 230.0
+      const pollenMult = box.pollen_multiplier || 40.0
+
+      broodVal = Number(box.brood || 0) * broodMult
+      beeVal = Number(box.bees || 0) * beeMult
+      foodVal = Number(box.food || 0) * foodMult
+      droneVal = Number(box.drones || 0) * droneMult
+      droneBroodVal = Number(box.drone_brood || 0) * droneBroodMult
+      pollenVal = Number(box.pollen || 0) * pollenMult
     }
     
     return {
@@ -1920,7 +1899,7 @@ function openCreateEntryModal() {
   
   entryForm.hiveId = selectedSession.value?.hive_id || (filteredHivesForEntry.value[0]?.id || '')
   entryForm.date = new Date().toISOString().substring(0, 10)
-  entryForm.entryType = 'GENERAL'
+  selectedTypeOption.value = 'GENERAL'
   entryForm.notes = ''
   entryForm.inspectionDetail.assessmentMode = 'boxes'
   entryForm.inspectionDetail.boxMode = 'exact'
@@ -1945,6 +1924,20 @@ function openEditEntryModal(entry) {
   entryForm.notes = entry.notes || ''
   
   clearEntryFormFiles()
+  
+  if (entry.entry_type === 'INSPECTION' && entry.inspection_detail) {
+    const anyEighths = (entry.inspection_detail.boxes || []).some(b =>
+      b.brood_eighths != null ||
+      b.bee_eighths != null ||
+      b.food_eighths != null ||
+      b.drone_eighths != null ||
+      b.drone_brood_eighths != null ||
+      b.pollen_eighths != null
+    )
+    selectedTypeOption.value = anyEighths ? 'INSPECTION_EIGHTHS' : 'INSPECTION_EXACT'
+  } else {
+    selectedTypeOption.value = entry.entry_type
+  }
   if (entry.images) {
     entryFiles.value = entry.images.map(img => ({
       id: img.id,
@@ -1957,6 +1950,15 @@ function openEditEntryModal(entry) {
   if (entry.entry_type === 'INSPECTION' && entry.inspection_detail) {
     const hive = hives.value.find(h => h.id === entry.hive_id)
 
+    const anyEighths = (entry.inspection_detail.boxes || []).some(b =>
+      b.brood_eighths != null ||
+      b.bee_eighths != null ||
+      b.food_eighths != null ||
+      b.drone_eighths != null ||
+      b.drone_brood_eighths != null ||
+      b.pollen_eighths != null
+    )
+
     entryForm.inspectionDetail.boxes = (entry.inspection_detail.boxes || [])
       .sort((a, b) => (a.box_index ?? 0) - (b.box_index ?? 0))
       .map((b, idx) => {
@@ -1967,26 +1969,23 @@ function openEditEntryModal(entry) {
           box_type: hiveBox?.box_type || 'BROOD',
           frame_count: hiveBox?.frame_count || 0,
           multiplier: hiveBox?.frame_type?.multiplier || 1.0,
+          brood_multiplier: hiveBox?.frame_type?.brood_multiplier || 400.0,
+          food_multiplier: hiveBox?.frame_type?.food_multiplier || 125.0,
+          bee_multiplier: hiveBox?.frame_type?.bee_multiplier || 125.0,
+          drone_multiplier: hiveBox?.frame_type?.drone_multiplier || 100.0,
+          drone_brood_multiplier: hiveBox?.frame_type?.drone_brood_multiplier || 230.0,
+          pollen_multiplier: hiveBox?.frame_type?.pollen_multiplier || 40.0,
           frame_type_name: hiveBox?.frame_type?.name || 'Zarge',
-          brood: b.brood_total ?? 0,
-          bees: b.bee_total ?? 0,
-          food: b.food_total ?? 0,
-          drones: b.drone_total ?? 0,
-          drone_brood: b.drone_brood_total ?? 0,
-          pollen: b.pollen_total ?? 0
+          brood: anyEighths ? (b.brood_eighths ?? 0) : (b.brood_total ?? 0),
+          bees: anyEighths ? (b.bee_eighths ?? 0) : (b.bee_total ?? 0),
+          food: anyEighths ? (b.food_eighths ?? 0) : (b.food_total ?? 0),
+          drones: anyEighths ? (b.drone_eighths ?? 0) : (b.drone_total ?? 0),
+          drone_brood: anyEighths ? (b.drone_brood_eighths ?? 0) : (b.drone_brood_total ?? 0),
+          pollen: anyEighths ? (b.pollen_eighths ?? 0) : (b.pollen_total ?? 0)
         }
       })
 
     entryForm.inspectionDetail.assessmentMode = 'boxes'
-
-    const anyEighths = (entry.inspection_detail.boxes || []).some(b =>
-      b.brood_eighths != null ||
-      b.bee_eighths != null ||
-      b.food_eighths != null ||
-      b.drone_eighths != null ||
-      b.drone_brood_eighths != null ||
-      b.pollen_eighths != null
-    )
     entryForm.inspectionDetail.boxMode = anyEighths ? 'eighths' : 'exact'
   }
   
@@ -2018,6 +2017,12 @@ function onHiveSelected() {
       box_type: box.box_type,
       frame_count: box.frame_count,
       multiplier: box.frame_type?.multiplier || 1.0,
+      brood_multiplier: box.frame_type?.brood_multiplier || 400.0,
+      food_multiplier: box.frame_type?.food_multiplier || 125.0,
+      bee_multiplier: box.frame_type?.bee_multiplier || 125.0,
+      drone_multiplier: box.frame_type?.drone_multiplier || 100.0,
+      drone_brood_multiplier: box.frame_type?.drone_brood_multiplier || 230.0,
+      pollen_multiplier: box.frame_type?.pollen_multiplier || 40.0,
       frame_type_name: box.frame_type?.name || 'Standard',
       brood: 0,
       bees: 0,
@@ -2054,11 +2059,12 @@ async function submitEntryForm() {
           const droneBroodVal = Number(box.drone_brood || 0)
           const pollenVal = Number(box.pollen || 0)
 
-          const M = box.multiplier || 1.0
-
-          // Eingabe = Achtel, Summen = Achtel * 400 * Multiplikator
-          // Beispiel: 5 Achtel Brut in Zander-Brutzarge -> 5 * 400 = 2000
-          const BASE = 400
+          const broodMult = box.brood_multiplier || 400.0
+          const beeMult = box.bee_multiplier || 125.0
+          const foodMult = box.food_multiplier || 125.0
+          const droneMult = box.drone_multiplier || 100.0
+          const droneBroodMult = box.drone_brood_multiplier || 230.0
+          const pollenMult = box.pollen_multiplier || 40.0
 
           let broodTotal, beeTotal, foodTotal, droneTotal, droneBroodTotal, pollenTotal
 
@@ -2070,12 +2076,12 @@ async function submitEntryForm() {
             droneBroodTotal = droneBroodVal
             pollenTotal = pollenVal
           } else {
-            broodTotal = broodVal * BASE * M
-            beeTotal = beeVal * BASE * M
-            foodTotal = foodVal * BASE * M
-            droneTotal = droneVal * BASE * M
-            droneBroodTotal = droneBroodVal * BASE * M
-            pollenTotal = pollenVal * BASE * M
+            broodTotal = broodVal * broodMult
+            beeTotal = beeVal * beeMult
+            foodTotal = foodVal * foodMult
+            droneTotal = droneVal * droneMult
+            droneBroodTotal = droneBroodVal * droneBroodMult
+            pollenTotal = pollenVal * pollenMult
           }
 
           return {
@@ -2199,7 +2205,12 @@ function onApplyDraft(draft) {
   
   entryForm.hiveId = targetHiveId
   entryForm.date = draft.date || new Date().toISOString().substring(0, 10)
-  entryForm.entryType = draft.entry_type || 'INSPECTION'
+  const draftType = draft.entry_type || 'GENERAL'
+  if (draftType === 'INSPECTION') {
+    selectedTypeOption.value = 'INSPECTION_EXACT'
+  } else {
+    selectedTypeOption.value = draftType
+  }
   entryForm.notes = draft.notes || ''
   
   if (draft.entry_type === 'INSPECTION' && draft.inspection_detail) {
@@ -2251,13 +2262,28 @@ function formatDate(dateStr) {
   return d.toLocaleDateString(locale.value === 'de' ? 'de-DE' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
-function getEntryTypeName(type) {
-  switch (type) {
+function getEntryTypeName(entryOrType) {
+  if (typeof entryOrType === 'object' && entryOrType !== null) {
+    if (entryOrType.entry_type === 'INSPECTION') {
+      const anyEighths = (entryOrType.inspection_detail?.boxes || []).some(b =>
+        b.brood_eighths != null ||
+        b.bee_eighths != null ||
+        b.food_eighths != null ||
+        b.drone_eighths != null ||
+        b.drone_brood_eighths != null ||
+        b.pollen_eighths != null
+      )
+      return anyEighths ? t('logbook.type_inspection_eighths') : t('logbook.type_inspection_exact')
+    }
+    return getEntryTypeName(entryOrType.entry_type)
+  }
+  
+  switch (entryOrType) {
     case 'INSPECTION': return t('logbook.type_inspection')
     case 'VARROA_COUNT': return t('logbook.type_varroa_count')
     case 'VARROA_TREATMENT': return t('logbook.type_varroa_treatment')
     case 'GENERAL': return t('logbook.type_general')
-    default: return type
+    default: return entryOrType
   }
 }
 

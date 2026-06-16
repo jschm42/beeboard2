@@ -895,7 +895,7 @@ import { useAuthStore } from '../stores/auth'
 import { useConfirmStore } from '../stores/confirm'
 import axios from 'axios'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const authStore = useAuthStore()
 const confirmStore = useConfirmStore()
 

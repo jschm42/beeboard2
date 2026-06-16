@@ -408,6 +408,8 @@
     "date_required": "Date *",
     "entry_type_required": "Entry Type *",
     "type_inspection": "🔎 Hive Inspection",
+    "type_inspection_exact": "🔎 Hive Inspection - Total Quantity",
+    "type_inspection_eighths": "🔎 Hive Inspection - in Eighths",
     "type_varroa_count": "🕷️ Varroa Count (Tray)",
     "type_varroa_treatment": "🧪 Varroosis Treatment",
     "type_general": "📝 General Note",

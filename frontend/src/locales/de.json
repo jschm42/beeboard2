@@ -408,6 +408,8 @@
     "date_required": "Datum *",
     "entry_type_required": "Eintrags-Typ *",
     "type_inspection": "🔎 Beuteninspektion",
+    "type_inspection_exact": "🔎 Beuteninspektion - Gesamtmenge",
+    "type_inspection_eighths": "🔎 Beuteninspektion - in Achteln",
     "type_varroa_count": "🕷️ Varroazählung (Windel)",
     "type_varroa_treatment": "🧪 Varroabehandlung",
     "type_general": "📝 Allgemeine Notiz",

@@ -50,3 +50,20 @@
 - Minimal-invasive Aenderungen mit klarer Begruendung.
 - Bei Unsicherheit zuerst Annahmen offenlegen statt stillschweigend Verhalten zu aendern.
 - Breaking Changes nur mit expliziter Kennzeichnung und Migrationshinweis.
+
+## Beuteninspektion (Achtel-Schätzmethode)
+
+- **Konzept**: Der Imker verwendet einen Schätzrahmen, der in 8 Teile unterteilt ist, um die Achtel von Brut, Bienen, Futter, Drohnen, Drohnenbrut und Pollen auf beiden Seiten einer Wabe zu schätzen.
+- **Datenerfassung**: Im Modus "in Achteln" (eighths) gibt der Imker die **Gesamtanzahl der Achtel je Zarge** (Summe über alle Waben der Zarge, beide Seiten) ein.
+- **Validierung**: Der Wert je Kategorie und Zarge ist auf maximal **300** begrenzt (das deckt alle üblichen Wabenmaße ab).
+- **Berechnung der Gesamtmenge (Zellenzahl/Gramm)**:
+  - Jede Kategorie hat einen spezifischen Multiplikator auf dem Wabenmaß (`FrameType`):
+    - Brut (`brood_multiplier`): z.B. 400.0 für Zander
+    - Bienen (`bee_multiplier`): z.B. 125.0 für Zander
+    - Futter (`food_multiplier`): z.B. 125.0 für Zander
+    - Drohnen (`drone_multiplier`): z.B. 100.0 für Zander
+    - Drohnenbrut (`drone_brood_multiplier`): z.B. 230.0 für Zander
+    - Pollen (`pollen_multiplier`): z.B. 40.0 für Zander
+  - Die Gesamtmenge (Zellenzahl bzw. Gramm) wird im Backend (`calculations.py`) und im Frontend (`calculatedBoxTotals` & `submitEntryForm`) wie folgt berechnet:
+    `Gesamtmenge = Eingegebene Achtel * Multiplikator des Wabenmaßes`
+
