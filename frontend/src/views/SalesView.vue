@@ -418,11 +418,27 @@
               <tr 
                 v-for="p in filteredInventory" 
                 :key="p.id" 
-                class="hover:bg-gray-50/50 dark:hover:bg-dark-bg/30 transition-colors duration-150"
+                class="transition-colors duration-150"
+                :class="[
+                  p.manage_stock && p.stock <= 0
+                    ? 'bg-rose-500/5 dark:bg-rose-500/10 hover:bg-rose-500/10 dark:hover:bg-rose-500/20'
+                    : p.manage_stock && p.stock <= p.min_stock
+                      ? 'bg-amber-500/5 dark:bg-amber-500/10 hover:bg-amber-500/10 dark:hover:bg-amber-500/20'
+                      : 'hover:bg-gray-50/50 dark:hover:bg-dark-bg/30'
+                ]"
               >
                 <!-- Name -->
                 <td class="px-6 py-4 font-bold text-gray-800 dark:text-gray-200">
-                  {{ p.name }}
+                  <div class="flex items-center space-x-2">
+                    <span>{{ p.name }}</span>
+                    <span 
+                      v-if="p.manage_stock && p.stock <= p.min_stock"
+                      class="text-amber-500 dark:text-amber-400 cursor-help"
+                      :title="$t('sales.stock_alert_warning_desc')"
+                    >
+                      ⚠️
+                    </span>
+                  </div>
                 </td>
                 
                 <!-- Honey Type -->
