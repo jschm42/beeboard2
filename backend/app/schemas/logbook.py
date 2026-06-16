@@ -16,12 +16,12 @@ class InspectionBoxBase(BaseModel):
     box_index: int
 
     # Direct totals per box (Zarge)
-    brood_total: int = 0
-    food_total: int = 0
-    bee_total: int = 0
-    drone_total: int = 0
-    drone_brood_total: int = 0
-    pollen_total: int = 0
+    brood_total: Optional[int] = None
+    food_total: Optional[int] = None
+    bee_total: Optional[int] = None
+    drone_total: Optional[int] = None
+    drone_brood_total: Optional[int] = None
+    pollen_total: Optional[int] = None
 
     # Optional eighth-based inputs when Achtel-Modus is used
     brood_eighths: Optional[int] = None

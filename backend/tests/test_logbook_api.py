@@ -204,3 +204,88 @@ def test_logbook_box_creation_and_stats(client: TestClient, db: Session):
     assert stats_data["food"][0] == 250.0
     assert stats_data["bees"][0] == 750.0
 
+
+def test_logbook_box_creation_with_deselected_categories(client: TestClient, db: Session):
+    # 1. Register and login
+    reg_response = client.post("/api/auth/register", json={
+        "username": "deselector",
+        "email": "deselector@example.com",
+        "password": "strongpassword123",
+        "first_name": "Deselect",
+        "last_name": "Tester"
+    })
+    assert reg_response.status_code == 201
+    
+    login_response = client.post("/api/auth/login", data={
+        "username": "deselector",
+        "password": "strongpassword123"
+    })
+    token = login_response.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    # 2. Create apiary, location, and hive
+    apiary_resp = client.post("/api/apiaries", json={
+        "name": "Deselect Apiary",
+        "address": "Honey Road 3"
+    }, headers=headers)
+    apiary_id = apiary_resp.json()["id"]
+    
+    loc_resp = client.post(f"/api/locations?apiary_id={apiary_id}", json={
+        "name": "Deselect Stand",
+        "address": "Forstwald 13"
+    }, headers=headers)
+    loc_id = loc_resp.json()["id"]
+    
+    ft_resp = client.get("/api/hives/frame-types", headers=headers)
+    zander_ft = next(f for f in ft_resp.json() if f["name"] == "Zander")
+    
+    hive_resp = client.post(f"/api/hives?apiary_id={apiary_id}", json={
+        "name": "Deselect Hive",
+        "location_id": loc_id,
+        "frame_type_id": zander_ft["id"],
+        "queen_year": 2026,
+        "is_active": True
+    }, headers=headers)
+    hive_id = hive_resp.json()["id"]
+    
+    client.post(f"/api/hives/{hive_id}/boxes", json=[{
+        "order": 1,
+        "frame_type_id": zander_ft["id"],
+        "frame_count": 10,
+        "box_type": "BROOD"
+    }], headers=headers)
+
+    # 3. Create entry with some unrecorded categories (None)
+    entry_resp = client.post(f"/api/logbook/entries?apiary_id={apiary_id}", json={
+        "hive_id": hive_id,
+        "session_id": None,
+        "date": "2026-06-16",
+        "entry_type": "INSPECTION",
+        "notes": "Deselected drone, drone_brood, pollen",
+        "inspection_detail": {
+            "boxes": [
+                {
+                    "box_index": 0,
+                    "brood_total": 2000,
+                    "food_total": 500,
+                    "bee_total": 500,
+                    "drone_total": None,
+                    "drone_brood_total": None,
+                    "pollen_total": None,
+                    "brood_eighths": 5,
+                    "food_eighths": 4,
+                    "bee_eighths": 4,
+                    "drone_eighths": None,
+                    "drone_brood_eighths": None,
+                    "pollen_eighths": None
+                }
+            ]
+        }
+    }, headers=headers)
+    assert entry_resp.status_code == 201
+    entry_data = entry_resp.json()
+    box_data = entry_data["inspection_detail"]["boxes"][0]
+    assert box_data["drone_total"] == -1
+    assert box_data["drone_eighths"] is None
+
+
