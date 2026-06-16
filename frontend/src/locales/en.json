@@ -378,6 +378,7 @@
   },
   "logbook": {
     "title": "Beekeeper Logbook",
+    "categories_to_record": "Categories to Record",
     "subtitle": "Record hive inspections, Varroa counts, and treatments.",
     "new_session": "+ New Logbook",
     "no_active_apiary": "No active apiary selected",

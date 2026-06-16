@@ -461,6 +461,36 @@
 
                     <!-- Zargen-weise Vereinfachte Assessment -->
                     <div class="space-y-4 animate-scale">
+                      <!-- Category selection checkboxes -->
+                      <div class="p-4 bg-gray-50 dark:bg-dark-bg/60 border border-gray-200 dark:border-dark-border rounded-2xl space-y-2.5">
+                        <span class="block text-[10px] font-black text-gray-500 uppercase tracking-wide">{{ $t('logbook.categories_to_record') }}</span>
+                        <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs font-bold text-gray-700 dark:text-gray-300">
+                          <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
+                            <input type="checkbox" v-model="activeCategories.brood" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
+                            <span class="text-amber-500">🥚 {{ $t('logbook.brood') }}</span>
+                          </label>
+                          <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
+                            <input type="checkbox" v-model="activeCategories.bees" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
+                            <span class="text-green-500">🐝 {{ $t('logbook.bees') }}</span>
+                          </label>
+                          <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
+                            <input type="checkbox" v-model="activeCategories.drones" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
+                            <span class="text-sky-500">♂️ {{ $t('logbook.drones') }}</span>
+                          </label>
+                          <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
+                            <input type="checkbox" v-model="activeCategories.drone_brood" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
+                            <span class="text-orange-500">🥚♂️ {{ $t('logbook.drone_brood') }}</span>
+                          </label>
+                          <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
+                            <input type="checkbox" v-model="activeCategories.pollen" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
+                            <span class="text-purple-500">🌺 {{ $t('logbook.pollen') }}</span>
+                          </label>
+                          <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
+                            <input type="checkbox" v-model="activeCategories.food" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
+                            <span class="text-yellow-500">🍯 {{ $t('logbook.food') }}</span>
+                          </label>
+                        </div>
+                      </div>
 
                       <!-- Boxes List -->
                       <div class="space-y-3">
@@ -480,7 +510,7 @@
 
                           <div class="grid grid-cols-2 sm:grid-cols-6 gap-3 text-center">
                             <!-- Brood -->
-                            <div class="space-y-1">
+                            <div v-if="activeCategories.brood" class="space-y-1">
                               <span class="text-[9px] text-amber-500 font-bold uppercase">{{ $t('logbook.brood') }}</span>
                               <input 
                                 v-model.number="box.brood" 
@@ -494,7 +524,7 @@
                             </div>
 
                             <!-- Bees -->
-                            <div class="space-y-1">
+                            <div v-if="activeCategories.bees" class="space-y-1">
                               <span class="text-[9px] text-green-500 font-bold uppercase">{{ $t('logbook.bees') }}</span>
                               <input 
                                 v-model.number="box.bees" 
@@ -508,7 +538,7 @@
                             </div>
 
                             <!-- Drones -->
-                            <div class="space-y-1">
+                            <div v-if="activeCategories.drones" class="space-y-1">
                               <span class="text-[9px] text-sky-500 font-bold uppercase">{{ $t('logbook.drones') }}</span>
                               <input 
                                 v-model.number="box.drones" 
@@ -522,7 +552,7 @@
                             </div>
 
                             <!-- Drone Brood -->
-                            <div class="space-y-1">
+                            <div v-if="activeCategories.drone_brood" class="space-y-1">
                               <span class="text-[9px] text-orange-500 font-bold uppercase">{{ $t('logbook.drone_brood') }}</span>
                               <input 
                                 v-model.number="box.drone_brood" 
@@ -536,7 +566,7 @@
                             </div>
 
                             <!-- Pollen -->
-                            <div class="space-y-1">
+                            <div v-if="activeCategories.pollen" class="space-y-1">
                               <span class="text-[9px] text-purple-500 font-bold uppercase">{{ $t('logbook.pollen') }}</span>
                               <input 
                                 v-model.number="box.pollen" 
@@ -550,7 +580,7 @@
                             </div>
 
                             <!-- Food -->
-                            <div class="space-y-1">
+                            <div v-if="activeCategories.food" class="space-y-1">
                               <span class="text-[9px] text-yellow-500 font-bold uppercase">{{ $t('logbook.food') }}</span>
                               <input 
                                 v-model.number="box.food" 
@@ -693,27 +723,27 @@
                           <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono font-bold">
                             <div class="flex justify-between items-center text-amber-500">
                               <span>{{ $t('logbook.brood') }}:</span>
-                              <span>{{ box.brood.toFixed(0) }}</span>
+                              <span>{{ formatTotal(box.brood, 0) }}</span>
                             </div>
                             <div class="flex justify-between items-center text-green-500">
                               <span>{{ $t('logbook.bees') }}:</span>
-                              <span>{{ box.bees.toFixed(0) }}</span>
+                              <span>{{ formatTotal(box.bees, 0) }}</span>
                             </div>
                             <div class="flex justify-between items-center text-sky-500">
                               <span>{{ $t('logbook.drones') }}:</span>
-                              <span>{{ box.drones.toFixed(0) }}</span>
+                              <span>{{ formatTotal(box.drones, 0) }}</span>
                             </div>
                             <div class="flex justify-between items-center text-orange-500">
                               <span>{{ $t('logbook.drone_brood') }}:</span>
-                              <span>{{ box.drone_brood.toFixed(0) }}</span>
+                              <span>{{ formatTotal(box.drone_brood, 0) }}</span>
                             </div>
                             <div class="flex justify-between items-center text-purple-500">
                               <span>{{ $t('logbook.pollen') }}:</span>
-                              <span>{{ box.pollen.toFixed(0) }} g</span>
+                              <span>{{ formatTotal(box.pollen, 0, 'g') }}</span>
                             </div>
                             <div class="flex justify-between items-center text-yellow-500">
                               <span>{{ $t('logbook.food') }}:</span>
-                              <span>{{ box.food.toFixed(0) }} g</span>
+                              <span>{{ formatTotal(box.food, 0, 'g') }}</span>
                             </div>
                           </div>
                         </div>
@@ -728,27 +758,27 @@
                         <div class="flex flex-wrap gap-2 font-mono font-black text-[10px]">
                           <div class="flex items-center space-x-1 text-amber-500 bg-amber-500/10 px-2 py-1 rounded-xl">
                             <span>{{ $t('logbook.brood') }}:</span>
-                            <span>{{ getBoxTotalsForEntry(entry).hive.brood.toFixed(0) }}</span>
+                            <span>{{ formatTotal(getBoxTotalsForEntry(entry).hive.brood, 0) }}</span>
                           </div>
                           <div class="flex items-center space-x-1 text-green-500 bg-green-500/10 px-2 py-1 rounded-xl">
                             <span>{{ $t('logbook.bees') }}:</span>
-                            <span>{{ getBoxTotalsForEntry(entry).hive.bees.toFixed(0) }}</span>
+                            <span>{{ formatTotal(getBoxTotalsForEntry(entry).hive.bees, 0) }}</span>
                           </div>
                           <div class="flex items-center space-x-1 text-sky-500 bg-sky-500/10 px-2 py-1 rounded-xl">
                             <span>{{ $t('logbook.drones') }}:</span>
-                            <span>{{ getBoxTotalsForEntry(entry).hive.drones.toFixed(0) }}</span>
+                            <span>{{ formatTotal(getBoxTotalsForEntry(entry).hive.drones, 0) }}</span>
                           </div>
                           <div class="flex items-center space-x-1 text-orange-500 bg-orange-500/10 px-2 py-1 rounded-xl">
                             <span>{{ $t('logbook.drone_brood') }}:</span>
-                            <span>{{ getBoxTotalsForEntry(entry).hive.drone_brood.toFixed(0) }}</span>
+                            <span>{{ formatTotal(getBoxTotalsForEntry(entry).hive.drone_brood, 0) }}</span>
                           </div>
                           <div class="flex items-center space-x-1 text-purple-500 bg-purple-500/10 px-2 py-1 rounded-xl">
                             <span>{{ $t('logbook.pollen') }}:</span>
-                            <span>{{ getBoxTotalsForEntry(entry).hive.pollen.toFixed(0) }} g</span>
+                            <span>{{ formatTotal(getBoxTotalsForEntry(entry).hive.pollen, 0, 'g') }}</span>
                           </div>
                           <div class="flex items-center space-x-1 text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded-xl">
                             <span>{{ $t('logbook.food') }}:</span>
-                            <span>{{ getBoxTotalsForEntry(entry).hive.food.toFixed(0) }} g</span>
+                            <span>{{ formatTotal(getBoxTotalsForEntry(entry).hive.food, 0, 'g') }}</span>
                           </div>
                         </div>
                       </div>
@@ -1074,6 +1104,36 @@
 
               <!-- Zargen-weise Vereinfachte Assessment (Standard, einzige Variante) -->
               <div class="space-y-4 animate-scale">
+                <!-- Category selection checkboxes -->
+                <div class="p-4 bg-gray-50 dark:bg-dark-bg/60 border border-gray-200 dark:border-dark-border rounded-2xl space-y-2.5">
+                  <span class="block text-[10px] font-black text-gray-500 uppercase tracking-wide">{{ $t('logbook.categories_to_record') }}</span>
+                  <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs font-bold text-gray-700 dark:text-gray-300">
+                    <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
+                      <input type="checkbox" v-model="activeCategories.brood" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
+                      <span class="text-amber-500">🥚 {{ $t('logbook.brood') }}</span>
+                    </label>
+                    <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
+                      <input type="checkbox" v-model="activeCategories.bees" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
+                      <span class="text-green-500">🐝 {{ $t('logbook.bees') }}</span>
+                    </label>
+                    <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
+                      <input type="checkbox" v-model="activeCategories.drones" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
+                      <span class="text-sky-500">♂️ {{ $t('logbook.drones') }}</span>
+                    </label>
+                    <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
+                      <input type="checkbox" v-model="activeCategories.drone_brood" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
+                      <span class="text-orange-500">🥚♂️ {{ $t('logbook.drone_brood') }}</span>
+                    </label>
+                    <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
+                      <input type="checkbox" v-model="activeCategories.pollen" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
+                      <span class="text-purple-500">🌺 {{ $t('logbook.pollen') }}</span>
+                    </label>
+                    <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
+                      <input type="checkbox" v-model="activeCategories.food" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
+                      <span class="text-yellow-500">🍯 {{ $t('logbook.food') }}</span>
+                    </label>
+                  </div>
+                </div>
 
                 <!-- Boxes List -->
                 <div class="space-y-3">
@@ -1093,7 +1153,7 @@
 
                     <div class="grid grid-cols-2 sm:grid-cols-6 gap-3 text-center">
                       <!-- Brood -->
-                      <div class="space-y-1">
+                      <div v-if="activeCategories.brood" class="space-y-1">
                         <span class="text-[9px] text-amber-500 font-bold uppercase">{{ $t('logbook.brood') }}</span>
                         <input 
                           v-model.number="box.brood" 
@@ -1110,7 +1170,7 @@
                       </div>
 
                       <!-- Bees -->
-                      <div class="space-y-1">
+                      <div v-if="activeCategories.bees" class="space-y-1">
                         <span class="text-[9px] text-green-500 font-bold uppercase">{{ $t('logbook.bees') }}</span>
                         <input 
                           v-model.number="box.bees" 
@@ -1127,7 +1187,7 @@
                       </div>
 
                       <!-- Drones -->
-                      <div class="space-y-1">
+                      <div v-if="activeCategories.drones" class="space-y-1">
                         <span class="text-[9px] text-sky-500 font-bold uppercase">{{ $t('logbook.drones') }}</span>
                         <input 
                           v-model.number="box.drones" 
@@ -1144,7 +1204,7 @@
                       </div>
 
                       <!-- Drone Brood -->
-                      <div class="space-y-1">
+                      <div v-if="activeCategories.drone_brood" class="space-y-1">
                         <span class="text-[9px] text-orange-500 font-bold uppercase">{{ $t('logbook.drone_brood') }}</span>
                         <input 
                           v-model.number="box.drone_brood" 
@@ -1161,7 +1221,7 @@
                       </div>
 
                       <!-- Pollen -->
-                      <div class="space-y-1">
+                      <div v-if="activeCategories.pollen" class="space-y-1">
                         <span class="text-[9px] text-purple-500 font-bold uppercase">{{ $t('logbook.pollen') }}</span>
                         <input 
                           v-model.number="box.pollen" 
@@ -1178,7 +1238,7 @@
                       </div>
 
                       <!-- Food -->
-                      <div class="space-y-1">
+                      <div v-if="activeCategories.food" class="space-y-1">
                         <span class="text-[9px] text-yellow-500 font-bold uppercase">{{ $t('logbook.food') }}</span>
                         <input 
                           v-model.number="box.food" 
@@ -1323,12 +1383,12 @@
                       <div class="flex justify-between items-center pb-1 border-b border-gray-200/40 dark:border-dark-border">
                         <span class="font-bold text-gray-500 uppercase tracking-wide">{{ $t('logbook.inspection_details_header') }}</span>
                         <span v-if="getBoxTotalsForEntry(entry)" class="font-black text-amber-500 text-[10px] flex flex-wrap gap-2">
-                          <span>B: {{ getBoxTotalsForEntry(entry).hive.brood.toFixed(0) }}</span>
-                          <span>N: {{ getBoxTotalsForEntry(entry).hive.bees.toFixed(0) }}</span>
-                          <span>D: {{ getBoxTotalsForEntry(entry).hive.drones.toFixed(0) }}</span>
-                          <span>DB: {{ getBoxTotalsForEntry(entry).hive.drone_brood.toFixed(0) }}</span>
-                          <span>P: {{ getBoxTotalsForEntry(entry).hive.pollen.toFixed(0) }} g</span>
-                          <span>F: {{ getBoxTotalsForEntry(entry).hive.food.toFixed(0) }} g</span>
+                          <span>B: {{ formatTotal(getBoxTotalsForEntry(entry).hive.brood, 0) }}</span>
+                          <span>N: {{ formatTotal(getBoxTotalsForEntry(entry).hive.bees, 0) }}</span>
+                          <span>D: {{ formatTotal(getBoxTotalsForEntry(entry).hive.drones, 0) }}</span>
+                          <span>DB: {{ formatTotal(getBoxTotalsForEntry(entry).hive.drone_brood, 0) }}</span>
+                          <span>P: {{ formatTotal(getBoxTotalsForEntry(entry).hive.pollen, 0, 'g') }}</span>
+                          <span>F: {{ formatTotal(getBoxTotalsForEntry(entry).hive.food, 0, 'g') }}</span>
                         </span>
                       </div>
                       <div v-if="getBoxTotalsForEntry(entry)" class="flex flex-wrap gap-1.5 mt-1">
@@ -1338,12 +1398,12 @@
                           class="px-2 py-0.5 bg-white dark:bg-dark-card border rounded-lg text-[9px] font-mono border-gray-100 dark:border-dark-border flex flex-wrap gap-x-1.5 font-bold shadow-sm"
                         >
                           <span class="text-gray-400">Z{{ box.order }}:</span>
-                          <span class="text-amber-500">B:{{ box.brood.toFixed(1) }}</span>
-                          <span class="text-green-500">N:{{ box.bees.toFixed(1) }}</span>
-                          <span class="text-sky-500">D:{{ box.drones.toFixed(1) }}</span>
-                          <span class="text-orange-500">DB:{{ box.drone_brood.toFixed(1) }}</span>
-                          <span class="text-purple-500">P:{{ box.pollen.toFixed(1) }}</span>
-                          <span class="text-yellow-500">F:{{ box.food.toFixed(1) }}</span>
+                          <span class="text-amber-500">B:{{ formatTotal(box.brood, 1) }}</span>
+                          <span class="text-green-500">N:{{ formatTotal(box.bees, 1) }}</span>
+                          <span class="text-sky-500">D:{{ formatTotal(box.drones, 1) }}</span>
+                          <span class="text-orange-500">DB:{{ formatTotal(box.drone_brood, 1) }}</span>
+                          <span class="text-purple-500">P:{{ formatTotal(box.pollen, 1) }}</span>
+                          <span class="text-yellow-500">F:{{ formatTotal(box.food, 1) }}</span>
                         </span>
                       </div>
                       <div v-else class="text-[9px] text-gray-400 italic">
@@ -1506,6 +1566,15 @@ const dragOver = ref(false)
 const modalFileInput = ref(null)
 const modalFileInputTable = ref(null)
 const selectedTypeOption = ref('GENERAL')
+
+const activeCategories = reactive({
+  brood: true,
+  bees: true,
+  drones: true,
+  drone_brood: true,
+  pollen: true,
+  food: true
+})
 
 // Lifecycle
 onMounted(async () => {
@@ -1683,12 +1752,12 @@ const calculatedBoxTotals = computed(() => {
     }
     
     return {
-      brood: broodVal.toFixed(0) + ' Stk.',
-      bees: beeVal.toFixed(0) + ' Stk.',
-      food: foodVal.toFixed(0) + ' g',
-      drones: droneVal.toFixed(0) + ' Stk.',
-      drone_brood: droneBroodVal.toFixed(0) + ' Stk.',
-      pollen: pollenVal.toFixed(0) + ' g'
+      brood: activeCategories.brood ? broodVal.toFixed(0) + ' Stk.' : '-',
+      bees: activeCategories.bees ? beeVal.toFixed(0) + ' Stk.' : '-',
+      food: activeCategories.food ? foodVal.toFixed(0) + ' g' : '-',
+      drones: activeCategories.drones ? droneVal.toFixed(0) + ' Stk.' : '-',
+      drone_brood: activeCategories.drone_brood ? droneBroodVal.toFixed(0) + ' Stk.' : '-',
+      pollen: activeCategories.pollen ? pollenVal.toFixed(0) + ' g' : '-'
     }
   })
 })
@@ -1908,6 +1977,13 @@ function openCreateEntryModal() {
   entryForm.varroaTreatmentDetail.dosage = ''
   entryForm.varroaTreatmentDetail.treatmentNotes = ''
   
+  activeCategories.brood = true
+  activeCategories.bees = true
+  activeCategories.drones = true
+  activeCategories.drone_brood = true
+  activeCategories.pollen = true
+  activeCategories.food = true
+  
   onHiveSelected()
   clearEntryFormFiles()
   showEntryModal.value = true
@@ -1951,13 +2027,21 @@ function openEditEntryModal(entry) {
     const hive = hives.value.find(h => h.id === entry.hive_id)
 
     const anyEighths = (entry.inspection_detail.boxes || []).some(b =>
-      b.brood_eighths != null ||
-      b.bee_eighths != null ||
-      b.food_eighths != null ||
-      b.drone_eighths != null ||
-      b.drone_brood_eighths != null ||
-      b.pollen_eighths != null
+      (b.brood_eighths != null && b.brood_eighths !== -1) ||
+      (b.bee_eighths != null && b.bee_eighths !== -1) ||
+      (b.food_eighths != null && b.food_eighths !== -1) ||
+      (b.drone_eighths != null && b.drone_eighths !== -1) ||
+      (b.drone_brood_eighths != null && b.drone_brood_eighths !== -1) ||
+      (b.pollen_eighths != null && b.pollen_eighths !== -1)
     )
+
+    const boxesFromDb = entry.inspection_detail.boxes || []
+    activeCategories.brood = boxesFromDb.some(b => anyEighths ? (b.brood_eighths !== null && b.brood_eighths !== -1) : (b.brood_total !== null && b.brood_total !== -1))
+    activeCategories.bees = boxesFromDb.some(b => anyEighths ? (b.bee_eighths !== null && b.bee_eighths !== -1) : (b.bee_total !== null && b.bee_total !== -1))
+    activeCategories.food = boxesFromDb.some(b => anyEighths ? (b.food_eighths !== null && b.food_eighths !== -1) : (b.food_total !== null && b.food_total !== -1))
+    activeCategories.drones = boxesFromDb.some(b => anyEighths ? (b.drone_eighths !== null && b.drone_eighths !== -1) : (b.drone_total !== null && b.drone_total !== -1))
+    activeCategories.drone_brood = boxesFromDb.some(b => anyEighths ? (b.drone_brood_eighths !== null && b.drone_brood_eighths !== -1) : (b.drone_brood_total !== null && b.drone_brood_total !== -1))
+    activeCategories.pollen = boxesFromDb.some(b => anyEighths ? (b.pollen_eighths !== null && b.pollen_eighths !== -1) : (b.pollen_total !== null && b.pollen_total !== -1))
 
     entryForm.inspectionDetail.boxes = (entry.inspection_detail.boxes || [])
       .sort((a, b) => (a.box_index ?? 0) - (b.box_index ?? 0))
@@ -1976,12 +2060,12 @@ function openEditEntryModal(entry) {
           drone_brood_multiplier: hiveBox?.frame_type?.drone_brood_multiplier || 230.0,
           pollen_multiplier: hiveBox?.frame_type?.pollen_multiplier || 40.0,
           frame_type_name: hiveBox?.frame_type?.name || 'Zarge',
-          brood: anyEighths ? (b.brood_eighths ?? 0) : (b.brood_total ?? 0),
-          bees: anyEighths ? (b.bee_eighths ?? 0) : (b.bee_total ?? 0),
-          food: anyEighths ? (b.food_eighths ?? 0) : (b.food_total ?? 0),
-          drones: anyEighths ? (b.drone_eighths ?? 0) : (b.drone_total ?? 0),
-          drone_brood: anyEighths ? (b.drone_brood_eighths ?? 0) : (b.drone_brood_total ?? 0),
-          pollen: anyEighths ? (b.pollen_eighths ?? 0) : (b.pollen_total ?? 0)
+          brood: anyEighths ? (b.brood_eighths !== null && b.brood_eighths !== -1 ? b.brood_eighths : 0) : (b.brood_total !== null && b.brood_total !== -1 ? b.brood_total : 0),
+          bees: anyEighths ? (b.bee_eighths !== null && b.bee_eighths !== -1 ? b.bee_eighths : 0) : (b.bee_total !== null && b.bee_total !== -1 ? b.bee_total : 0),
+          food: anyEighths ? (b.food_eighths !== null && b.food_eighths !== -1 ? b.food_eighths : 0) : (b.food_total !== null && b.food_total !== -1 ? b.food_total : 0),
+          drones: anyEighths ? (b.drone_eighths !== null && b.drone_eighths !== -1 ? b.drone_eighths : 0) : (b.drone_total !== null && b.drone_total !== -1 ? b.drone_total : 0),
+          drone_brood: anyEighths ? (b.drone_brood_eighths !== null && b.drone_brood_eighths !== -1 ? b.drone_brood_eighths : 0) : (b.drone_brood_total !== null && b.drone_brood_total !== -1 ? b.drone_brood_total : 0),
+          pollen: anyEighths ? (b.pollen_eighths !== null && b.pollen_eighths !== -1 ? b.pollen_eighths : 0) : (b.pollen_total !== null && b.pollen_total !== -1 ? b.pollen_total : 0)
         }
       })
 
@@ -2052,12 +2136,12 @@ async function submitEntryForm() {
       notes: entryForm.notes.trim() || null,
       inspection_detail: entryForm.entryType === 'INSPECTION' ? {
         boxes: entryForm.inspectionDetail.boxes.map((box, idx) => {
-          const broodVal = Number(box.brood || 0)
-          const beeVal = Number(box.bees || 0)
-          const foodVal = Number(box.food || 0)
-          const droneVal = Number(box.drones || 0)
-          const droneBroodVal = Number(box.drone_brood || 0)
-          const pollenVal = Number(box.pollen || 0)
+          const broodVal = activeCategories.brood ? Number(box.brood || 0) : -1
+          const beeVal = activeCategories.bees ? Number(box.bees || 0) : -1
+          const foodVal = activeCategories.food ? Number(box.food || 0) : -1
+          const droneVal = activeCategories.drones ? Number(box.drones || 0) : -1
+          const droneBroodVal = activeCategories.drone_brood ? Number(box.drone_brood || 0) : -1
+          const pollenVal = activeCategories.pollen ? Number(box.pollen || 0) : -1
 
           const broodMult = box.brood_multiplier || 400.0
           const beeMult = box.bee_multiplier || 125.0
@@ -2076,12 +2160,12 @@ async function submitEntryForm() {
             droneBroodTotal = droneBroodVal
             pollenTotal = pollenVal
           } else {
-            broodTotal = broodVal * broodMult
-            beeTotal = beeVal * beeMult
-            foodTotal = foodVal * foodMult
-            droneTotal = droneVal * droneMult
-            droneBroodTotal = droneBroodVal * droneBroodMult
-            pollenTotal = pollenVal * pollenMult
+            broodTotal = broodVal !== -1 ? broodVal * broodMult : -1
+            beeTotal = beeVal !== -1 ? beeVal * beeMult : -1
+            foodTotal = foodVal !== -1 ? foodVal * foodMult : -1
+            droneTotal = droneVal !== -1 ? droneVal * droneMult : -1
+            droneBroodTotal = droneBroodVal !== -1 ? droneBroodVal * droneBroodMult : -1
+            pollenTotal = pollenVal !== -1 ? pollenVal * pollenMult : -1
           }
 
           return {
@@ -2287,6 +2371,11 @@ function getEntryTypeName(entryOrType) {
   }
 }
 
+function formatTotal(val, decimals = 0, unit = '') {
+  if (val === null || val === undefined || val === -1) return '-'
+  return `${Number(val).toFixed(decimals)}${unit ? ' ' + unit : ''}`
+}
+
 function getBoxTotalsForEntry(entry) {
   if (!entry.inspection_detail || !entry.inspection_detail.boxes) return null
   const boxes = [...entry.inspection_detail.boxes]
@@ -2298,21 +2387,21 @@ function getBoxTotalsForEntry(entry) {
       frame_count: 0,
       multiplier: 1.0,
       frame_type_name: t('hives.box_label'),
-      brood: b.brood_total ?? 0,
-      bees: b.bee_total ?? 0,
-      food: b.food_total ?? 0,
-      drones: b.drone_total ?? 0,
-      drone_brood: b.drone_brood_total ?? 0,
-      pollen: b.pollen_total ?? 0
+      brood: b.brood_total === -1 ? null : b.brood_total,
+      bees: b.bee_total === -1 ? null : b.bee_total,
+      food: b.food_total === -1 ? null : b.food_total,
+      drones: b.drone_total === -1 ? null : b.drone_total,
+      drone_brood: b.drone_brood_total === -1 ? null : b.drone_brood_total,
+      pollen: b.pollen_total === -1 ? null : b.pollen_total
     }))
 
   const hiveTotal = {
-    brood: boxes.reduce((acc, b) => acc + b.brood, 0),
-    bees: boxes.reduce((acc, b) => acc + b.bees, 0),
-    food: boxes.reduce((acc, b) => acc + b.food, 0),
-    drones: boxes.reduce((acc, b) => acc + b.drones, 0),
-    drone_brood: boxes.reduce((acc, b) => acc + b.drone_brood, 0),
-    pollen: boxes.reduce((acc, b) => acc + b.pollen, 0)
+    brood: boxes.some(b => b.brood !== null) ? boxes.reduce((acc, b) => acc + (b.brood || 0), 0) : null,
+    bees: boxes.some(b => b.bees !== null) ? boxes.reduce((acc, b) => acc + (b.bees || 0), 0) : null,
+    food: boxes.some(b => b.food !== null) ? boxes.reduce((acc, b) => acc + (b.food || 0), 0) : null,
+    drones: boxes.some(b => b.drones !== null) ? boxes.reduce((acc, b) => acc + (b.drones || 0), 0) : null,
+    drone_brood: boxes.some(b => b.drone_brood !== null) ? boxes.reduce((acc, b) => acc + (b.drone_brood || 0), 0) : null,
+    pollen: boxes.some(b => b.pollen !== null) ? boxes.reduce((acc, b) => acc + (b.pollen || 0), 0) : null
   }
 
   return {

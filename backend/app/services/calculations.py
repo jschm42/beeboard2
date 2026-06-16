@@ -53,35 +53,35 @@ def calculate_inspection_totals(boxes, db: Session = None):
         dr_b_mult = float(frame_type.drone_brood_multiplier or 1.0) if frame_type else 1.0
         p_mult = float(frame_type.pollen_multiplier or 1.0) if frame_type else 1.0
 
-        if box.brood_eighths is not None:
+        if box.brood_eighths is not None and box.brood_eighths != -1:
             brood += float(box.brood_eighths) * b_mult
-        else:
-            brood += float(box.brood_total or 0)
+        elif box.brood_total is not None and box.brood_total != -1:
+            brood += float(box.brood_total)
 
-        if box.food_eighths is not None:
+        if box.food_eighths is not None and box.food_eighths != -1:
             food += float(box.food_eighths) * f_mult
-        else:
-            food += float(box.food_total or 0)
+        elif box.food_total is not None and box.food_total != -1:
+            food += float(box.food_total)
 
-        if box.bee_eighths is not None:
+        if box.bee_eighths is not None and box.bee_eighths != -1:
             bees += float(box.bee_eighths) * bee_mult
-        else:
-            bees += float(box.bee_total or 0)
+        elif box.bee_total is not None and box.bee_total != -1:
+            bees += float(box.bee_total)
 
-        if box.drone_eighths is not None:
+        if box.drone_eighths is not None and box.drone_eighths != -1:
             drones += float(box.drone_eighths) * dr_mult
-        else:
-            drones += float(box.drone_total or 0)
+        elif box.drone_total is not None and box.drone_total != -1:
+            drones += float(box.drone_total)
 
-        if box.drone_brood_eighths is not None:
+        if box.drone_brood_eighths is not None and box.drone_brood_eighths != -1:
             drone_brood += float(box.drone_brood_eighths) * dr_b_mult
-        else:
-            drone_brood += float(box.drone_brood_total or 0)
+        elif box.drone_brood_total is not None and box.drone_brood_total != -1:
+            drone_brood += float(box.drone_brood_total)
 
-        if box.pollen_eighths is not None:
+        if box.pollen_eighths is not None and box.pollen_eighths != -1:
             pollen += float(box.pollen_eighths) * p_mult
-        else:
-            pollen += float(box.pollen_total or 0)
+        elif box.pollen_total is not None and box.pollen_total != -1:
+            pollen += float(box.pollen_total)
 
     return {
         "brood": brood,

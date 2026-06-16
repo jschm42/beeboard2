@@ -378,6 +378,7 @@
   },
   "logbook": {
     "title": "Imker-Logbuch",
+    "categories_to_record": "Zu erfassende Kategorien",
     "subtitle": "Erfasse Beutenkontrollen, Varroamessungen und Behandlungen.",
     "new_session": "+ Neues Logbuch",
     "no_active_apiary": "Keine aktive Imkerei ausgewählt",
