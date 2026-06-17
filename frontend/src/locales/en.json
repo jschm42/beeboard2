@@ -12,7 +12,8 @@
     "success": "Success",
     "confirm": "Confirm",
     "edit": "Edit",
-    "back_to_dashboard": "Back to Dashboard"
+    "back_to_dashboard": "Back to Dashboard",
+    "more": "more"
   },
   "sidebar": {
     "dashboard": "Dashboard",
@@ -568,7 +569,17 @@
     "delete_title": "Delete Task",
     "confirm_delete_msg": "Are you sure you want to delete this task?",
     "error_delete": "Error deleting task.",
-    "error_save": "Error saving task."
+    "error_save": "Error saving task.",
+    "all_day": "All Day",
+    "due_time_label": "Due Time",
+    "recurring_btn": "Recurring",
+    "repeat_every": "Repeat every",
+    "day_unit": "Day",
+    "week_unit": "Week",
+    "month_unit": "Month",
+    "year_unit": "Year",
+    "until": "Until",
+    "disable_recurrence": "Remove recurrence"
   },
   "honey_batches": {
     "title": "Honey Batches",

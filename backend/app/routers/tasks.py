@@ -14,44 +14,112 @@ from app.routers.apiaries import check_access
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
-def calculate_next_due_date(current_due_date: Optional[date], interval: str) -> date:
+def calculate_next_due_date(
+    current_due_date: Optional[date],
+    interval_type: Optional[str],
+    interval_value: int = 1,
+    weekdays: Optional[str] = None,
+    end_date: Optional[date] = None,
+    legacy_interval: Optional[str] = None
+) -> Optional[date]:
     if not current_due_date:
         current_due_date = date.today()
     
-    interval = interval.upper()
-    if interval == "DAILY":
-        return current_due_date + timedelta(days=1)
-    elif interval == "WEEKLY":
+    # Handle legacy interval fallback
+    if not interval_type and legacy_interval:
+        up_legacy = legacy_interval.upper()
+        if up_legacy == "DAILY":
+            interval_type = "DAILY"
+            interval_value = 1
+        elif up_legacy == "WEEKLY":
+            interval_type = "WEEKLY"
+            interval_value = 1
+        elif up_legacy == "BIWEEKLY":
+            interval_type = "WEEKLY"
+            interval_value = 2
+        elif up_legacy == "MONTHLY":
+            interval_type = "MONTHLY"
+            interval_value = 1
+        elif up_legacy == "YEARLY":
+            interval_type = "YEARLY"
+            interval_value = 1
+        elif up_legacy.startswith("EVERY_") and up_legacy.endswith("_DAYS"):
+            try:
+                interval_type = "DAILY"
+                interval_value = int(up_legacy.split("_")[1])
+            except (IndexError, ValueError):
+                interval_type = "WEEKLY"
+                interval_value = 1
+        else:
+            interval_type = "WEEKLY"
+            interval_value = 1
+
+    if not interval_type:
         return current_due_date + timedelta(weeks=1)
-    elif interval == "BIWEEKLY":
-        return current_due_date + timedelta(weeks=2)
-    elif interval.startswith("EVERY_") and interval.endswith("_DAYS"):
-        try:
-            days = int(interval.split("_")[1])
-            return current_due_date + timedelta(days=days)
-        except (IndexError, ValueError):
-            return current_due_date + timedelta(weeks=1)
-    elif interval == "MONTHLY":
+
+    if interval_value < 1:
+        interval_value = 1
+
+    interval_type = interval_type.upper()
+    next_date = current_due_date
+
+    if interval_type == "DAILY":
+        next_date = current_due_date + timedelta(days=interval_value)
+        
+    elif interval_type == "WEEKLY":
+        # Check for weekday filters
+        active_days = []
+        if weekdays:
+            for d in weekdays.split(","):
+                try:
+                    active_days.append(int(d.strip()))
+                except ValueError:
+                    pass
+            active_days = sorted(list(set(active_days)))
+            
+        if active_days:
+            current_weekday = current_due_date.weekday()  # 0 = Monday, 6 = Sunday
+            found = False
+            for w in active_days:
+                if w > current_weekday:
+                    next_date = current_due_date + timedelta(days=w - current_weekday)
+                    found = True
+                    break
+            if not found:
+                first_active = active_days[0]
+                days_to_next_week = (7 - current_weekday) + (interval_value - 1) * 7 + first_active
+                next_date = current_due_date + timedelta(days=days_to_next_week)
+        else:
+            next_date = current_due_date + timedelta(weeks=interval_value)
+            
+    elif interval_type == "MONTHLY":
         year = current_due_date.year
-        month = current_due_date.month + 1
-        if month > 12:
-            month = 1
+        month = current_due_date.month + interval_value
+        while month > 12:
+            month -= 12
             year += 1
         day = current_due_date.day
         last_day = calendar.monthrange(year, month)[1]
         if day > last_day:
             day = last_day
-        return date(year, month, day)
-    elif interval == "YEARLY":
-        year = current_due_date.year + 1
+        next_date = date(year, month, day)
+        
+    elif interval_type == "YEARLY":
+        year = current_due_date.year + interval_value
         month = current_due_date.month
         day = current_due_date.day
         last_day = calendar.monthrange(year, month)[1]
         if day > last_day:
             day = last_day
-        return date(year, month, day)
+        next_date = date(year, month, day)
+        
     else:
-        return current_due_date + timedelta(weeks=1)
+        next_date = current_due_date + timedelta(weeks=1)
+
+    if end_date and next_date > end_date:
+        return None
+
+    return next_date
 
 
 @router.get("", response_model=List[TaskOut])
@@ -100,6 +168,27 @@ def create_task(
     """Creates a new task in an authorized apiary."""
     check_access(apiary_id, current_user, db)
     
+    # Backward compatibility logic for recurrence_interval
+    rec_type = task_in.recurrence_interval_type
+    rec_value = task_in.recurrence_interval_value
+    if task_in.is_recurring and not rec_type and task_in.recurrence_interval:
+        up_legacy = task_in.recurrence_interval.upper()
+        if up_legacy == "DAILY":
+            rec_type, rec_value = "DAILY", 1
+        elif up_legacy == "WEEKLY":
+            rec_type, rec_value = "WEEKLY", 1
+        elif up_legacy == "BIWEEKLY":
+            rec_type, rec_value = "WEEKLY", 2
+        elif up_legacy == "MONTHLY":
+            rec_type, rec_value = "MONTHLY", 1
+        elif up_legacy == "YEARLY":
+            rec_type, rec_value = "YEARLY", 1
+        elif up_legacy.startswith("EVERY_") and up_legacy.endswith("_DAYS"):
+            try:
+                rec_type, rec_value = "DAILY", int(up_legacy.split("_")[1])
+            except (IndexError, ValueError):
+                rec_type, rec_value = "WEEKLY", 1
+
     new_task = Task(
         title=task_in.title,
         description=task_in.description,
@@ -109,6 +198,12 @@ def create_task(
         hive_id=task_in.hive_id if task_in.hive_id else None,
         is_recurring=task_in.is_recurring,
         recurrence_interval=task_in.recurrence_interval if task_in.is_recurring else None,
+        is_all_day=task_in.is_all_day,
+        due_time=task_in.due_time if not task_in.is_all_day else None,
+        recurrence_interval_type=rec_type if task_in.is_recurring else None,
+        recurrence_interval_value=rec_value if task_in.is_recurring else 1,
+        recurrence_weekdays=task_in.recurrence_weekdays if task_in.is_recurring else None,
+        recurrence_end_date=task_in.recurrence_end_date if task_in.is_recurring else None,
         apiary_id=apiary_id,
         created_by_id=current_user.id,
         is_completed=False
@@ -156,6 +251,10 @@ def update_task(
         task.is_recurring = task_in.is_recurring
         if not task_in.is_recurring:
             task.recurrence_interval = None
+            task.recurrence_interval_type = None
+            task.recurrence_interval_value = 1
+            task.recurrence_weekdays = None
+            task.recurrence_end_date = None
     if task_in.recurrence_interval is not None:
         task.recurrence_interval = task_in.recurrence_interval if task.is_recurring else None
     if task_in.is_completed is not None:
@@ -166,27 +265,56 @@ def update_task(
         else:
             task.completed_at = None
             
+    if task_in.is_all_day is not None:
+        task.is_all_day = task_in.is_all_day
+    if task_in.due_time is not None:
+        task.due_time = task_in.due_time if not task.is_all_day else None
+        
+    if task.is_recurring:
+        if task_in.recurrence_interval_type is not None:
+            task.recurrence_interval_type = task_in.recurrence_interval_type
+        if task_in.recurrence_interval_value is not None:
+            task.recurrence_interval_value = task_in.recurrence_interval_value
+        if task_in.recurrence_weekdays is not None:
+            task.recurrence_weekdays = task_in.recurrence_weekdays
+        if task_in.recurrence_end_date is not None:
+            task.recurrence_end_date = task_in.recurrence_end_date
+            
     db.commit()
     db.refresh(task)
     
     # Recurrence trigger
-    if not was_completed and task.is_completed and task.is_recurring and task.recurrence_interval:
-        next_due = calculate_next_due_date(task.due_date, task.recurrence_interval)
-        new_task = Task(
-            title=task.title,
-            description=task.description,
-            due_date=next_due,
-            priority=task.priority,
-            is_completed=False,
-            location_id=task.location_id,
-            hive_id=task.hive_id,
-            is_recurring=True,
-            recurrence_interval=task.recurrence_interval,
-            apiary_id=task.apiary_id,
-            created_by_id=current_user.id
+    if not was_completed and task.is_completed and task.is_recurring:
+        next_due = calculate_next_due_date(
+            task.due_date,
+            task.recurrence_interval_type,
+            task.recurrence_interval_value,
+            task.recurrence_weekdays,
+            task.recurrence_end_date,
+            task.recurrence_interval
         )
-        db.add(new_task)
-        db.commit()
+        if next_due:
+            new_task = Task(
+                title=task.title,
+                description=task.description,
+                due_date=next_due,
+                priority=task.priority,
+                is_completed=False,
+                location_id=task.location_id,
+                hive_id=task.hive_id,
+                is_recurring=True,
+                recurrence_interval=task.recurrence_interval,
+                is_all_day=task.is_all_day,
+                due_time=task.due_time,
+                recurrence_interval_type=task.recurrence_interval_type,
+                recurrence_interval_value=task.recurrence_interval_value,
+                recurrence_weekdays=task.recurrence_weekdays,
+                recurrence_end_date=task.recurrence_end_date,
+                apiary_id=task.apiary_id,
+                created_by_id=current_user.id
+            )
+            db.add(new_task)
+            db.commit()
         
     return db.query(Task).options(
         joinedload(Task.location),
@@ -214,23 +342,37 @@ def complete_task(
         db.refresh(task)
         
         # Recurrence logic
-        if task.is_recurring and task.recurrence_interval:
-            next_due = calculate_next_due_date(task.due_date, task.recurrence_interval)
-            new_task = Task(
-                title=task.title,
-                description=task.description,
-                due_date=next_due,
-                priority=task.priority,
-                is_completed=False,
-                location_id=task.location_id,
-                hive_id=task.hive_id,
-                is_recurring=True,
-                recurrence_interval=task.recurrence_interval,
-                apiary_id=task.apiary_id,
-                created_by_id=current_user.id
+        if task.is_recurring:
+            next_due = calculate_next_due_date(
+                task.due_date,
+                task.recurrence_interval_type,
+                task.recurrence_interval_value,
+                task.recurrence_weekdays,
+                task.recurrence_end_date,
+                task.recurrence_interval
             )
-            db.add(new_task)
-            db.commit()
+            if next_due:
+                new_task = Task(
+                    title=task.title,
+                    description=task.description,
+                    due_date=next_due,
+                    priority=task.priority,
+                    is_completed=False,
+                    location_id=task.location_id,
+                    hive_id=task.hive_id,
+                    is_recurring=True,
+                    recurrence_interval=task.recurrence_interval,
+                    is_all_day=task.is_all_day,
+                    due_time=task.due_time,
+                    recurrence_interval_type=task.recurrence_interval_type,
+                    recurrence_interval_value=task.recurrence_interval_value,
+                    recurrence_weekdays=task.recurrence_weekdays,
+                    recurrence_end_date=task.recurrence_end_date,
+                    apiary_id=task.apiary_id,
+                    created_by_id=current_user.id
+                )
+                db.add(new_task)
+                db.commit()
             
     return db.query(Task).options(
         joinedload(Task.location),

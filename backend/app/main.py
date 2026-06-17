@@ -94,6 +94,28 @@ with engine.connect() as conn:
         if "scope_type" not in log_session_columns:
             conn.execute(text("ALTER TABLE log_sessions ADD COLUMN scope_type VARCHAR(20) DEFAULT 'APIARY'"))
             conn.commit()
+        
+        # Task recurrence and all-day migrations
+        result = conn.execute(text("PRAGMA table_info(tasks)"))
+        tasks_columns = [row[1] for row in result.fetchall()]
+        if "is_all_day" not in tasks_columns:
+            conn.execute(text("ALTER TABLE tasks ADD COLUMN is_all_day BOOLEAN DEFAULT 1"))
+            conn.commit()
+        if "due_time" not in tasks_columns:
+            conn.execute(text("ALTER TABLE tasks ADD COLUMN due_time VARCHAR(5) DEFAULT NULL"))
+            conn.commit()
+        if "recurrence_interval_type" not in tasks_columns:
+            conn.execute(text("ALTER TABLE tasks ADD COLUMN recurrence_interval_type VARCHAR(10) DEFAULT NULL"))
+            conn.commit()
+        if "recurrence_interval_value" not in tasks_columns:
+            conn.execute(text("ALTER TABLE tasks ADD COLUMN recurrence_interval_value INTEGER DEFAULT 1"))
+            conn.commit()
+        if "recurrence_weekdays" not in tasks_columns:
+            conn.execute(text("ALTER TABLE tasks ADD COLUMN recurrence_weekdays VARCHAR(50) DEFAULT NULL"))
+            conn.commit()
+        if "recurrence_end_date" not in tasks_columns:
+            conn.execute(text("ALTER TABLE tasks ADD COLUMN recurrence_end_date DATE DEFAULT NULL"))
+            conn.commit()
 
         # Migrate existing log_sessions with hive_id to scope_type='HIVE' and populate log_session_hives
         conn.execute(text("""

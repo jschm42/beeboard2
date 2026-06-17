@@ -398,14 +398,56 @@
 
       <!-- VIEW 3: CALENDAR -->
       <div v-else class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div class="xl:col-span-2 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-4 shadow-sm">
+        <div class="xl:col-span-2 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-4 shadow-sm overflow-hidden">
           <VCalendar
             expanded
             borderless
             locale="de-DE"
             :attributes="calendarAttributes"
             @dayclick="onCalendarDayClick"
-          />
+          >
+            <template #day-content="{ day, attributes }">
+              <div 
+                class="flex flex-col h-full min-h-[75px] p-1.5 justify-between select-none transition-all duration-150 border-2"
+                :class="[
+                  toDateString(day.date) === selectedDateString 
+                    ? 'border-primary bg-primary/5 dark:bg-primary/10 rounded-2xl' 
+                    : 'border-transparent hover:bg-gray-50 dark:hover:bg-dark-bg/40 rounded-2xl'
+                ]"
+              >
+                <div class="flex justify-between items-center mb-1">
+                  <span 
+                    class="text-xs font-black w-6 h-6 flex items-center justify-center rounded-full"
+                    :class="[
+                      day.isToday 
+                        ? 'bg-amber-500 text-white shadow-sm shadow-amber-500/30' 
+                        : day.inMonth 
+                          ? 'text-gray-900 dark:text-gray-100' 
+                          : 'text-gray-400 dark:text-gray-600'
+                    ]"
+                  >
+                    {{ day.day }}
+                  </span>
+                </div>
+                
+                <div class="flex-grow space-y-1 overflow-hidden mt-0.5">
+                  <div 
+                    v-for="attr in attributes.slice(0, 3)" 
+                    :key="attr.key"
+                    class="text-[9px] px-1.5 py-0.5 rounded-lg truncate font-extrabold tracking-wide border transition-all duration-150 shadow-sm"
+                    :class="getCalendarItemClasses(attr)"
+                    :style="getCalendarItemStyle(attr)"
+                    :title="attr.customData?.title"
+                  >
+                    {{ attr.customData?.title }}
+                  </div>
+                  <div v-if="attributes.length > 3" class="text-[8px] text-gray-400 dark:text-gray-500 font-bold text-center">
+                    +{{ attributes.length - 3 }} {{ $t('common.more') }}
+                  </div>
+                </div>
+              </div>
+            </template>
+          </VCalendar>
         </div>
 
         <div class="space-y-4">
@@ -462,6 +504,7 @@
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary"
               />
 
+              <!-- Start/End dates -->
               <div class="grid grid-cols-2 gap-2">
                 <input
                   v-model="customEventForm.start_date"
@@ -477,6 +520,89 @@
                 />
               </div>
 
+              <!-- Ganztägig & Wiederkehrend Toggles -->
+              <div class="flex items-center space-x-4 py-1">
+                <label class="flex items-center space-x-1 text-[10px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider cursor-pointer">
+                  <input 
+                    v-model="customEventForm.is_all_day" 
+                    type="checkbox"
+                    class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                  <span>{{ $t('tasks.all_day') }}</span>
+                </label>
+
+                <button 
+                  type="button"
+                  @click="customEventForm.is_recurring = !customEventForm.is_recurring"
+                  class="flex items-center space-x-1 px-2.5 py-1 rounded-lg border text-[10px] font-bold uppercase transition-all"
+                  :class="customEventForm.is_recurring
+                    ? 'bg-primary/10 border-primary text-primary'
+                    : 'bg-white dark:bg-dark-bg border-gray-200 dark:border-gray-700 text-gray-500'"
+                >
+                  <span>🔄 {{ $t('tasks.recurring_btn') }}</span>
+                </button>
+              </div>
+
+              <!-- Start/End times if NOT Ganztägig -->
+              <div v-if="!customEventForm.is_all_day" class="grid grid-cols-2 gap-2 animate-scale">
+                <input 
+                  v-model="customEventForm.start_time" 
+                  type="time" 
+                  class="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-xs"
+                />
+                <input 
+                  v-model="customEventForm.end_time" 
+                  type="time" 
+                  class="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-xs"
+                />
+              </div>
+
+              <!-- Custom Event Recurrence Panel -->
+              <div v-if="customEventForm.is_recurring" class="p-3 bg-gray-50 dark:bg-dark-bg/40 rounded-xl border border-gray-200/60 dark:border-dark-border/60 space-y-2.5 text-xs animate-scale">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="font-bold text-gray-500 uppercase tracking-wider">{{ $t('tasks.repeat_every') }}</span>
+                  <select 
+                    v-model.number="customEventForm.recurrence_interval_value"
+                    class="px-1.5 py-1 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded focus:ring-1 focus:ring-primary font-bold text-center"
+                  >
+                    <option v-for="n in 30" :key="n" :value="n">{{ n }}</option>
+                  </select>
+                  <select 
+                    v-model="customEventForm.recurrence_interval_type"
+                    class="px-1.5 py-1 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded focus:ring-1 focus:ring-primary font-bold"
+                  >
+                    <option value="DAILY">{{ $t('tasks.day_unit') }}</option>
+                    <option value="WEEKLY">{{ $t('tasks.week_unit') }}</option>
+                    <option value="MONTHLY">{{ $t('tasks.month_unit') }}</option>
+                    <option value="YEARLY">{{ $t('tasks.year_unit') }}</option>
+                  </select>
+
+                  <span class="font-bold text-gray-500 uppercase tracking-wider">{{ $t('tasks.until') }}</span>
+                  <input 
+                    v-model="customEventForm.recurrence_end_date" 
+                    type="date"
+                    class="px-1.5 py-0.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded font-bold text-[11px]"
+                  />
+                </div>
+
+                <!-- Weekday Selectors (Shown only when WEEKLY is selected) -->
+                <div v-if="customEventForm.recurrence_interval_type === 'WEEKLY'" class="flex items-center gap-1 py-1">
+                  <button
+                    v-for="(day, index) in weekdaysList"
+                    :key="index"
+                    type="button"
+                    @click="toggleCustomEventWeekday(index)"
+                    class="w-7 h-7 rounded border text-[10px] font-black transition-all flex items-center justify-center cursor-pointer"
+                    :class="customEventForm.recurrence_weekdays.includes(index)
+                      ? 'bg-primary border-primary text-white'
+                      : 'bg-white dark:bg-dark-bg border-gray-200 dark:border-gray-700 text-gray-500 hover:border-gray-300'"
+                  >
+                    {{ day.label }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- Notes & Color -->
               <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
                 <input
                   v-model="customEventForm.notes"
@@ -493,7 +619,7 @@
 
               <button
                 type="submit"
-                class="w-full px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-extrabold uppercase tracking-wider rounded-xl"
+                class="w-full px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-extrabold uppercase tracking-wider rounded-xl shadow-sm"
               >
                 {{ customEventForm.id ? $t('tasks.save_event_btn') : $t('tasks.create_event_btn') }}
               </button>
@@ -634,47 +760,93 @@
                 </div>
               </div>
 
-              <!-- Recurrence Settings -->
-              <div class="border-t border-gray-100 dark:border-dark-border/80 pt-4 space-y-3">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wide">🔄 {{ $t('tasks.form_recurring') }}</h5>
-                    <p class="text-[10px] text-gray-400 dark:text-gray-500">{{ $t('hives.task_recurring_desc') }}</p>
-                  </div>
+              <!-- Ganztägig & Wiederkehrend Toggles -->
+              <div class="flex items-center space-x-6 py-1">
+                <label class="flex items-center space-x-2 text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-0.5 cursor-pointer">
                   <input 
-                    v-model="taskForm.isRecurring" 
+                    v-model="taskForm.isAllDay" 
                     type="checkbox"
-                    class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                    class="w-4.5 h-4.5 rounded border-gray-300 text-primary focus:ring-primary"
                   />
+                  <span class="ml-1.5">{{ $t('tasks.all_day') }}</span>
+                </label>
+
+                <button 
+                  type="button"
+                  @click="taskForm.isRecurring = !taskForm.isRecurring"
+                  class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border text-xs font-extrabold tracking-wide transition-all cursor-pointer"
+                  :class="taskForm.isRecurring
+                    ? 'bg-primary/10 border-primary text-primary shadow-sm'
+                    : 'bg-white dark:bg-dark-card border-gray-200 dark:border-dark-border text-gray-500 hover:border-gray-300 dark:hover:border-gray-700'"
+                >
+                  <span>🔄</span>
+                  <span>{{ $t('tasks.recurring_btn') }}</span>
+                </button>
+              </div>
+
+              <!-- Time Picker if NOT Ganztägig -->
+              <div v-if="!taskForm.isAllDay" class="animate-scale">
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('tasks.due_time_label') }}</label>
+                <input 
+                  v-model="taskForm.dueTime" 
+                  type="time" 
+                  class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-semibold"
+                />
+              </div>
+
+              <!-- Recurrence Settings Panel -->
+              <div v-if="taskForm.isRecurring" class="p-4 bg-gray-50 dark:bg-dark-bg/40 rounded-2xl border border-gray-200/60 dark:border-dark-border/60 space-y-4 animate-scale">
+                <div class="flex flex-wrap items-center gap-3 text-xs">
+                  <span class="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ $t('tasks.repeat_every') }}</span>
+                  
+                  <select 
+                    v-model.number="taskForm.recurrenceIntervalValue"
+                    class="px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-bold text-center cursor-pointer"
+                  >
+                    <option v-for="n in 30" :key="n" :value="n">{{ n }}</option>
+                  </select>
+                  
+                  <select 
+                    v-model="taskForm.recurrenceIntervalType"
+                    class="px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-bold cursor-pointer"
+                  >
+                    <option value="DAILY">{{ $t('tasks.day_unit') }}</option>
+                    <option value="WEEKLY">{{ $t('tasks.week_unit') }}</option>
+                    <option value="MONTHLY">{{ $t('tasks.month_unit') }}</option>
+                    <option value="YEARLY">{{ $t('tasks.year_unit') }}</option>
+                  </select>
+
+                  <span class="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-auto sm:ml-0">{{ $t('tasks.until') }}</span>
+                  <input 
+                    v-model="taskForm.recurrenceEndDate" 
+                    type="date"
+                    class="px-2 py-1 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-bold"
+                  />
+
+                  <button 
+                    type="button"
+                    @click="taskForm.isRecurring = false"
+                    class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all ml-auto cursor-pointer"
+                    :title="$t('tasks.disable_recurrence')"
+                  >
+                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  </button>
                 </div>
 
-                <div v-if="taskForm.isRecurring" class="animate-scale space-y-3">
-                  <div>
-                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.task_recurrence_interval') }}</label>
-                    <select 
-                      v-model="taskForm.recurrenceInterval" 
-                      required
-                      class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs cursor-pointer font-bold"
-                    >
-                      <option value="DAILY">{{ $t('hives.recurrence_daily') }}</option>
-                      <option value="WEEKLY">{{ $t('hives.recurrence_weekly') }}</option>
-                      <option value="BIWEEKLY">{{ $t('hives.recurrence_biweekly') }}</option>
-                      <option value="MONTHLY">{{ $t('hives.recurrence_monthly') }}</option>
-                      <option value="YEARLY">{{ $t('hives.recurrence_yearly') }}</option>
-                      <option value="EVERY_X_DAYS">{{ $t('hives.recurrence_every_x_days') }}</option>
-                    </select>
-                  </div>
-                  <div v-if="taskForm.recurrenceInterval === 'EVERY_X_DAYS'">
-                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.recurrence_days_label') }}</label>
-                    <input
-                      v-model.number="taskForm.customDays"
-                      type="number"
-                      min="2"
-                      max="365"
-                      required
-                      class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-semibold"
-                    />
-                  </div>
+                <!-- Weekday Selectors (Shown only when WEEKLY is selected) -->
+                <div v-if="taskForm.recurrenceIntervalType === 'WEEKLY'" class="flex items-center gap-1.5 py-1 animate-scale">
+                  <button
+                    v-for="(day, index) in weekdaysList"
+                    :key="index"
+                    type="button"
+                    @click="toggleFormWeekday(index)"
+                    class="w-8 h-8 rounded-lg border text-xs font-black transition-all flex items-center justify-center cursor-pointer"
+                    :class="taskForm.recurrenceWeekdays.includes(index)
+                      ? 'bg-primary border-primary text-white shadow-sm'
+                      : 'bg-white dark:bg-dark-bg border-gray-200 dark:border-gray-700 text-gray-500 hover:border-gray-300 dark:hover:border-gray-650'"
+                  >
+                    {{ day.label }}
+                  </button>
                 </div>
               </div>
             </div>
@@ -710,7 +882,75 @@ import { useRoute, useRouter } from 'vue-router'
 import { useApiaryStore } from '../stores/apiary'
 import { useErrorStore } from '../stores/error'
 import { useConfirmStore } from '../stores/confirm'
-import { getCustomCalendarEvents, upsertCustomCalendarEvent, deleteCustomCalendarEvent, isDateInRange } from '../utils/calendarEvents'
+import { getCustomCalendarEvents, upsertCustomCalendarEvent, deleteCustomCalendarEvent, isDateInRange, getOccurrences } from '../utils/calendarEvents'
+
+const weekdaysList = [
+  { value: 0, label: 'M' },
+  { value: 1, label: 'D' },
+  { value: 2, label: 'M' },
+  { value: 3, label: 'D' },
+  { value: 4, label: 'F' },
+  { value: 5, label: 'S' },
+  { value: 6, label: 'S' }
+]
+
+function toggleFormWeekday(dayValue) {
+  if (!taskForm.value.recurrenceWeekdays) {
+    taskForm.value.recurrenceWeekdays = []
+  }
+  const idx = taskForm.value.recurrenceWeekdays.indexOf(dayValue)
+  if (idx >= 0) {
+    taskForm.value.recurrenceWeekdays.splice(idx, 1)
+  } else {
+    taskForm.value.recurrenceWeekdays.push(dayValue)
+  }
+}
+
+function toggleCustomEventWeekday(dayValue) {
+  if (!customEventForm.value.recurrence_weekdays) {
+    customEventForm.value.recurrence_weekdays = []
+  }
+  const idx = customEventForm.value.recurrence_weekdays.indexOf(dayValue)
+  if (idx >= 0) {
+    customEventForm.value.recurrence_weekdays.splice(idx, 1)
+  } else {
+    customEventForm.value.recurrence_weekdays.push(dayValue)
+  }
+}
+
+function getCalendarItemClasses(attr) {
+  if (attr.customData?.type === 'task') {
+    if (attr.customData.isDone) {
+      return 'bg-green-100/50 text-green-700 border-green-200 dark:bg-green-950/20 dark:text-green-400 dark:border-green-900/20 border-l-4 border-l-green-500'
+    } else if (attr.customData.overdue) {
+      return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900/30 font-black animate-pulse border-l-4 border-l-red-500'
+    } else {
+      // Differentiate by priority for better visual recognition
+      if (attr.customData.priority === 'HIGH') {
+        return 'bg-red-50 text-red-800 border-red-200 dark:bg-red-950/30 dark:text-red-300 dark:border-red-900/40 border-l-4 border-l-red-500 font-bold'
+      } else if (attr.customData.priority === 'MEDIUM') {
+        return 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-900/40 border-l-4 border-l-amber-500 font-bold'
+      } else {
+        // LOW
+        return 'bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-900/40 border-l-4 border-l-blue-400 font-semibold'
+      }
+    }
+  }
+  return ''
+}
+
+function getCalendarItemStyle(attr) {
+  if (attr.customData?.type === 'event') {
+    const color = attr.customData.color || '#2563eb'
+    return {
+      backgroundColor: `${color}15`,
+      color: color,
+      borderColor: `${color}40`,
+      borderLeft: `4px solid ${color}`
+    }
+  }
+  return {}
+}
 import axios from 'axios'
 
 const { t, locale } = useI18n()
@@ -734,7 +974,15 @@ const customEventForm = ref({
   notes: '',
   start_date: todayStr(),
   end_date: todayStr(),
-  color: '#2563eb'
+  color: '#2563eb',
+  is_recurring: false,
+  recurrence_interval_type: 'WEEKLY',
+  recurrence_interval_value: 1,
+  recurrence_weekdays: [],
+  recurrence_end_date: '',
+  is_all_day: true,
+  start_time: '',
+  end_time: ''
 })
 
 // Filter state
@@ -796,8 +1044,12 @@ const taskForm = ref({
   priority: 'MEDIUM',
   dueDate: '',
   isRecurring: false,
-  recurrenceInterval: 'WEEKLY',
-  customDays: 14
+  recurrenceIntervalType: 'WEEKLY',
+  recurrenceIntervalValue: 1,
+  recurrenceWeekdays: [],
+  recurrenceEndDate: '',
+  isAllDay: true,
+  dueTime: ''
 })
 
 // Filter hives based on selected location
@@ -972,46 +1224,127 @@ const filteredTasks = computed(() => {
 })
 
 const calendarAttributes = computed(() => {
-  const taskAttributes = filteredTasks.value
-    .filter(task => task.due_date)
-    .map(task => {
-      const isDone = task.is_completed
-      const overdue = !isDone && isOverdue(task.due_date)
-      return {
+  const attrs = []
+  const today = todayStr()
+
+  const startRange = todayOffsetStr(-90)
+  const endRange = todayOffsetStr(365)
+
+  // Expand Tasks
+  filteredTasks.value.forEach(task => {
+    if (!task.due_date) return
+
+    if (task.is_completed) {
+      attrs.push({
         key: `task-${task.id}`,
         dates: new Date(`${task.due_date}T12:00:00`),
-        dot: { color: isDone ? '#16a34a' : overdue ? '#dc2626' : '#f59e0b' },
-        popover: { label: `${t('dashboard.task_kind')}: ${task.title}` }
-      }
+        customData: {
+          type: 'task',
+          title: `✓ ${task.title}`,
+          isDone: true,
+          overdue: false,
+          priority: task.priority
+        }
+      })
+      return
+    }
+
+    const occurrences = getOccurrences(
+      {
+        due_date: task.due_date,
+        is_recurring: task.is_recurring,
+        recurrence_interval_type: task.recurrence_interval_type,
+        recurrence_interval_value: task.recurrence_interval_value,
+        recurrence_weekdays: task.recurrence_weekdays,
+        recurrence_end_date: task.recurrence_end_date
+      },
+      startRange,
+      endRange
+    )
+
+    occurrences.forEach((occDate, idx) => {
+      const isOverdueTask = occDate < today
+      attrs.push({
+        key: `task-${task.id}-${occDate}`,
+        dates: new Date(`${occDate}T12:00:00`),
+        customData: {
+          type: 'task',
+          title: `${task.is_all_day ? '' : (task.due_time ? task.due_time + ' ' : '')}📋 ${task.title}`,
+          isDone: false,
+          overdue: isOverdueTask,
+          priority: task.priority,
+          isVirtual: idx > 0
+        }
+      })
     })
+  })
 
-  const customAttributes = customEvents.value.map(event => ({
-    key: `custom-${event.id}`,
-    dates: {
-      start: new Date(`${event.start_date}T12:00:00`),
-      end: new Date(`${event.end_date}T12:00:00`)
-    },
-    highlight: { color: event.color, fillMode: 'outline' },
-    popover: { label: `${t('dashboard.event_kind')}: ${event.title}` }
-  }))
+  // Expand Custom Events
+  customEvents.value.forEach(event => {
+    if (!event.start_date) return
 
-  return [
-    {
-      key: 'today',
-      dates: new Date(),
-      highlight: { color: '#f59e0b', fillMode: 'light' }
-    },
-    ...taskAttributes,
-    ...customAttributes
-  ]
+    const occurrences = getOccurrences(
+      {
+        start_date: event.start_date,
+        is_recurring: event.is_recurring,
+        recurrence_interval_type: event.recurrence_interval_type,
+        recurrence_interval_value: event.recurrence_interval_value,
+        recurrence_weekdays: event.recurrence_weekdays,
+        recurrence_end_date: event.recurrence_end_date
+      },
+      startRange,
+      endRange
+    )
+
+    occurrences.forEach(occDate => {
+      attrs.push({
+        key: `custom-${event.id}-${occDate}`,
+        dates: new Date(`${occDate}T12:00:00`),
+        customData: {
+          type: 'event',
+          title: `${event.is_all_day ? '' : (event.start_time ? event.start_time + ' ' : '')}📅 ${event.title}`,
+          color: event.color
+        }
+      })
+    })
+  })
+
+  return attrs
 })
 
+function todayOffsetStr(offsetDays) {
+  const d = new Date()
+  d.setDate(d.getDate() + offsetDays)
+  return d.toISOString().split('T')[0]
+}
+
 const selectedDateTaskItems = computed(() => {
-  return filteredTasks.value.filter(task => task.due_date === selectedDateString.value)
+  return calendarAttributes.value
+    .filter(attr => {
+      if (attr.customData?.type !== 'task') return false
+      const attrDateStr = toDateString(attr.dates)
+      return attrDateStr === selectedDateString.value
+    })
+    .map(attr => ({
+      id: attr.key,
+      title: attr.customData.title,
+      is_completed: attr.customData.isDone
+    }))
 })
 
 const selectedDateCustomItems = computed(() => {
-  return customEvents.value.filter(event => isDateInRange(selectedDateString.value, event.start_date, event.end_date))
+  return calendarAttributes.value
+    .filter(attr => {
+      if (attr.customData?.type !== 'event') return false
+      const attrDateStr = toDateString(attr.dates)
+      return attrDateStr === selectedDateString.value
+    })
+    .map(attr => ({
+      id: attr.key,
+      title: attr.customData.title,
+      color: attr.customData.color,
+      start_date: toDateString(attr.dates)
+    }))
 })
 
 function onCalendarDayClick(dayInfo) {
@@ -1032,14 +1365,31 @@ function resetCustomEventForm() {
     notes: '',
     start_date: selectedDateString.value || todayStr(),
     end_date: selectedDateString.value || todayStr(),
-    color: '#2563eb'
+    color: '#2563eb',
+    is_recurring: false,
+    recurrence_interval_type: 'WEEKLY',
+    recurrence_interval_value: 1,
+    recurrence_weekdays: [],
+    recurrence_end_date: '',
+    is_all_day: true,
+    start_time: '',
+    end_time: ''
   }
 }
 
 async function saveCustomEvent() {
   if (!apiaryStore.activeApiaryId) return
   try {
-    upsertCustomCalendarEvent(apiaryStore.activeApiaryId, customEventForm.value)
+    const payload = {
+      ...customEventForm.value,
+      title: customEventForm.value.title.trim(),
+      notes: customEventForm.value.notes.trim(),
+      recurrence_weekdays: customEventForm.value.recurrence_weekdays.join(','),
+      is_all_day: customEventForm.value.is_all_day,
+      start_time: customEventForm.value.is_all_day ? '' : customEventForm.value.start_time,
+      end_time: customEventForm.value.is_all_day ? '' : customEventForm.value.end_time
+    }
+    upsertCustomCalendarEvent(apiaryStore.activeApiaryId, payload)
     customEvents.value = getCustomCalendarEvents(apiaryStore.activeApiaryId)
     resetCustomEventForm()
   } catch (err) {
@@ -1048,7 +1398,20 @@ async function saveCustomEvent() {
 }
 
 function editCustomEvent(event) {
-  customEventForm.value = { ...event }
+  const weekdays = event.recurrence_weekdays
+    ? event.recurrence_weekdays.split(',').map(d => parseInt(d)).filter(d => !isNaN(d))
+    : []
+  customEventForm.value = {
+    ...event,
+    is_recurring: !!event.is_recurring,
+    recurrence_interval_type: event.recurrence_interval_type || 'WEEKLY',
+    recurrence_interval_value: event.recurrence_interval_value || 1,
+    recurrence_weekdays: weekdays,
+    recurrence_end_date: event.recurrence_end_date || '',
+    is_all_day: event.is_all_day !== false,
+    start_time: event.start_time || '',
+    end_time: event.end_time || ''
+  }
 }
 
 async function removeCustomEvent(eventId) {
@@ -1138,8 +1501,12 @@ function openCreateTaskModal(overrideHiveId = null) {
     priority: 'MEDIUM',
     dueDate: '',
     isRecurring: false,
-    recurrenceInterval: 'WEEKLY',
-    customDays: 14
+    recurrenceIntervalType: 'WEEKLY',
+    recurrenceIntervalValue: 1,
+    recurrenceWeekdays: [],
+    recurrenceEndDate: '',
+    isAllDay: true,
+    dueTime: ''
   }
   showTaskModal.value = true
 }
@@ -1147,14 +1514,9 @@ function openCreateTaskModal(overrideHiveId = null) {
 function openEditTaskModal(task) {
   isEditMode.value = true
   editingTaskId.value = task.id
-  const existingInterval = task.recurrence_interval || 'WEEKLY'
-  let recurrenceInterval = existingInterval
-  let customDays = 14
-  if (existingInterval.startsWith('EVERY_') && existingInterval.endsWith('_DAYS')) {
-    recurrenceInterval = 'EVERY_X_DAYS'
-    const n = parseInt(existingInterval.split('_')[1])
-    if (!Number.isNaN(n)) customDays = n
-  }
+  const weekdays = task.recurrence_weekdays
+    ? task.recurrence_weekdays.split(',').map(d => parseInt(d)).filter(d => !isNaN(d))
+    : []
   taskForm.value = {
     title: task.title,
     description: task.description || '',
@@ -1163,17 +1525,18 @@ function openEditTaskModal(task) {
     priority: task.priority,
     dueDate: task.due_date || '',
     isRecurring: task.is_recurring,
-    recurrenceInterval,
-    customDays
+    recurrenceIntervalType: task.recurrence_interval_type || 'WEEKLY',
+    recurrenceIntervalValue: task.recurrence_interval_value || 1,
+    recurrenceWeekdays: weekdays,
+    recurrenceEndDate: task.recurrence_end_date || '',
+    isAllDay: task.is_all_day !== false,
+    dueTime: task.due_time || ''
   }
   showTaskModal.value = true
 }
 
 async function submitTaskForm() {
   try {
-    const interval = taskForm.value.recurrenceInterval === 'EVERY_X_DAYS'
-      ? `EVERY_${taskForm.value.customDays}_DAYS`
-      : taskForm.value.recurrenceInterval
     const payload = {
       title: taskForm.value.title.trim(),
       description: taskForm.value.description.trim() || null,
@@ -1182,7 +1545,16 @@ async function submitTaskForm() {
       location_id: taskForm.value.locationId || null,
       hive_id: taskForm.value.hiveId || null,
       is_recurring: taskForm.value.isRecurring,
-      recurrence_interval: taskForm.value.isRecurring ? interval : null
+      is_all_day: taskForm.value.isAllDay,
+      due_time: taskForm.value.isAllDay ? null : (taskForm.value.dueTime || null),
+      recurrence_interval_type: taskForm.value.isRecurring ? taskForm.value.recurrenceIntervalType : null,
+      recurrence_interval_value: taskForm.value.isRecurring ? taskForm.value.recurrenceIntervalValue : 1,
+      recurrence_weekdays: taskForm.value.isRecurring && taskForm.value.recurrenceIntervalType === 'WEEKLY'
+        ? taskForm.value.recurrenceWeekdays.join(',')
+        : null,
+      recurrence_end_date: taskForm.value.isRecurring && taskForm.value.recurrenceEndDate
+        ? taskForm.value.recurrenceEndDate
+        : null
     }
 
     if (isEditMode.value) {
@@ -1259,4 +1631,38 @@ function getRecurrenceIntervalText(interval) {
 
 <style scoped>
 @reference "../style.css";
+
+/* Style overrides for v-calendar to make it look premium and fit our custom day cells */
+:deep(.vc-container) {
+  border: none !important;
+  background: transparent !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+:deep(.vc-weeks) {
+  padding: 0 !important;
+  width: 100% !important;
+}
+:deep(.vc-day) {
+  min-height: 85px !important;
+  border-bottom: 1px solid var(--color-gray-100, #f3f4f6) !important;
+  padding: 0 !important;
+}
+:deep(.vc-day:not(:nth-child(7n))) {
+  border-right: 1px solid var(--color-gray-100, #f3f4f6) !important;
+}
+.dark :deep(.vc-day) {
+  border-bottom-color: var(--color-gray-800, #1f2937) !important;
+}
+.dark :deep(.vc-day:not(:nth-child(7n))) {
+  border-right-color: var(--color-gray-800, #1f2937) !important;
+}
+:deep(.vc-day.is-not-in-month) {
+  background-color: var(--color-gray-50, #f9fafb) !important;
+  opacity: 0.5;
+}
+.dark :deep(.vc-day.is-not-in-month) {
+  background-color: rgba(0, 0, 0, 0.15) !important;
+}
 </style>

@@ -12,7 +12,8 @@
     "success": "Erfolg",
     "confirm": "Bestätigen",
     "edit": "Bearbeiten",
-    "back_to_dashboard": "Zurück zum Dashboard"
+    "back_to_dashboard": "Zurück zum Dashboard",
+    "more": "mehr"
   },
   "sidebar": {
     "dashboard": "Dashboard",
@@ -568,7 +569,17 @@
     "delete_title": "Aufgabe löschen",
     "confirm_delete_msg": "Möchtest du diese Aufgabe wirklich löschen?",
     "error_delete": "Fehler beim Löschen der Aufgabe.",
-    "error_save": "Fehler beim Speichern der Aufgabe."
+    "error_save": "Fehler beim Speichern der Aufgabe.",
+    "all_day": "Ganztägig",
+    "due_time_label": "Fälligkeitszeit",
+    "recurring_btn": "Wiederkehrend",
+    "repeat_every": "Wiederholen alle",
+    "day_unit": "Tag",
+    "week_unit": "Woche",
+    "month_unit": "Monat",
+    "year_unit": "Jahr",
+    "until": "Bis",
+    "disable_recurrence": "Wiederholung entfernen"
   },
   "honey_batches": {
     "title": "Honig-Chargen",

@@ -27,6 +27,12 @@ class TaskBase(BaseModel):
     hive_id: Optional[str] = None
     is_recurring: bool = False
     recurrence_interval: Optional[str] = None  # DAILY, WEEKLY, BIWEEKLY, MONTHLY, YEARLY, EVERY_N_DAYS
+    is_all_day: bool = True
+    due_time: Optional[str] = None
+    recurrence_interval_type: Optional[str] = None  # DAILY, WEEKLY, MONTHLY, YEARLY
+    recurrence_interval_value: int = 1
+    recurrence_weekdays: Optional[str] = None  # e.g., "0,2,4" for Mon, Wed, Fri
+    recurrence_end_date: Optional[date] = None
 
 class TaskCreate(TaskBase):
     pass
@@ -41,6 +47,12 @@ class TaskUpdate(BaseModel):
     is_recurring: Optional[bool] = None
     recurrence_interval: Optional[str] = None  # DAILY, WEEKLY, BIWEEKLY, MONTHLY, YEARLY, EVERY_N_DAYS
     is_completed: Optional[bool] = None
+    is_all_day: Optional[bool] = None
+    due_time: Optional[str] = None
+    recurrence_interval_type: Optional[str] = None
+    recurrence_interval_value: Optional[int] = None
+    recurrence_weekdays: Optional[str] = None
+    recurrence_end_date: Optional[date] = None
 
 class TaskOut(TaskBase):
     id: str
