@@ -330,335 +330,7 @@
                 </button>
               </div>
 
-              <!-- Inline Create/Edit Form -->
-              <div v-if="showEntryModal" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl shadow-md p-6 mb-6 animate-scale">
-                <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100 dark:border-dark-border">
-                  <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-                    {{ isEditEntryMode ? $t('logbook.edit_entry_title') : $t('logbook.new_entry_title') }}
-                  </h3>
-                  <button @click="showEntryModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                  </button>
-                </div>
-                
-                <form @submit.prevent="submitEntryForm" class="space-y-4">
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('logbook.hive_required') }}</label>
-                      <select 
-                        v-model="entryForm.hiveId" 
-                        required
-                        :disabled="isHiveSelectorDisabled"
-                        @change="onHiveSelected"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                      >
-                        <option value="" disabled>{{ $t('logbook.select_hive_placeholder') }}</option>
-                        <option v-for="hive in filteredHivesForEntry" :key="hive.id" :value="hive.id">
-                          {{ hive.name }}
-                        </option>
-                      </select>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('logbook.date_required') }}</label>
-                      <input 
-                        v-model="entryForm.date" 
-                        type="date" 
-                        required
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-                      />
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('logbook.entry_type_required') }}</label>
-                      <select 
-                        v-model="selectedTypeOption" 
-                        required
-                        :disabled="isEditEntryMode"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer"
-                      >
-                        <option value="GENERAL">{{ $t('logbook.type_general') }}</option>
-                        <option value="INSPECTION_EXACT">{{ $t('logbook.type_inspection_exact') }}</option>
-                        <option value="INSPECTION_EIGHTHS">{{ $t('logbook.type_inspection_eighths') }}</option>
-                        <option value="VARROA_COUNT">{{ $t('logbook.type_varroa_count') }}</option>
-                        <option value="VARROA_TREATMENT">{{ $t('logbook.type_varroa_treatment') }}</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('logbook.notes_label') }}</label>
-                    <textarea 
-                      v-model="entryForm.notes" 
-                      :placeholder="$t('logbook.notes_placeholder')"
-                      rows="6"
-                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-                    ></textarea>
-                  </div>
-
-                  <!-- Image Upload Section -->
-                  <div class="space-y-3">
-                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
-                      {{ $t('logbook.table_images') }}
-                    </label>
-                    <div 
-                      @dragover.prevent="dragOver = true"
-                      @dragleave.prevent="dragOver = false"
-                      @drop.prevent="onFileDrop"
-                      @click="triggerFileInput"
-                      class="border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-200"
-                      :class="dragOver ? 'border-primary bg-primary/5' : 'border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-dark-bg/30 hover:border-primary/50'"
-                    >
-                      <input 
-                        type="file" 
-                        ref="modalFileInput" 
-                        multiple 
-                        accept="image/*" 
-                        class="hidden" 
-                        @change="onFileSelect" 
-                      />
-                      <div class="text-2xl mb-1">📸</div>
-                      <p class="text-xs font-bold text-gray-700 dark:text-gray-300">
-                        {{ $t('logbook.drag_drop_area') }}
-                      </p>
-                      <p class="text-[10px] text-gray-400 mt-1">
-                        {{ $t('logbook.drag_drop_hint') }}
-                      </p>
-                    </div>
-
-                    <!-- Image Preview Grid -->
-                    <div v-if="entryFiles.length > 0" class="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-3">
-                      <div 
-                        v-for="(img, idx) in entryFiles" 
-                        :key="idx"
-                        class="relative aspect-square rounded-2xl overflow-hidden border border-gray-100 dark:border-dark-border group bg-gray-50 dark:bg-dark-card"
-                      >
-                        <img 
-                          :src="img.isExisting ? `/uploads/${img.thumbnail_path || img.image_path}` : img.previewUrl" 
-                          alt="Preview" 
-                          class="w-full h-full object-cover"
-                        />
-                        <button 
-                          type="button"
-                          @click="removeEntryFile(idx)"
-                          class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-lg shadow opacity-0 group-hover:opacity-100 transition-opacity duration-150"
-                          :title="$t('logbook.delete_image')"
-                        >
-                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- SUB-FORM: INSPECTION DETAILS (nur Zargen-weise) -->
-                  <div v-if="entryForm.entryType === 'INSPECTION'" class="space-y-4 border-t border-gray-100 dark:border-dark-border pt-4">
-                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                      <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">
-                        {{ $t('logbook.assessment_variant') }}
-                      </h4>
-                    </div>
-
-                    <!-- Zargen-weise Vereinfachte Assessment -->
-                    <div class="space-y-4 animate-scale">
-                      <!-- Category selection checkboxes -->
-                      <div class="p-4 bg-gray-50 dark:bg-dark-bg/60 border border-gray-200 dark:border-dark-border rounded-2xl space-y-2.5">
-                        <span class="block text-[10px] font-black text-gray-500 uppercase tracking-wide">{{ $t('logbook.categories_to_record') }}</span>
-                        <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs font-bold text-gray-700 dark:text-gray-300">
-                          <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
-                            <input type="checkbox" v-model="activeCategories.brood" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
-                            <span class="text-amber-500">🥚 {{ $t('logbook.brood') }}</span>
-                          </label>
-                          <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
-                            <input type="checkbox" v-model="activeCategories.bees" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
-                            <span class="text-green-500">🐝 {{ $t('logbook.bees') }}</span>
-                          </label>
-                          <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
-                            <input type="checkbox" v-model="activeCategories.drones" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
-                            <span class="text-sky-500">♂️ {{ $t('logbook.drones') }}</span>
-                          </label>
-                          <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
-                            <input type="checkbox" v-model="activeCategories.drone_brood" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
-                            <span class="text-orange-500">🥚♂️ {{ $t('logbook.drone_brood') }}</span>
-                          </label>
-                          <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
-                            <input type="checkbox" v-model="activeCategories.pollen" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
-                            <span class="text-purple-500">🌺 {{ $t('logbook.pollen') }}</span>
-                          </label>
-                          <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
-                            <input type="checkbox" v-model="activeCategories.food" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
-                            <span class="text-yellow-500">🍯 {{ $t('logbook.food') }}</span>
-                          </label>
-                        </div>
-                      </div>
-
-                      <!-- Boxes List -->
-                      <div class="space-y-3">
-                        <div 
-                          v-for="box in entryForm.inspectionDetail.boxes" 
-                          :key="box.id"
-                          class="p-4 bg-white dark:bg-dark-card border rounded-2xl shadow-sm space-y-3 border-gray-200 dark:border-dark-border"
-                        >
-                          <div class="flex justify-between items-center pb-2 border-b border-gray-50 dark:border-dark-border">
-                            <span class="text-xs font-extrabold text-gray-800 dark:text-gray-200 flex items-center">
-                              {{ $t('logbook.box_label', { order: box.order, type: box.box_type === 'BROOD' ? $t('logbook.brood_chamber') : $t('logbook.honey_chamber') }) }}
-                            </span>
-                            <span class="text-[9px] font-bold text-gray-400 font-mono">
-                              {{ $t('logbook.box_detail_hint', { count: box.frame_count, name: box.frame_type_name, multiplier: box.multiplier }) }}
-                            </span>
-                          </div>
-
-                          <div class="grid grid-cols-2 sm:grid-cols-6 gap-3 text-center">
-                            <!-- Brood -->
-                            <div v-if="activeCategories.brood" class="space-y-1">
-                              <span class="text-[9px] text-amber-500 font-bold uppercase">{{ $t('logbook.brood') }}</span>
-                              <input 
-                                v-model.number="box.brood" 
-                                type="number" 
-                                step="any"
-                                min="0" 
-                                :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 300 : undefined" 
-                                class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                                :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
-                              />
-                            </div>
-
-                            <!-- Bees -->
-                            <div v-if="activeCategories.bees" class="space-y-1">
-                              <span class="text-[9px] text-green-500 font-bold uppercase">{{ $t('logbook.bees') }}</span>
-                              <input 
-                                v-model.number="box.bees" 
-                                type="number" 
-                                step="any"
-                                min="0" 
-                                :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 300 : undefined" 
-                                class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                                :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
-                              />
-                            </div>
-
-                            <!-- Drones -->
-                            <div v-if="activeCategories.drones" class="space-y-1">
-                              <span class="text-[9px] text-sky-500 font-bold uppercase">{{ $t('logbook.drones') }}</span>
-                              <input 
-                                v-model.number="box.drones" 
-                                type="number" 
-                                step="any"
-                                min="0" 
-                                :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 300 : undefined" 
-                                class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                                :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
-                              />
-                            </div>
-
-                            <!-- Drone Brood -->
-                            <div v-if="activeCategories.drone_brood" class="space-y-1">
-                              <span class="text-[9px] text-orange-500 font-bold uppercase">{{ $t('logbook.drone_brood') }}</span>
-                              <input 
-                                v-model.number="box.drone_brood" 
-                                type="number" 
-                                step="any"
-                                min="0" 
-                                :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 300 : undefined" 
-                                class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                                :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
-                              />
-                            </div>
-
-                            <!-- Pollen -->
-                            <div v-if="activeCategories.pollen" class="space-y-1">
-                              <span class="text-[9px] text-purple-500 font-bold uppercase">{{ $t('logbook.pollen') }}</span>
-                              <input 
-                                v-model.number="box.pollen" 
-                                type="number" 
-                                step="any"
-                                min="0" 
-                                :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 300 : undefined" 
-                                class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                                :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_g') : $t('logbook.eighths_placeholder')"
-                              />
-                            </div>
-
-                            <!-- Food -->
-                            <div v-if="activeCategories.food" class="space-y-1">
-                              <span class="text-[9px] text-yellow-500 font-bold uppercase">{{ $t('logbook.food') }}</span>
-                              <input 
-                                v-model.number="box.food" 
-                                type="number" 
-                                step="any"
-                                min="0" 
-                                :max="entryForm.inspectionDetail.boxMode === 'eighths' ? 300 : undefined" 
-                                class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                                :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_g') : $t('logbook.eighths_placeholder')"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- SUB-FORM: VARROA COUNT DETAILS -->
-                  <div v-if="entryForm.entryType === 'VARROA_COUNT'" class="space-y-3 border-t border-gray-100 dark:border-dark-border pt-4">
-                    <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">{{ $t('logbook.varroa_windel_result') }}</h4>
-                    <div>
-                      <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('logbook.varroa_raw_count_label') }}</label>
-                      <input 
-                        v-model.number="entryForm.varroaCountDetail.rawCount" 
-                        type="number" 
-                        required
-                        min="0"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-                      />
-                      <p class="text-[10px] text-gray-400 mt-1 italic">{{ $t('logbook.varroa_calc_hint') }}</p>
-                    </div>
-                  </div>
-
-                  <!-- SUB-FORM: VARROA TREATMENT DETAILS -->
-                  <div v-if="entryForm.entryType === 'VARROA_TREATMENT'" class="space-y-3 border-t border-gray-100 dark:border-dark-border pt-4">
-                    <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">{{ $t('logbook.treatment_method') }}</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('logbook.treatment_product_label') }}</label>
-                        <input 
-                          v-model="entryForm.varroaTreatmentDetail.product" 
-                          type="text" 
-                          required
-                          :placeholder="$t('logbook.treatment_product_placeholder')"
-                          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('logbook.treatment_dosage_label') }}</label>
-                        <input 
-                          v-model="entryForm.varroaTreatmentDetail.dosage" 
-                          type="text" 
-                          required
-                          :placeholder="$t('logbook.treatment_dosage_placeholder')"
-                          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('logbook.treatment_notes_label') }}</label>
-                      <textarea 
-                        v-model="entryForm.varroaTreatmentDetail.treatmentNotes" 
-                        :placeholder="$t('logbook.treatment_notes_placeholder')"
-                        rows="2"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-                      ></textarea>
-                    </div>
-                  </div>
-
-                  <div class="flex justify-end space-x-2 pt-4 border-t border-gray-100 dark:border-dark-border">
-                    <button type="button" @click="showEntryModal = false" class="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">{{ $t('common.cancel') }}</button>
-                    <button type="submit" class="px-5 py-2 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md">
-                      {{ $t('common.save') }}
-                    </button>
-                  </div>
-                </form>
-              </div>
-
+              <!-- Inline Create/Edit Form moved to <LogbookEntryModal /> at top level -->
               <!-- Entries Stream List -->
               <div v-if="entriesLoading" class="flex justify-center py-20 bg-white dark:bg-dark-card rounded-3xl border border-gray-200 dark:border-dark-border shadow-sm">
                 <svg class="animate-spin h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -965,361 +637,6 @@
           </div>
         </div>
 
-        <!-- Inline Entry creation form in table mode -->
-        <div v-if="showEntryModal" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl shadow-md p-6 max-w-3xl mx-auto mb-6 animate-scale">
-          <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100 dark:border-dark-border">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-              {{ isEditEntryMode ? $t('logbook.edit_entry_title') : $t('logbook.new_entry_title') }}
-            </h3>
-            <button @click="showEntryModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-          </div>
-          
-          <form @submit.prevent="submitEntryForm" class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('logbook.hive_required') }}</label>
-                <select 
-                  v-model="entryForm.hiveId" 
-                  required
-                  :disabled="isHiveSelectorDisabled"
-                  @change="onHiveSelected"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  <option value="" disabled>{{ $t('logbook.select_hive_placeholder') }}</option>
-                  <option v-for="hive in hives" :key="hive.id" :value="hive.id">
-                    {{ hive.name }}
-                  </option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('logbook.date_required') }}</label>
-                <input 
-                  v-model="entryForm.date" 
-                  type="date" 
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-                />
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('logbook.entry_type_required') }}</label>
-                <select 
-                  v-model="selectedTypeOption" 
-                  required
-                  :disabled="isEditEntryMode"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer"
-                >
-                  <option value="GENERAL">{{ $t('logbook.type_general') }}</option>
-                  <option value="INSPECTION_EXACT">{{ $t('logbook.type_inspection_exact') }}</option>
-                  <option value="INSPECTION_EIGHTHS">{{ $t('logbook.type_inspection_eighths') }}</option>
-                  <option value="VARROA_COUNT">{{ $t('logbook.type_varroa_count') }}</option>
-                  <option value="VARROA_TREATMENT">{{ $t('logbook.type_varroa_treatment') }}</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('logbook.notes_label') }}</label>
-              <textarea 
-                v-model="entryForm.notes" 
-                :placeholder="$t('logbook.notes_placeholder')"
-                rows="6"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-              ></textarea>
-            </div>
-
-            <!-- Image Upload Section -->
-            <div class="space-y-3">
-              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
-                {{ $t('logbook.table_images') }}
-              </label>
-              <div 
-                @dragover.prevent="dragOver = true"
-                @dragleave.prevent="dragOver = false"
-                @drop.prevent="onFileDrop"
-                @click="triggerFileInput"
-                class="border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-200"
-                :class="dragOver ? 'border-primary bg-primary/5' : 'border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-dark-bg/30 hover:border-primary/50'"
-              >
-                <input 
-                  type="file" 
-                  ref="modalFileInputTable" 
-                  multiple 
-                  accept="image/*" 
-                  class="hidden" 
-                  @change="onFileSelect" 
-                />
-                <div class="text-2xl mb-1">📸</div>
-                <p class="text-xs font-bold text-gray-700 dark:text-gray-300">
-                  {{ $t('logbook.drag_drop_area') }}
-                </p>
-                <p class="text-[10px] text-gray-400 mt-1">
-                  {{ $t('logbook.drag_drop_hint') }}
-                </p>
-              </div>
-
-              <!-- Image Preview Grid -->
-              <div v-if="entryFiles.length > 0" class="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-3">
-                <div 
-                  v-for="(img, idx) in entryFiles" 
-                  :key="idx"
-                  class="relative aspect-square rounded-2xl overflow-hidden border border-gray-100 dark:border-dark-border group bg-gray-50 dark:bg-dark-card"
-                >
-                  <img 
-                    :src="img.isExisting ? `/uploads/${img.thumbnail_path || img.image_path}` : img.previewUrl" 
-                    alt="Preview" 
-                    class="w-full h-full object-cover"
-                  />
-                  <button 
-                    type="button"
-                    @click="removeEntryFile(idx)"
-                    class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-lg shadow opacity-0 group-hover:opacity-100 transition-opacity duration-150"
-                    :title="$t('logbook.delete_image')"
-                  >
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- SUB-FORM: INSPECTION DETAILS -->
-            <div v-if="entryForm.entryType === 'INSPECTION'" class="space-y-4 border-t border-gray-100 dark:border-dark-border pt-4">
-              
-              <!-- Warning card when hive has no boxes -->
-              <div v-if="activeHive && (!activeHive.boxes || activeHive.boxes.length === 0)" class="p-3.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/60 rounded-xl text-xs font-bold text-amber-700 dark:text-amber-400 flex items-start space-x-2">
-                <span class="mt-0.5 text-base shrink-0">⚠️</span>
-                <span>{{ $t('logbook.no_boxes_warning') }}</span>
-              </div>
-
-              <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">{{ $t('logbook.assessment_variant_simple') }}</h4>
-                <span class="inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black bg-white dark:bg-dark-card text-primary border border-gray-200 dark:border-dark-border">
-                  {{ $t('logbook.assessment_variant_badge') }}
-                </span>
-              </div>
-
-              <!-- Zargen-weise Vereinfachte Assessment (Standard, einzige Variante) -->
-              <div class="space-y-4 animate-scale">
-                <!-- Category selection checkboxes -->
-                <div class="p-4 bg-gray-50 dark:bg-dark-bg/60 border border-gray-200 dark:border-dark-border rounded-2xl space-y-2.5">
-                  <span class="block text-[10px] font-black text-gray-500 uppercase tracking-wide">{{ $t('logbook.categories_to_record') }}</span>
-                  <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs font-bold text-gray-700 dark:text-gray-300">
-                    <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
-                      <input type="checkbox" v-model="activeCategories.brood" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
-                      <span class="text-amber-500">🥚 {{ $t('logbook.brood') }}</span>
-                    </label>
-                    <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
-                      <input type="checkbox" v-model="activeCategories.bees" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
-                      <span class="text-green-500">🐝 {{ $t('logbook.bees') }}</span>
-                    </label>
-                    <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
-                      <input type="checkbox" v-model="activeCategories.drones" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
-                      <span class="text-sky-500">♂️ {{ $t('logbook.drones') }}</span>
-                    </label>
-                    <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
-                      <input type="checkbox" v-model="activeCategories.drone_brood" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
-                      <span class="text-orange-500">🥚♂️ {{ $t('logbook.drone_brood') }}</span>
-                    </label>
-                    <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
-                      <input type="checkbox" v-model="activeCategories.pollen" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
-                      <span class="text-purple-500">🌺 {{ $t('logbook.pollen') }}</span>
-                    </label>
-                    <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
-                      <input type="checkbox" v-model="activeCategories.food" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border" />
-                      <span class="text-yellow-500">🍯 {{ $t('logbook.food') }}</span>
-                    </label>
-                  </div>
-                </div>
-
-                <!-- Boxes List -->
-                <div class="space-y-3">
-                  <div 
-                    v-for="(box, idx) in entryForm.inspectionDetail.boxes" 
-                    :key="box.id"
-                    class="p-4 bg-white dark:bg-dark-card border rounded-2xl shadow-sm space-y-3 border-gray-200 dark:border-dark-border"
-                  >
-                    <div class="flex justify-between items-center pb-2 border-b border-gray-50 dark:border-dark-border">
-                      <span class="text-xs font-extrabold text-gray-800 dark:text-gray-200 flex items-center">
-                        {{ $t('logbook.box_label', { order: box.order, type: box.box_type === 'BROOD' ? $t('logbook.brood_chamber') : $t('logbook.honey_chamber') }) }}
-                      </span>
-                      <span class="text-[9px] font-bold text-gray-400 font-mono">
-                        {{ $t('logbook.box_detail_hint', { count: box.frame_count, name: box.frame_type_name, multiplier: box.multiplier }) }}
-                      </span>
-                    </div>
-
-                    <div class="grid grid-cols-2 sm:grid-cols-6 gap-3 text-center">
-                      <!-- Brood -->
-                      <div v-if="activeCategories.brood" class="space-y-1">
-                        <span class="text-[9px] text-amber-500 font-bold uppercase">{{ $t('logbook.brood') }}</span>
-                        <input 
-                          v-model.number="box.brood" 
-                          type="number" 
-                          step="any"
-                          min="0" 
-                          :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 300" 
-                          class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                          :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
-                        />
-                        <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[9px] text-gray-400 font-mono">
-                          ≙ {{ calculatedBoxTotals[idx].brood }}
-                        </div>
-                      </div>
-
-                      <!-- Bees -->
-                      <div v-if="activeCategories.bees" class="space-y-1">
-                        <span class="text-[9px] text-green-500 font-bold uppercase">{{ $t('logbook.bees') }}</span>
-                        <input 
-                          v-model.number="box.bees" 
-                          type="number" 
-                          step="any"
-                          min="0" 
-                          :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 300" 
-                          class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                          :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
-                        />
-                        <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[9px] text-gray-400 font-mono">
-                          ≙ {{ calculatedBoxTotals[idx].bees }}
-                        </div>
-                      </div>
-
-                      <!-- Drones -->
-                      <div v-if="activeCategories.drones" class="space-y-1">
-                        <span class="text-[9px] text-sky-500 font-bold uppercase">{{ $t('logbook.drones') }}</span>
-                        <input 
-                          v-model.number="box.drones" 
-                          type="number" 
-                          step="any"
-                          min="0" 
-                          :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 300" 
-                          class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                          :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
-                        />
-                        <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[9px] text-gray-400 font-mono">
-                          ≙ {{ calculatedBoxTotals[idx].drones }}
-                        </div>
-                      </div>
-
-                      <!-- Drone Brood -->
-                      <div v-if="activeCategories.drone_brood" class="space-y-1">
-                        <span class="text-[9px] text-orange-500 font-bold uppercase">{{ $t('logbook.drone_brood') }}</span>
-                        <input 
-                          v-model.number="box.drone_brood" 
-                          type="number" 
-                          step="any"
-                          min="0" 
-                          :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 300" 
-                          class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                          :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_pcs') : $t('logbook.eighths_placeholder')"
-                        />
-                        <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[9px] text-gray-400 font-mono">
-                          ≙ {{ calculatedBoxTotals[idx].drone_brood }}
-                        </div>
-                      </div>
-
-                      <!-- Pollen -->
-                      <div v-if="activeCategories.pollen" class="space-y-1">
-                        <span class="text-[9px] text-purple-500 font-bold uppercase">{{ $t('logbook.pollen') }}</span>
-                        <input 
-                          v-model.number="box.pollen" 
-                          type="number" 
-                          step="any"
-                          min="0" 
-                          :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 300" 
-                          class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                          :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_g') : $t('logbook.eighths_placeholder')"
-                        />
-                        <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[9px] text-gray-400 font-mono">
-                          ≙ {{ calculatedBoxTotals[idx].pollen }}
-                        </div>
-                      </div>
-
-                      <!-- Food -->
-                      <div v-if="activeCategories.food" class="space-y-1">
-                        <span class="text-[9px] text-yellow-500 font-bold uppercase">{{ $t('logbook.food') }}</span>
-                        <input 
-                          v-model.number="box.food" 
-                          type="number" 
-                          step="any"
-                          min="0" 
-                          :max="entryForm.inspectionDetail.boxMode === 'exact' ? undefined : 300" 
-                          class="w-full px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg rounded-xl text-center text-xs font-mono font-bold"
-                          :placeholder="entryForm.inspectionDetail.boxMode === 'exact' ? $t('logbook.exact_placeholder_g') : $t('logbook.eighths_placeholder')"
-                        />
-                        <div v-if="calculatedBoxTotals && calculatedBoxTotals[idx]" class="text-[9px] text-gray-400 font-mono">
-                          ≙ {{ calculatedBoxTotals[idx].food }}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- SUB-FORM: VARROA COUNT DETAILS -->
-            <div v-if="entryForm.entryType === 'VARROA_COUNT'" class="space-y-3 border-t border-gray-100 dark:border-dark-border pt-4">
-              <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">{{ $t('logbook.varroa_windel_result') }}</h4>
-              <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('logbook.varroa_raw_count_label') }}</label>
-                <input 
-                  v-model.number="entryForm.varroaCountDetail.rawCount" 
-                  type="number" 
-                  required
-                  min="0"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-                />
-                <p class="text-[10px] text-gray-400 mt-1 italic">{{ $t('logbook.varroa_calc_hint') }}</p>
-              </div>
-            </div>
-
-            <!-- SUB-FORM: VARROA TREATMENT DETAILS -->
-            <div v-if="entryForm.entryType === 'VARROA_TREATMENT'" class="space-y-3 border-t border-gray-100 dark:border-dark-border pt-4">
-              <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">{{ $t('logbook.treatment_method') }}</h4>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('logbook.treatment_product_label') }}</label>
-                  <input 
-                    v-model="entryForm.varroaTreatmentDetail.product" 
-                    type="text" 
-                    required
-                    :placeholder="$t('logbook.treatment_product_placeholder')"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-                  />
-                </div>
-                <div>
-                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('logbook.treatment_dosage_label') }}</label>
-                  <input 
-                    v-model="entryForm.varroaTreatmentDetail.dosage" 
-                    type="text" 
-                    required
-                    :placeholder="$t('logbook.treatment_dosage_placeholder')"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-                  />
-                </div>
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('logbook.treatment_notes_label') }}</label>
-                <textarea 
-                  v-model="entryForm.varroaTreatmentDetail.treatmentNotes" 
-                  :placeholder="$t('logbook.treatment_notes_placeholder')"
-                  rows="2"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-                ></textarea>
-              </div>
-            </div>
-
-            <div class="flex justify-end space-x-2 pt-4 border-t border-gray-100 dark:border-dark-border">
-              <button type="button" @click="showEntryModal = false" class="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">{{ $t('common.cancel') }}</button>
-              <button type="submit" class="px-5 py-2 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md">
-                {{ $t('common.save') }}
-              </button>
-            </div>
-          </form>
-        </div>
-
         <!-- Entries Table Display -->
         <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl overflow-hidden shadow-sm">
           <div v-if="loadingAllEntries" class="flex flex-col items-center justify-center py-20">
@@ -1470,14 +787,25 @@
     <div v-if="lightboxImage" class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4" @click="closeLightbox">
       <div class="relative max-w-4xl max-h-screen">
         <img :src="lightboxImage" class="max-w-full max-h-[85vh] rounded-2xl shadow-2xl border border-white/10 animate-scale" alt="Full screen preview" />
-        <button 
-          @click="closeLightbox" 
+        <button
+          @click="closeLightbox"
           class="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/40 text-white rounded-full transition-colors"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
     </div>
+
+    <!-- Entry Create/Edit Modal -->
+    <LogbookEntryModal
+      ref="entryModalRef"
+      v-model:show="showEntryModal"
+      :editing-entry="editingEntry"
+      :hives="hives"
+      :selected-session="selectedSession"
+      :apiary-id="apiaryStore.activeApiaryId"
+      @saved="refreshCurrentEntries"
+    />
 
   </div>
 </template>
@@ -1489,6 +817,7 @@ import { useApiaryStore } from '../stores/apiary'
 import { useErrorStore } from '../stores/error'
 import { useConfirmStore } from '../stores/confirm'
 import AIChatPane from '../components/AIChatPane.vue'
+import LogbookEntryModal from '../components/LogbookEntryModal.vue'
 import axios from 'axios'
 
 const { t, locale } = useI18n()
@@ -1528,8 +857,8 @@ const showSessionModal = ref(false)
 const isEditSessionMode = ref(false)
 const editingSessionId = ref(null)
 const showEntryModal = ref(false)
-const isEditEntryMode = ref(false)
-const editingEntryId = ref(null)
+const editingEntry = ref(null)
+const entryModalRef = ref(null)
 
 const sessionForm = reactive({
   title: '',
@@ -1538,53 +867,6 @@ const sessionForm = reactive({
   linkedApiaryIds: [],
   linkedLocationIds: [],
   linkedHiveIds: []
-})
-
-const entryForm = reactive({
-  hiveId: '',
-  date: new Date().toISOString().substring(0, 10),
-  entryType: 'GENERAL',
-  notes: '',
-  inspectionDetail: {
-    assessmentMode: 'boxes', // only simplified box mode
-    boxMode: 'exact', // 'exact' or 'eighths'
-    frames: [],
-    boxes: []
-  },
-  varroaCountDetail: {
-    rawCount: 0
-  },
-  varroaTreatmentDetail: {
-    product: '',
-    dosage: '',
-    treatmentNotes: ''
-  }
-})
-
-const entryFiles = ref([])
-const dragOver = ref(false)
-const modalFileInput = ref(null)
-const modalFileInputTable = ref(null)
-const selectedTypeOption = ref('GENERAL')
-
-const CATEGORIES_STORAGE_KEY = 'beeboard_active_categories'
-
-function loadSavedCategories() {
-  try {
-    const saved = localStorage.getItem(CATEGORIES_STORAGE_KEY)
-    if (saved) return JSON.parse(saved)
-  } catch { /* ignore parse error, use defaults */ }
-  return null
-}
-
-const _savedCats = loadSavedCategories()
-const activeCategories = reactive({
-  brood: _savedCats ? _savedCats.brood !== false : true,
-  bees: _savedCats ? _savedCats.bees !== false : true,
-  drones: _savedCats ? _savedCats.drones !== false : true,
-  drone_brood: _savedCats ? _savedCats.drone_brood !== false : true,
-  pollen: _savedCats ? _savedCats.pollen !== false : true,
-  food: _savedCats ? _savedCats.food !== false : true
 })
 
 // Lifecycle
@@ -1622,59 +904,11 @@ watch(viewMode, async (newVal) => {
 
 watch(showEntryModal, (newVal) => {
   if (!newVal) {
-    clearEntryFormFiles()
-  }
-})
-
-watch(activeCategories, (newVal) => {
-  try {
-    localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify({ ...newVal }))
-  } catch { /* ignore storage write error */ }
-}, { deep: true })
-
-watch(selectedTypeOption, (newVal) => {
-  if (newVal === 'INSPECTION_EXACT') {
-    entryForm.entryType = 'INSPECTION'
-    entryForm.inspectionDetail.boxMode = 'exact'
-  } else if (newVal === 'INSPECTION_EIGHTHS') {
-    entryForm.entryType = 'INSPECTION'
-    entryForm.inspectionDetail.boxMode = 'eighths'
-  } else {
-    entryForm.entryType = newVal
-  }
-  
-  if (entryForm.entryType === 'INSPECTION') {
-    onHiveSelected()
+    editingEntry.value = null
   }
 })
 
 // Dropdown unique filter computed values
-const activeHive = computed(() => hives.value.find(h => h.id === entryForm.hiveId))
-
-const isHiveSelectorDisabled = computed(() => {
-  if (!selectedSession.value) return false
-  if (selectedSession.value.hive_id) return true
-  if (selectedSession.value.scope_type === 'HIVE' && selectedSession.value.linked_hives?.length === 1) return true
-  return false
-})
-
-const filteredHivesForEntry = computed(() => {
-  if (!selectedSession.value) return hives.value
-  
-  const scope = selectedSession.value.scope_type || 'APIARY'
-  if (scope === 'HIVE') {
-    const linkedIds = selectedSession.value.linked_hives?.map(h => h.id) || []
-    return hives.value.filter(h => linkedIds.includes(h.id))
-  } else if (scope === 'LOCATION') {
-    const linkedIds = selectedSession.value.linked_locations?.map(l => l.id) || []
-    return hives.value.filter(h => linkedIds.includes(h.location_id))
-  } else if (scope === 'APIARY') {
-    const linkedIds = selectedSession.value.linked_apiaries?.map(a => a.id) || []
-    return hives.value.filter(h => linkedIds.includes(h.apiary_id))
-  }
-  return hives.value
-})
-
 const uniqueLocations = computed(() => {
   const map = new Map()
   allEntries.value.forEach(e => {
@@ -1730,52 +964,6 @@ const filteredEntries = computed(() => {
       if (entryDate > endDate) return false
     }
     return true
-  })
-})
-
-// Box capacity conversions display
-const calculatedBoxTotals = computed(() => {
-  if (entryForm.entryType !== 'INSPECTION' || entryForm.inspectionDetail.assessmentMode !== 'boxes') return null
-  
-  return entryForm.inspectionDetail.boxes.map(box => {
-    let broodVal = 0
-    let beeVal = 0
-    let foodVal = 0
-    let droneVal = 0
-    let droneBroodVal = 0
-    let pollenVal = 0
-    
-    if (entryForm.inspectionDetail.boxMode === 'exact') {
-      broodVal = Number(box.brood || 0)
-      beeVal = Number(box.bees || 0)
-      foodVal = Number(box.food || 0)
-      droneVal = Number(box.drones || 0)
-      droneBroodVal = Number(box.drone_brood || 0)
-      pollenVal = Number(box.pollen || 0)
-    } else {
-      const broodMult = box.brood_multiplier || 400.0
-      const beeMult = box.bee_multiplier || 125.0
-      const foodMult = box.food_multiplier || 125.0
-      const droneMult = box.drone_multiplier || 100.0
-      const droneBroodMult = box.drone_brood_multiplier || 230.0
-      const pollenMult = box.pollen_multiplier || 40.0
-
-      broodVal = Number(box.brood || 0) * broodMult
-      beeVal = Number(box.bees || 0) * beeMult
-      foodVal = Number(box.food || 0) * foodMult
-      droneVal = Number(box.drones || 0) * droneMult
-      droneBroodVal = Number(box.drone_brood || 0) * droneBroodMult
-      pollenVal = Number(box.pollen || 0) * pollenMult
-    }
-    
-    return {
-      brood: activeCategories.brood ? broodVal.toFixed(0) + ' Stk.' : '-',
-      bees: activeCategories.bees ? beeVal.toFixed(0) + ' Stk.' : '-',
-      food: activeCategories.food ? foodVal.toFixed(0) + ' g' : '-',
-      drones: activeCategories.drones ? droneVal.toFixed(0) + ' Stk.' : '-',
-      drone_brood: activeCategories.drone_brood ? droneBroodVal.toFixed(0) + ' Stk.' : '-',
-      pollen: activeCategories.pollen ? pollenVal.toFixed(0) + ' g' : '-'
-    }
   })
 })
 
@@ -1980,265 +1168,103 @@ async function deleteSession(session) {
 }
 
 function openCreateEntryModal() {
-  isEditEntryMode.value = false
-  editingEntryId.value = null
-  
-  entryForm.hiveId = selectedSession.value?.hive_id || (filteredHivesForEntry.value[0]?.id || '')
-  entryForm.date = new Date().toISOString().substring(0, 10)
-  selectedTypeOption.value = 'GENERAL'
-  entryForm.notes = ''
-  entryForm.inspectionDetail.assessmentMode = 'boxes'
-  entryForm.inspectionDetail.boxMode = 'exact'
-  entryForm.varroaCountDetail.rawCount = 0
-  entryForm.varroaTreatmentDetail.product = ''
-  entryForm.varroaTreatmentDetail.dosage = ''
-  entryForm.varroaTreatmentDetail.treatmentNotes = ''
-  
-  const saved = loadSavedCategories()
-  activeCategories.brood = saved ? saved.brood !== false : true
-  activeCategories.bees = saved ? saved.bees !== false : true
-  activeCategories.drones = saved ? saved.drones !== false : true
-  activeCategories.drone_brood = saved ? saved.drone_brood !== false : true
-  activeCategories.pollen = saved ? saved.pollen !== false : true
-  activeCategories.food = saved ? saved.food !== false : true
-  
-  onHiveSelected()
-  clearEntryFormFiles()
-  showEntryModal.value = true
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  editingEntry.value = null
+  entryModalRef.value?.open(null)
 }
 
 function openEditEntryModal(entry) {
-  isEditEntryMode.value = true
-  editingEntryId.value = entry.id
-  
-  entryForm.hiveId = entry.hive_id
-  entryForm.date = entry.date
-  entryForm.entryType = entry.entry_type
-  entryForm.notes = entry.notes || ''
-  
-  clearEntryFormFiles()
-  
-  if (entry.entry_type === 'INSPECTION' && entry.inspection_detail) {
-    const anyEighths = (entry.inspection_detail.boxes || []).some(b =>
-      b.brood_eighths != null ||
-      b.bee_eighths != null ||
-      b.food_eighths != null ||
-      b.drone_eighths != null ||
-      b.drone_brood_eighths != null ||
-      b.pollen_eighths != null
-    )
-    selectedTypeOption.value = anyEighths ? 'INSPECTION_EIGHTHS' : 'INSPECTION_EXACT'
-  } else {
-    selectedTypeOption.value = entry.entry_type
-  }
-  if (entry.images) {
-    entryFiles.value = entry.images.map(img => ({
-      id: img.id,
-      image_path: img.image_path,
-      thumbnail_path: img.thumbnail_path,
-      isExisting: true
-    }))
-  }
-  
-  if (entry.entry_type === 'INSPECTION' && entry.inspection_detail) {
-    const hive = hives.value.find(h => h.id === entry.hive_id)
-
-    const anyEighths = (entry.inspection_detail.boxes || []).some(b =>
-      (b.brood_eighths != null && b.brood_eighths !== -1) ||
-      (b.bee_eighths != null && b.bee_eighths !== -1) ||
-      (b.food_eighths != null && b.food_eighths !== -1) ||
-      (b.drone_eighths != null && b.drone_eighths !== -1) ||
-      (b.drone_brood_eighths != null && b.drone_brood_eighths !== -1) ||
-      (b.pollen_eighths != null && b.pollen_eighths !== -1)
-    )
-
-    const boxesFromDb = entry.inspection_detail.boxes || []
-    activeCategories.brood = boxesFromDb.some(b => anyEighths ? (b.brood_eighths !== null && b.brood_eighths !== -1) : (b.brood_total !== null && b.brood_total !== -1))
-    activeCategories.bees = boxesFromDb.some(b => anyEighths ? (b.bee_eighths !== null && b.bee_eighths !== -1) : (b.bee_total !== null && b.bee_total !== -1))
-    activeCategories.food = boxesFromDb.some(b => anyEighths ? (b.food_eighths !== null && b.food_eighths !== -1) : (b.food_total !== null && b.food_total !== -1))
-    activeCategories.drones = boxesFromDb.some(b => anyEighths ? (b.drone_eighths !== null && b.drone_eighths !== -1) : (b.drone_total !== null && b.drone_total !== -1))
-    activeCategories.drone_brood = boxesFromDb.some(b => anyEighths ? (b.drone_brood_eighths !== null && b.drone_brood_eighths !== -1) : (b.drone_brood_total !== null && b.drone_brood_total !== -1))
-    activeCategories.pollen = boxesFromDb.some(b => anyEighths ? (b.pollen_eighths !== null && b.pollen_eighths !== -1) : (b.pollen_total !== null && b.pollen_total !== -1))
-
-    entryForm.inspectionDetail.boxes = (entry.inspection_detail.boxes || [])
-      .sort((a, b) => (a.box_index ?? 0) - (b.box_index ?? 0))
-      .map((b, idx) => {
-        const hiveBox = hive?.boxes?.[b.box_index ?? idx]
-        return {
-          id: hiveBox?.id || `box-${idx}`,
-          order: (b.box_index ?? idx) + 1,
-          box_type: hiveBox?.box_type || 'BROOD',
-          frame_count: hiveBox?.frame_count || 0,
-          multiplier: hiveBox?.frame_type?.multiplier || 1.0,
-          brood_multiplier: hiveBox?.frame_type?.brood_multiplier || 400.0,
-          food_multiplier: hiveBox?.frame_type?.food_multiplier || 125.0,
-          bee_multiplier: hiveBox?.frame_type?.bee_multiplier || 125.0,
-          drone_multiplier: hiveBox?.frame_type?.drone_multiplier || 100.0,
-          drone_brood_multiplier: hiveBox?.frame_type?.drone_brood_multiplier || 230.0,
-          pollen_multiplier: hiveBox?.frame_type?.pollen_multiplier || 40.0,
-          frame_type_name: hiveBox?.frame_type?.name || 'Zarge',
-          brood: anyEighths ? (b.brood_eighths !== null && b.brood_eighths !== -1 ? b.brood_eighths : 0) : (b.brood_total !== null && b.brood_total !== -1 ? b.brood_total : 0),
-          bees: anyEighths ? (b.bee_eighths !== null && b.bee_eighths !== -1 ? b.bee_eighths : 0) : (b.bee_total !== null && b.bee_total !== -1 ? b.bee_total : 0),
-          food: anyEighths ? (b.food_eighths !== null && b.food_eighths !== -1 ? b.food_eighths : 0) : (b.food_total !== null && b.food_total !== -1 ? b.food_total : 0),
-          drones: anyEighths ? (b.drone_eighths !== null && b.drone_eighths !== -1 ? b.drone_eighths : 0) : (b.drone_total !== null && b.drone_total !== -1 ? b.drone_total : 0),
-          drone_brood: anyEighths ? (b.drone_brood_eighths !== null && b.drone_brood_eighths !== -1 ? b.drone_brood_eighths : 0) : (b.drone_brood_total !== null && b.drone_brood_total !== -1 ? b.drone_brood_total : 0),
-          pollen: anyEighths ? (b.pollen_eighths !== null && b.pollen_eighths !== -1 ? b.pollen_eighths : 0) : (b.pollen_total !== null && b.pollen_total !== -1 ? b.pollen_total : 0)
-        }
-      })
-
-    entryForm.inspectionDetail.assessmentMode = 'boxes'
-    entryForm.inspectionDetail.boxMode = anyEighths ? 'eighths' : 'exact'
-  }
-  
-  if (entry.entry_type === 'VARROA_COUNT' && entry.varroa_count_detail) {
-    entryForm.varroaCountDetail.rawCount = entry.varroa_count_detail.raw_count
-  }
-  
-  if (entry.entry_type === 'VARROA_TREATMENT' && entry.varroa_treatment_detail) {
-    entryForm.varroaTreatmentDetail.product = entry.varroa_treatment_detail.product
-    entryForm.varroaTreatmentDetail.dosage = entry.varroa_treatment_detail.dosage
-    entryForm.varroaTreatmentDetail.treatmentNotes = entry.varroa_treatment_detail.treatment_notes || ''
-  }
-  
-  showEntryModal.value = true
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  editingEntry.value = entry
+  entryModalRef.value?.open(entry)
 }
 
-function onHiveSelected() {
-  if (entryForm.entryType !== 'INSPECTION') return
-  
-  const hive = hives.value.find(h => h.id === entryForm.hiveId)
-  if (!hive) return
-
-  // Build box-level inputs if the hive has boxes
-  if (hive.boxes && hive.boxes.length > 0) {
-    entryForm.inspectionDetail.boxes = hive.boxes.map(box => ({
-      id: box.id,
-      order: box.order,
-      box_type: box.box_type,
-      frame_count: box.frame_count,
-      multiplier: box.frame_type?.multiplier || 1.0,
-      brood_multiplier: box.frame_type?.brood_multiplier || 400.0,
-      food_multiplier: box.frame_type?.food_multiplier || 125.0,
-      bee_multiplier: box.frame_type?.bee_multiplier || 125.0,
-      drone_multiplier: box.frame_type?.drone_multiplier || 100.0,
-      drone_brood_multiplier: box.frame_type?.drone_brood_multiplier || 230.0,
-      pollen_multiplier: box.frame_type?.pollen_multiplier || 40.0,
-      frame_type_name: box.frame_type?.name || 'Standard',
-      brood: 0,
-      bees: 0,
-      food: 0,
-      drones: 0,
-      drone_brood: 0,
-      pollen: 0
-    }))
-  } else {
-    // If no boxes are configured, empty the boxes and force frames mode
-    entryForm.inspectionDetail.boxes = []
-    entryForm.inspectionDetail.assessmentMode = 'frames'
-  }
-
-  // nothing to do for frames anymore – boxes are precomputed elsewhere
+function onApplyDraft(draft) {
+  rightTab.value = 'entries'
+  entryModalRef.value?.applyDraft(draft)
 }
 
-async function submitEntryForm() {
-  try {
-    const isExact = entryForm.inspectionDetail.boxMode === 'exact'
+// Lightbox helpers
+function openLightbox(url) {
+  lightboxImage.value = url
+}
 
-    const payload = {
-      hive_id: entryForm.hiveId,
-      session_id: selectedSession.value ? selectedSession.value.id : null,
-      date: entryForm.date,
-      entry_type: entryForm.entryType,
-      notes: entryForm.notes.trim() || null,
-      inspection_detail: entryForm.entryType === 'INSPECTION' ? {
-        boxes: entryForm.inspectionDetail.boxes.map((box, idx) => {
-          const broodVal = activeCategories.brood ? Number(box.brood || 0) : -1
-          const beeVal = activeCategories.bees ? Number(box.bees || 0) : -1
-          const foodVal = activeCategories.food ? Number(box.food || 0) : -1
-          const droneVal = activeCategories.drones ? Number(box.drones || 0) : -1
-          const droneBroodVal = activeCategories.drone_brood ? Number(box.drone_brood || 0) : -1
-          const pollenVal = activeCategories.pollen ? Number(box.pollen || 0) : -1
+function closeLightbox() {
+  lightboxImage.value = null
+}
 
-          const broodMult = box.brood_multiplier || 400.0
-          const beeMult = box.bee_multiplier || 125.0
-          const foodMult = box.food_multiplier || 125.0
-          const droneMult = box.drone_multiplier || 100.0
-          const droneBroodMult = box.drone_brood_multiplier || 230.0
-          const pollenMult = box.pollen_multiplier || 40.0
+// Helpers
+function formatDateTime(dateTimeStr) {
+  if (!dateTimeStr) return ''
+  const d = new Date(dateTimeStr)
+  return d.toLocaleString(locale.value === 'de' ? 'de-DE' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
 
-          let broodTotal, beeTotal, foodTotal, droneTotal, droneBroodTotal, pollenTotal
+function formatDate(dateStr) {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  return d.toLocaleDateString(locale.value === 'de' ? 'de-DE' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
 
-          if (isExact) {
-            broodTotal = broodVal
-            beeTotal = beeVal
-            foodTotal = foodVal
-            droneTotal = droneVal
-            droneBroodTotal = droneBroodVal
-            pollenTotal = pollenVal
-          } else {
-            broodTotal = broodVal !== -1 ? broodVal * broodMult : -1
-            beeTotal = beeVal !== -1 ? beeVal * beeMult : -1
-            foodTotal = foodVal !== -1 ? foodVal * foodMult : -1
-            droneTotal = droneVal !== -1 ? droneVal * droneMult : -1
-            droneBroodTotal = droneBroodVal !== -1 ? droneBroodVal * droneBroodMult : -1
-            pollenTotal = pollenVal !== -1 ? pollenVal * pollenMult : -1
-          }
-
-          return {
-            box_index: idx,
-            brood_total: broodTotal,
-            bee_total: beeTotal,
-            drone_total: droneTotal,
-            drone_brood_total: droneBroodTotal,
-            pollen_total: pollenTotal,
-            food_total: foodTotal,
-
-            brood_eighths: isExact ? null : broodVal,
-            bee_eighths: isExact ? null : beeVal,
-            drone_eighths: isExact ? null : droneVal,
-            drone_brood_eighths: isExact ? null : droneBroodVal,
-            pollen_eighths: isExact ? null : pollenVal,
-            food_eighths: isExact ? null : foodVal
-          }
-        })
-      } : null,
-      varroa_count_detail: entryForm.entryType === 'VARROA_COUNT' ? {
-        raw_count: entryForm.varroaCountDetail.rawCount
-      } : null,
-      varroa_treatment_detail: entryForm.entryType === 'VARROA_TREATMENT' ? {
-        product: entryForm.varroaTreatmentDetail.product.trim(),
-        dosage: entryForm.varroaTreatmentDetail.dosage.trim(),
-        treatment_notes: entryForm.varroaTreatmentDetail.treatmentNotes.trim() || null
-      } : null
+function getEntryTypeName(entryOrType) {
+  if (typeof entryOrType === 'object' && entryOrType !== null) {
+    if (entryOrType.entry_type === 'INSPECTION') {
+      const anyEighths = (entryOrType.inspection_detail?.boxes || []).some(b =>
+        b.brood_eighths != null ||
+        b.bee_eighths != null ||
+        b.food_eighths != null ||
+        b.drone_eighths != null ||
+        b.drone_brood_eighths != null ||
+        b.pollen_eighths != null
+      )
+      return anyEighths ? t('logbook.type_inspection_eighths') : t('logbook.type_inspection_exact')
     }
+    return getEntryTypeName(entryOrType.entry_type)
+  }
 
-    let response
-    if (isEditEntryMode.value) {
-      response = await axios.put(`/api/logbook/entries/${editingEntryId.value}`, payload)
-    } else {
-      response = await axios.post('/api/logbook/entries', payload, {
-        params: { apiary_id: apiaryStore.activeApiaryId }
-      })
-    }
+  switch (entryOrType) {
+    case 'INSPECTION': return t('logbook.type_inspection')
+    case 'VARROA_COUNT': return t('logbook.type_varroa_count')
+    case 'VARROA_TREATMENT': return t('logbook.type_varroa_treatment')
+    case 'GENERAL': return t('logbook.type_general')
+    default: return entryOrType
+  }
+}
 
-    const entryId = response.data?.id || editingEntryId.value
-    const uploads = entryFiles.value.filter(f => !f.isExisting)
-    for (const uf of uploads) {
-      const formData = new FormData()
-      formData.append('file', uf.file)
-      await axios.post(`/api/logbook/entries/${entryId}/images`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
-    }
+function formatTotal(val, decimals = 0, unit = '') {
+  if (val === null || val === undefined || val === -1) return '-'
+  return `${Number(val).toFixed(decimals)}${unit ? ' ' + unit : ''}`
+}
 
-    showEntryModal.value = false
-    await refreshCurrentEntries()
-  } catch (err) {
-    errorStore.showError(t('logbook.entry_form_submission_error'), err, t('common.save'))
+function getBoxTotalsForEntry(entry) {
+  if (!entry.inspection_detail || !entry.inspection_detail.boxes) return null
+  const boxes = [...entry.inspection_detail.boxes]
+    .sort((a, b) => (a.box_index ?? 0) - (b.box_index ?? 0))
+    .map((b, idx) => ({
+      id: b.id || `box-${idx}`,
+      order: (b.box_index ?? idx) + 1,
+      box_type: 'BROOD',
+      frame_count: 0,
+      multiplier: 1.0,
+      frame_type_name: t('hives.box_label'),
+      brood: b.brood_total === -1 ? null : b.brood_total,
+      bees: b.bee_total === -1 ? null : b.bee_total,
+      food: b.food_total === -1 ? null : b.food_total,
+      drones: b.drone_total === -1 ? null : b.drone_total,
+      drone_brood: b.drone_brood_total === -1 ? null : b.drone_brood_total,
+      pollen: b.pollen_total === -1 ? null : b.pollen_total
+    }))
+
+  const hiveTotal = {
+    brood: boxes.some(b => b.brood !== null) ? boxes.reduce((acc, b) => acc + (b.brood || 0), 0) : null,
+    bees: boxes.some(b => b.bees !== null) ? boxes.reduce((acc, b) => acc + (b.bees || 0), 0) : null,
+    food: boxes.some(b => b.food !== null) ? boxes.reduce((acc, b) => acc + (b.food || 0), 0) : null,
+    drones: boxes.some(b => b.drones !== null) ? boxes.reduce((acc, b) => acc + (b.drones || 0), 0) : null,
+    drone_brood: boxes.some(b => b.drone_brood !== null) ? boxes.reduce((acc, b) => acc + (b.drone_brood || 0), 0) : null,
+    pollen: boxes.some(b => b.pollen !== null) ? boxes.reduce((acc, b) => acc + (b.pollen || 0), 0) : null
+  }
+
+  return {
+    boxes,
+    hive: hiveTotal
   }
 }
 
@@ -2290,213 +1316,6 @@ async function deleteEntryImage(imageId) {
     await refreshCurrentEntries()
   } catch (err) {
     console.error('Delete image failed:', err)
-  }
-}
-
-function onApplyDraft(draft) {
-  isEditEntryMode.value = false
-  editingEntryId.value = null
-  
-  rightTab.value = 'entries'
-  
-  let targetHiveId = hives.value[0]?.id || ''
-  if (draft.hive_name) {
-    const matched = hives.value.find(h => h.name.toLowerCase() === draft.hive_name.toLowerCase())
-    if (matched) targetHiveId = matched.id
-  }
-  
-  entryForm.hiveId = targetHiveId
-  entryForm.date = draft.date || new Date().toISOString().substring(0, 10)
-  const draftType = draft.entry_type || 'GENERAL'
-  if (draftType === 'INSPECTION') {
-    selectedTypeOption.value = 'INSPECTION_EXACT'
-  } else {
-    selectedTypeOption.value = draftType
-  }
-  entryForm.notes = draft.notes || ''
-  
-  if (draft.entry_type === 'INSPECTION' && draft.inspection_detail) {
-    entryForm.inspectionDetail.assessmentMode = 'frames'
-    entryForm.inspectionDetail.frames = (draft.inspection_detail.frames || []).map((f, i) => ({
-      frame_number: f.frame_number || (i + 1),
-      side: f.side || 1,
-      brood_eighths: f.brood_eighths || 0,
-      bee_eighths: f.bee_eighths || 0,
-      food_eighths: f.food_eighths || 0
-    }))
-  } else {
-    onHiveSelected()
-  }
-  
-  if (draft.entry_type === 'VARROA_COUNT' && draft.varroa_count_detail) {
-    entryForm.varroaCountDetail.rawCount = draft.varroa_count_detail.raw_count || 0
-  }
-  
-  if (draft.entry_type === 'VARROA_TREATMENT' && draft.varroa_treatment_detail) {
-    entryForm.varroaTreatmentDetail.product = draft.varroa_treatment_detail.product || ''
-    entryForm.varroaTreatmentDetail.dosage = draft.varroa_treatment_detail.dosage || ''
-    entryForm.varroaTreatmentDetail.treatmentNotes = draft.varroa_treatment_detail.treatment_notes || ''
-  }
-
-  showEntryModal.value = true
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-}
-
-// Lightbox helpers
-function openLightbox(url) {
-  lightboxImage.value = url
-}
-
-function closeLightbox() {
-  lightboxImage.value = null
-}
-
-// Helpers
-function formatDateTime(dateTimeStr) {
-  if (!dateTimeStr) return ''
-  const d = new Date(dateTimeStr)
-  return d.toLocaleString(locale.value === 'de' ? 'de-DE' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-}
-
-function formatDate(dateStr) {
-  if (!dateStr) return ''
-  const d = new Date(dateStr)
-  return d.toLocaleDateString(locale.value === 'de' ? 'de-DE' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })
-}
-
-function getEntryTypeName(entryOrType) {
-  if (typeof entryOrType === 'object' && entryOrType !== null) {
-    if (entryOrType.entry_type === 'INSPECTION') {
-      const anyEighths = (entryOrType.inspection_detail?.boxes || []).some(b =>
-        b.brood_eighths != null ||
-        b.bee_eighths != null ||
-        b.food_eighths != null ||
-        b.drone_eighths != null ||
-        b.drone_brood_eighths != null ||
-        b.pollen_eighths != null
-      )
-      return anyEighths ? t('logbook.type_inspection_eighths') : t('logbook.type_inspection_exact')
-    }
-    return getEntryTypeName(entryOrType.entry_type)
-  }
-  
-  switch (entryOrType) {
-    case 'INSPECTION': return t('logbook.type_inspection')
-    case 'VARROA_COUNT': return t('logbook.type_varroa_count')
-    case 'VARROA_TREATMENT': return t('logbook.type_varroa_treatment')
-    case 'GENERAL': return t('logbook.type_general')
-    default: return entryOrType
-  }
-}
-
-function formatTotal(val, decimals = 0, unit = '') {
-  if (val === null || val === undefined || val === -1) return '-'
-  return `${Number(val).toFixed(decimals)}${unit ? ' ' + unit : ''}`
-}
-
-function getBoxTotalsForEntry(entry) {
-  if (!entry.inspection_detail || !entry.inspection_detail.boxes) return null
-  const boxes = [...entry.inspection_detail.boxes]
-    .sort((a, b) => (a.box_index ?? 0) - (b.box_index ?? 0))
-    .map((b, idx) => ({
-      id: b.id || `box-${idx}`,
-      order: (b.box_index ?? idx) + 1,
-      box_type: 'BROOD',
-      frame_count: 0,
-      multiplier: 1.0,
-      frame_type_name: t('hives.box_label'),
-      brood: b.brood_total === -1 ? null : b.brood_total,
-      bees: b.bee_total === -1 ? null : b.bee_total,
-      food: b.food_total === -1 ? null : b.food_total,
-      drones: b.drone_total === -1 ? null : b.drone_total,
-      drone_brood: b.drone_brood_total === -1 ? null : b.drone_brood_total,
-      pollen: b.pollen_total === -1 ? null : b.pollen_total
-    }))
-
-  const hiveTotal = {
-    brood: boxes.some(b => b.brood !== null) ? boxes.reduce((acc, b) => acc + (b.brood || 0), 0) : null,
-    bees: boxes.some(b => b.bees !== null) ? boxes.reduce((acc, b) => acc + (b.bees || 0), 0) : null,
-    food: boxes.some(b => b.food !== null) ? boxes.reduce((acc, b) => acc + (b.food || 0), 0) : null,
-    drones: boxes.some(b => b.drones !== null) ? boxes.reduce((acc, b) => acc + (b.drones || 0), 0) : null,
-    drone_brood: boxes.some(b => b.drone_brood !== null) ? boxes.reduce((acc, b) => acc + (b.drone_brood || 0), 0) : null,
-    pollen: boxes.some(b => b.pollen !== null) ? boxes.reduce((acc, b) => acc + (b.pollen || 0), 0) : null
-  }
-
-  return {
-    boxes,
-    hive: hiveTotal
-  }
-}
-
-function clearEntryFormFiles() {
-  entryFiles.value.forEach(img => {
-    if (!img.isExisting && img.previewUrl) {
-      URL.revokeObjectURL(img.previewUrl)
-    }
-  })
-  entryFiles.value = []
-}
-
-function handleFilesAdd(files) {
-  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
-  const currentCount = entryFiles.value.length
-  let addedCount = 0
-  
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i]
-    if (!allowedTypes.includes(file.type.toLowerCase())) {
-      errorStore.showError(t('logbook.error_unsupported_format') || 'Dateiformat nicht unterstützt')
-      continue
-    }
-    
-    if (currentCount + addedCount >= 5) {
-      errorStore.showError(t('logbook.max_images_reached'))
-      break
-    }
-    
-    const previewUrl = URL.createObjectURL(file)
-    entryFiles.value.push({
-      file,
-      previewUrl,
-      isExisting: false
-    })
-    addedCount++
-  }
-}
-
-function onFileSelect(event) {
-  const files = event.target.files
-  if (files && files.length > 0) {
-    handleFilesAdd(files)
-  }
-}
-
-function onFileDrop(event) {
-  dragOver.value = false
-  const files = event.dataTransfer?.files
-  if (files && files.length > 0) {
-    handleFilesAdd(files)
-  }
-}
-
-function triggerFileInput() {
-  if (viewMode.value === 'table') {
-    modalFileInputTable.value?.click()
-  } else {
-    modalFileInput.value?.click()
-  }
-}
-
-async function removeEntryFile(index) {
-  const img = entryFiles.value[index]
-  if (img.isExisting) {
-    await deleteEntryImage(img.id)
-    entryFiles.value.splice(index, 1)
-  } else {
-    if (img.previewUrl) {
-      URL.revokeObjectURL(img.previewUrl)
-    }
-    entryFiles.value.splice(index, 1)
   }
 }
 </script>
