@@ -31,7 +31,9 @@
     "theme": "Design",
     "about": "Über",
     "logout": "Abmelden",
-    "toggle_language": "Sprache wechseln"
+    "toggle_language": "Sprache wechseln",
+    "collapse": "Sidebar einklappen",
+    "expand": "Sidebar ausklappen"
   },
   "apiary": {
     "manage_title": "Imkerei verwalten",

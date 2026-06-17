@@ -1,17 +1,37 @@
 <template>
   <div>
     <!-- Desktop Sidebar (md and up) -->
-    <aside class="fixed inset-y-0 left-0 z-30 w-64 bg-white dark:bg-dark-card border-r border-gray-200 dark:border-dark-border flex flex-col justify-between hidden md:flex transition-colors duration-300">
+    <aside
+      class="fixed inset-y-0 left-0 z-30 bg-white dark:bg-dark-card border-r border-gray-200 dark:border-dark-border flex flex-col justify-between hidden lg:flex transition-all duration-300 ease-in-out"
+      :class="[
+        settingsStore.sidebarCollapsed ? 'w-16' : 'w-64',
+        settingsStore.sidebarOverlaysContent ? 'shadow-2xl' : ''
+      ]"
+    >
       
       <!-- Brand Logo Section -->
-      <div class="h-20 flex items-center px-5 border-b border-gray-200 dark:border-dark-border/60">
-        <router-link to="/" class="flex items-center gap-3 hover-scale">
+      <div class="border-b border-gray-200 dark:border-dark-border/60 flex flex-col">
+        <router-link to="/" class="flex items-center gap-3 hover-scale min-w-0 px-5 py-4" :class="settingsStore.sidebarCollapsed ? 'justify-center px-2' : ''" :title="APP_NAME">
           <img :src="beeboardLogo" alt="BeeBoard" class="h-12 w-auto flex-shrink-0" />
-          <div class="flex flex-col leading-tight">
-            <span class="text-base font-extrabold tracking-tight text-gray-800 dark:text-white">{{ APP_NAME }}</span>
+          <div v-if="!settingsStore.sidebarCollapsed" class="flex flex-col leading-tight min-w-0">
+            <span class="text-base font-extrabold tracking-tight text-gray-800 dark:text-white truncate">{{ APP_NAME }}</span>
             <span class="text-[10px] font-semibold text-gray-400 dark:text-gray-500 tracking-wider">v{{ APP_VERSION }}</span>
           </div>
         </router-link>
+
+        <!-- Collapse/Expand Toggle (below the logo) -->
+        <button
+          type="button"
+          @click="settingsStore.toggleSidebar()"
+          class="w-full px-5 py-1.5 flex items-center gap-2 text-xs font-semibold text-gray-400 hover:text-primary dark:text-gray-500 dark:hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border transition-colors duration-200 border-t border-gray-100 dark:border-dark-border/40"
+          :class="settingsStore.sidebarCollapsed ? 'justify-center px-2' : ''"
+          :title="settingsStore.sidebarCollapsed ? $t('sidebar.expand') : $t('sidebar.collapse')"
+          :aria-label="settingsStore.sidebarCollapsed ? $t('sidebar.expand') : $t('sidebar.collapse')"
+        >
+          <ChevronsLeft v-if="!settingsStore.sidebarCollapsed" class="w-4 h-4" />
+          <ChevronsRight v-else class="w-4 h-4" />
+          <span v-if="!settingsStore.sidebarCollapsed">{{ $t('sidebar.collapse') }}</span>
+        </button>
       </div>
 
       <!-- Navigation Links -->
@@ -20,23 +40,30 @@
           v-for="item in filteredNavItems" 
           :key="item.path" 
           :to="item.path"
-          class="mx-3 px-4 py-2.5 rounded-xl flex items-center gap-3 text-sm font-semibold transition-all duration-200 group"
-          :class="$route.path.startsWith(item.path) 
-            ? 'bg-primary text-white shadow-md shadow-primary/20' 
-            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-border hover:text-primary dark:hover:text-primary'"
+          class="mx-3 px-3 py-2.5 rounded-xl flex items-center text-sm font-semibold transition-all duration-200 group relative"
+          :class="[
+            settingsStore.sidebarCollapsed ? 'justify-center' : 'gap-3',
+            $route.path.startsWith(item.path) 
+              ? 'bg-primary text-white shadow-md shadow-primary/20' 
+              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-border hover:text-primary dark:hover:text-primary'
+          ]"
+          :title="settingsStore.sidebarCollapsed ? item.name : null"
         >
           <component 
             :is="item.icon" 
             class="w-5 h-5 flex-shrink-0 transition-colors duration-200"
             :class="$route.path.startsWith(item.path) ? 'text-white' : 'text-gray-400 dark:text-gray-500 group-hover:text-primary dark:group-hover:text-primary'"
           />
-          <span class="flex-1">{{ item.name }}</span>
+          <span v-if="!settingsStore.sidebarCollapsed" class="flex-1">{{ item.name }}</span>
           <span
             v-if="item.path === '/ai-insights' && unreadInsightsCount > 0"
             class="min-w-5 h-5 px-1.5 rounded-full text-[10px] font-black flex items-center justify-center"
-            :class="$route.path.startsWith(item.path)
-              ? 'bg-white/20 text-white'
-              : 'bg-primary/15 text-primary'"
+            :class="[
+              settingsStore.sidebarCollapsed ? 'absolute top-1 right-1' : '',
+              $route.path.startsWith(item.path)
+                ? 'bg-white/20 text-white'
+                : 'bg-primary/15 text-primary'
+            ]"
           >
             {{ unreadInsightsCount > 99 ? '99+' : unreadInsightsCount }}
           </span>
@@ -44,11 +71,11 @@
       </nav>
 
       <!-- Sidebar Footer (Switcher, Profile, Actions) -->
-      <div class="p-4 border-t border-gray-200 dark:border-dark-border space-y-4 bg-gray-50/50 dark:bg-dark-bg/20">
+      <div class="p-3 border-t border-gray-200 dark:border-dark-border space-y-3 bg-gray-50/50 dark:bg-dark-bg/20">
         
         <!-- Apiary Switcher -->
-        <div class="space-y-1.5">
-          <label class="text-[10px] uppercase tracking-wider font-extrabold text-gray-400 dark:text-gray-505 block px-1">
+        <div v-if="!settingsStore.sidebarCollapsed" class="space-y-1.5">
+          <label class="text-[10px] uppercase tracking-wider font-extrabold text-gray-400 dark:text-gray-500 block px-1">
             {{ $t('sidebar.active_apiary') }}
           </label>
           <div class="flex items-center gap-1.5 w-full">
@@ -73,7 +100,7 @@
               v-if="apiaryStore.activeApiaryId"
               type="button"
               @click="manageApiaryOpen = true"
-              class="p-2 rounded-xl border border-gray-250 dark:border-dark-border hover:bg-gray-100 dark:hover:bg-dark-border hover:text-primary dark:hover:text-primary transition-all shrink-0 cursor-pointer"
+              class="p-2 rounded-xl border border-gray-200 dark:border-dark-border hover:bg-gray-100 dark:hover:bg-dark-border hover:text-primary dark:hover:text-primary transition-all shrink-0 cursor-pointer"
               title="Imkerei verwalten"
             >
               <Settings class="w-4.5 h-4.5" />
@@ -81,8 +108,19 @@
           </div>
         </div>
 
+        <!-- Compact Apiary Indicator (collapsed) -->
+        <button
+          v-else
+          type="button"
+          @click="manageApiaryOpen = true"
+          class="w-full flex justify-center items-center p-2 rounded-xl border border-gray-200 dark:border-dark-border hover:bg-gray-100 dark:hover:bg-dark-border hover:text-primary dark:hover:text-primary transition-all cursor-pointer"
+          :title="apiaryStore.apiaries.find(a => a.id === apiaryStore.activeApiaryId)?.name || 'Imkerei wählen'"
+        >
+          <Hexagon class="w-4.5 h-4.5 text-primary" />
+        </button>
+
         <!-- User Profile Area -->
-        <div class="flex items-center gap-3 px-1 pt-1">
+        <div v-if="!settingsStore.sidebarCollapsed" class="flex items-center gap-3 px-1 pt-1">
           <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm flex-shrink-0 uppercase border border-primary/20">
             {{ (authStore.user?.first_name || authStore.user?.username || 'U').substring(0, 2) }}
           </div>
@@ -96,15 +134,31 @@
           </div>
         </div>
 
+        <!-- User Avatar (collapsed) -->
+        <div v-else class="flex justify-center pt-1">
+          <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm uppercase border border-primary/20" :title="authStore.user?.first_name || authStore.user?.username || ''">
+            {{ (authStore.user?.first_name || authStore.user?.username || 'U').substring(0, 2) }}
+          </div>
+        </div>
+
         <!-- Utilities -->
         <div class="flex gap-2 pt-2 border-t border-gray-200/50 dark:border-dark-border/40">
           <button 
+            v-if="!settingsStore.sidebarCollapsed"
             @click="toggleDarkMode" 
             class="flex-grow px-3 py-2 rounded-xl text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border transition-colors duration-200 hover-scale flex justify-center items-center gap-1.5"
             :title="$t('sidebar.theme')"
           >
             <component :is="isDark ? Sun : Moon" class="w-4.5 h-4.5" />
             <span class="text-xs font-semibold">{{ $t('sidebar.theme') }}</span>
+          </button>
+          <button
+            v-else
+            @click="toggleDarkMode"
+            class="flex-grow p-2 rounded-xl text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border transition-colors duration-200 hover-scale flex justify-center items-center"
+            :title="$t('sidebar.theme')"
+          >
+            <component :is="isDark ? Sun : Moon" class="w-4.5 h-4.5" />
           </button>
 
           <button
@@ -116,6 +170,7 @@
           </button>
 
           <button
+            v-if="!settingsStore.sidebarCollapsed"
             @click="aboutOpen = true"
             class="p-2 rounded-xl text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border transition-colors duration-200 hover-scale flex justify-center items-center"
             :title="$t('sidebar.about')"
@@ -136,11 +191,11 @@
     </aside>
 
     <!-- Mobile Top Header (below md) -->
-    <header class="fixed top-0 left-0 right-0 h-16 z-40 bg-white/80 dark:bg-dark-bg/80 backdrop-blur-md border-b border-gray-200 dark:border-dark-border flex items-center justify-between px-4 md:hidden transition-colors duration-300">
+    <header class="fixed top-0 left-0 right-0 h-16 z-40 bg-white/80 dark:bg-dark-bg/80 backdrop-blur-md border-b border-gray-200 dark:border-dark-border flex items-center justify-between px-4 lg:hidden transition-colors duration-300">
       <div class="flex items-center gap-2">
         <button 
           @click="mobileMenuOpen = !mobileMenuOpen" 
-          class="p-2 rounded-xl text-gray-500 hover:text-primary hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-dark-border transition-colors duration-200"
+          class="p-2 rounded-xl text-gray-500 hover:text-primary hover:bg-gray-100 dark:text-gray-400 dark:hover:text-primary dark:hover:bg-dark-border transition-colors duration-200"
           aria-label="Menü öffnen"
         >
           <Menu v-if="!mobileMenuOpen" class="w-6 h-6" />
@@ -172,13 +227,13 @@
       <div 
         v-if="mobileMenuOpen" 
         @click="mobileMenuOpen = false"
-        class="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
+        class="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
       ></div>
     </transition>
 
     <!-- Mobile Drawer Sidebar (below md) -->
     <aside 
-      class="fixed inset-y-0 left-0 w-64 bg-white dark:bg-dark-card z-50 shadow-2xl flex flex-col justify-between transform transition-transform duration-300 ease-in-out md:hidden"
+      class="fixed inset-y-0 left-0 w-64 bg-white dark:bg-dark-card z-50 shadow-2xl flex flex-col justify-between transform transition-transform duration-300 ease-in-out lg:hidden"
       :class="mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'"
     >
       <!-- Brand Logo Section -->
@@ -193,7 +248,7 @@
 
         <button 
           @click="mobileMenuOpen = false" 
-          class="p-1 rounded-lg text-gray-400 hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border"
+          class="p-1 rounded-lg text-gray-400 hover:text-primary hover:bg-gray-100 dark:hover:text-primary dark:hover:bg-dark-border"
           aria-label="Schließen"
         >
           <X class="w-5 h-5" />
@@ -337,6 +392,7 @@ import beeboardLogo from '../assets/beeboard-logo.svg'
 import { APP_NAME, APP_VERSION } from '../config/app.js'
 import { useAuthStore } from '../stores/auth'
 import { useApiaryStore } from '../stores/apiary'
+import { useSettingsStore } from '../stores/settings'
 import AboutDialog from './AboutDialog.vue'
 import ManageApiaryModal from './ManageApiaryModal.vue'
 import { 
@@ -358,12 +414,15 @@ import {
   CircleHelp,
   Globe,
   Calendar,
-  Settings
+  Settings,
+  ChevronsLeft,
+  ChevronsRight,
 } from 'lucide-vue-next'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const apiaryStore = useApiaryStore()
+const settingsStore = useSettingsStore()
 const { t, locale } = useI18n()
 
 const mobileMenuOpen = ref(false)
@@ -395,6 +454,8 @@ const filteredNavItems = computed(() => {
   return navItems.value
 })
 
+let removeAutoCollapseListener = () => {}
+
 onMounted(() => {
   // Check persisted dark mode setting
   if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -405,12 +466,17 @@ onMounted(() => {
     document.documentElement.classList.remove('dark')
   }
 
+  // App.vue owns the sidebar lifecycle, but make sure the listener is bound
+  // even when the sidebar mounts independently of App.vue (defensive).
+  removeAutoCollapseListener = settingsStore.bindAutoCollapseListener()
+
   fetchUnreadInsightsCount()
   window.addEventListener('ai-insights-updated', fetchUnreadInsightsCount)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('ai-insights-updated', fetchUnreadInsightsCount)
+  removeAutoCollapseListener()
 })
 
 watch(() => apiaryStore.activeApiaryId, () => {

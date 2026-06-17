@@ -5,7 +5,10 @@
       <Sidebar />
       
       <!-- Main Content Area -->
-      <div class="flex-grow flex flex-col min-w-0 md:pl-64 pt-16 md:pt-0">
+      <div
+        class="flex-grow flex flex-col min-w-0 pt-16 lg:pt-0 transition-[padding] duration-300 ease-in-out"
+        :class="settingsStore.sidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64'"
+      >
         <main class="flex-grow">
           <router-view v-slot="{ Component }">
             <transition name="fade" mode="out-in">
@@ -39,7 +42,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { useAuthStore } from './stores/auth'
@@ -56,6 +59,8 @@ const authStore = useAuthStore()
 const apiaryStore = useApiaryStore()
 const errorStore = useErrorStore()
 const settingsStore = useSettingsStore()
+
+let removeAutoCollapseListener = () => {}
 
 // Configure global Axios response interceptors
 axios.interceptors.response.use(
@@ -112,6 +117,14 @@ onMounted(async () => {
     : window.matchMedia('(prefers-color-scheme: dark)').matches
 
   document.documentElement.classList.toggle('dark', useDark)
+
+  // Initialize sidebar collapse state early to avoid a padding flash.
+  settingsStore.sidebarCollapsed = settingsStore.readInitialCollapsed()
+  removeAutoCollapseListener = settingsStore.bindAutoCollapseListener()
+})
+
+onBeforeUnmount(() => {
+  removeAutoCollapseListener()
 })
 </script>
 

@@ -31,7 +31,9 @@
     "theme": "Theme",
     "about": "About",
     "logout": "Log Out",
-    "toggle_language": "Change Language"
+    "toggle_language": "Change Language",
+    "collapse": "Collapse sidebar",
+    "expand": "Expand sidebar"
   },
   "apiary": {
     "manage_title": "Manage Apiary",
