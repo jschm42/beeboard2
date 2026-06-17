@@ -485,181 +485,61 @@
           </div>
 
           <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-5 shadow-sm">
-            <div class="flex items-center justify-between mb-3">
-              <h4 class="text-sm font-extrabold text-gray-900 dark:text-white">{{ $t('tasks.custom_event_header') }}</h4>
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <h4 class="text-sm font-extrabold text-gray-900 dark:text-white flex items-center gap-1.5">
+                <span>🗂️</span>
+                <span>{{ $t('tasks.custom_event_header') }}</span>
+                <span v-if="customEvents.length" class="text-xs font-bold text-gray-400 dark:text-gray-500">({{ customEvents.length }})</span>
+              </h4>
               <button
-                v-if="customEventForm.id"
-                @click="resetCustomEventForm"
-                class="text-[11px] font-bold text-primary hover:underline"
+                @click="openCustomEventModal()"
+                class="px-3 py-1.5 bg-primary hover:bg-primary-hover text-white text-[11px] font-extrabold uppercase tracking-wider rounded-lg shadow-sm hover-scale cursor-pointer flex items-center gap-1"
               >
-                {{ $t('tasks.new_custom_event_btn') }}
+                <span>+</span>
+                <span>{{ $t('tasks.new_custom_event_btn') }}</span>
               </button>
             </div>
 
-            <form class="space-y-3" @submit.prevent="saveCustomEvent">
-              <input
-                v-model="customEventForm.title"
-                type="text"
-                required
-                :placeholder="$t('tasks.custom_event_placeholder')"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-
-              <!-- Start/End dates -->
-              <div class="grid grid-cols-2 gap-2">
-                <input
-                  v-model="customEventForm.start_date"
-                  type="date"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <input
-                  v-model="customEventForm.end_date"
-                  type="date"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-
-              <!-- Ganztägig & Wiederkehrend Toggles -->
-              <div class="flex items-center space-x-4 py-1">
-                <label class="flex items-center space-x-1 text-[10px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider cursor-pointer">
-                  <input 
-                    v-model="customEventForm.is_all_day" 
-                    type="checkbox"
-                    class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                  />
-                  <span>{{ $t('tasks.all_day') }}</span>
-                </label>
-
-                <button 
-                  type="button"
-                  @click="customEventForm.is_recurring = !customEventForm.is_recurring"
-                  class="flex items-center space-x-1 px-2.5 py-1 rounded-lg border text-[10px] font-bold uppercase transition-all"
-                  :class="customEventForm.is_recurring
-                    ? 'bg-primary/10 border-primary text-primary'
-                    : 'bg-white dark:bg-dark-bg border-gray-200 dark:border-gray-700 text-gray-500'"
-                >
-                  <span>🔄 {{ $t('tasks.recurring_btn') }}</span>
-                </button>
-              </div>
-
-              <!-- Start/End times if NOT Ganztägig -->
-              <div v-if="!customEventForm.is_all_day" class="grid grid-cols-2 gap-2 animate-scale">
-                <input 
-                  v-model="customEventForm.start_time" 
-                  type="time" 
-                  class="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-xs"
-                />
-                <input 
-                  v-model="customEventForm.end_time" 
-                  type="time" 
-                  class="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-xs"
-                />
-              </div>
-
-              <!-- Custom Event Recurrence Panel -->
-              <div v-if="customEventForm.is_recurring" class="p-3 bg-gray-50 dark:bg-dark-bg/40 rounded-xl border border-gray-200/60 dark:border-dark-border/60 space-y-2.5 text-xs animate-scale">
-                <div class="flex flex-wrap items-center gap-2">
-                  <span class="font-bold text-gray-500 uppercase tracking-wider">{{ $t('tasks.repeat_every') }}</span>
-                  <select 
-                    v-model.number="customEventForm.recurrence_interval_value"
-                    class="px-1.5 py-1 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded focus:ring-1 focus:ring-primary font-bold text-center"
-                  >
-                    <option v-for="n in 30" :key="n" :value="n">{{ n }}</option>
-                  </select>
-                  <select 
-                    v-model="customEventForm.recurrence_interval_type"
-                    class="px-1.5 py-1 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded focus:ring-1 focus:ring-primary font-bold"
-                  >
-                    <option value="DAILY">{{ $t('tasks.day_unit') }}</option>
-                    <option value="WEEKLY">{{ $t('tasks.week_unit') }}</option>
-                    <option value="MONTHLY">{{ $t('tasks.month_unit') }}</option>
-                    <option value="YEARLY">{{ $t('tasks.year_unit') }}</option>
-                  </select>
-
-                  <div class="flex items-center gap-1.5 shrink-0">
-                    <span class="font-bold text-gray-500 uppercase tracking-wider">{{ $t('tasks.until') }}</span>
-                    <input 
-                      v-model="customEventForm.recurrence_end_date" 
-                      type="date"
-                      :title="$t('tasks.recurrence_end_date_tooltip')"
-                      class="px-1.5 py-0.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded font-bold text-[11px]"
-                    />
-                  </div>
-                </div>
-
-                <!-- Weekday Selectors (Shown only when WEEKLY is selected) -->
-                <div v-if="customEventForm.recurrence_interval_type === 'WEEKLY'" class="flex items-center gap-1 py-1">
-                  <button
-                    v-for="(day, index) in weekdaysList"
-                    :key="index"
-                    type="button"
-                    @click="toggleCustomEventWeekday(index)"
-                    class="w-7 h-7 rounded border text-[10px] font-black transition-all flex items-center justify-center cursor-pointer"
-                    :class="customEventForm.recurrence_weekdays.includes(index)
-                      ? 'bg-primary border-primary text-white'
-                      : 'bg-white dark:bg-dark-bg border-gray-200 dark:border-gray-700 text-gray-500 hover:border-gray-300'"
-                  >
-                    {{ day.label }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- Notes & Color -->
-              <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
-                <input
-                  v-model="customEventForm.notes"
-                  type="text"
-                  :placeholder="$t('tasks.custom_event_notes_placeholder')"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <input
-                  v-model="customEventForm.color"
-                  type="color"
-                  class="h-9 w-11 p-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-dark-bg cursor-pointer"
-                />
-              </div>
-
-              <button
-                type="submit"
-                class="w-full px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-extrabold uppercase tracking-wider rounded-xl shadow-sm"
-              >
-                {{ customEventForm.id ? $t('tasks.save_event_btn') : $t('tasks.create_event_btn') }}
-              </button>
-            </form>
-
-            <div class="mt-4 pt-4 border-t border-gray-100 dark:border-dark-border space-y-2 max-h-56 overflow-y-auto">
+            <div v-if="customEvents.length === 0" class="text-xs text-gray-500 dark:text-gray-400 italic">
+              {{ $t('tasks.no_custom_events_yet') }}
+            </div>
+            <div v-else class="space-y-2 max-h-72 overflow-y-auto">
               <div
                 v-for="event in customEvents"
                 :key="event.id"
                 class="p-2.5 rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-bg/60"
               >
                 <div class="flex items-start justify-between gap-2">
-                  <div>
+                  <div class="min-w-0 flex-1">
                     <div class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
-                      <span class="inline-block w-2.5 h-2.5 rounded-full" :style="{ backgroundColor: event.color }"></span>
-                      <span>{{ event.title }}</span>
+                      <span class="inline-block w-2.5 h-2.5 rounded-full shrink-0" :style="{ backgroundColor: event.color }"></span>
+                      <span class="truncate">{{ event.title }}</span>
                     </div>
                     <div class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-                      {{ formatDate(event.start_date) }}<span v-if="event.end_date !== event.start_date"> - {{ formatDate(event.end_date) }}</span>
+                      {{ formatDate(event.start_date) }}<span v-if="event.end_date !== event.start_date"> – {{ formatDate(event.end_date) }}</span>
                     </div>
                   </div>
-
-                  <div class="flex items-center gap-1">
-                    <button @click="editCustomEvent(event)" class="text-[11px] text-primary font-bold hover:underline">{{ $t('common.edit') }}</button>
-                    <button @click="removeCustomEvent(event.id)" class="text-[11px] text-red-500 font-bold hover:underline">{{ $t('common.delete') }}</button>
-                  </div>
+                  <button
+                    @click="openCustomEventModal(event)"
+                    class="text-[11px] text-primary font-bold hover:underline shrink-0"
+                  >
+                    {{ $t('common.edit') }}
+                  </button>
                 </div>
               </div>
-
-              <p v-if="customEvents.length === 0" class="text-xs text-gray-500 dark:text-gray-400 italic">
-                {{ $t('tasks.no_custom_events_yet') }}
-              </p>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- Custom Event Modal -->
+      <CustomEventModal
+        ref="customEventModalRef"
+        v-model="showCustomEventModal"
+        :apiary-id="apiaryStore.activeApiaryId"
+        :initial-date="selectedDateString"
+        @changed="refreshCustomEvents"
+      />
 
     </div>
 
@@ -883,13 +763,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useApiaryStore } from '../stores/apiary'
 import { useErrorStore } from '../stores/error'
 import { useConfirmStore } from '../stores/confirm'
-import { getCustomCalendarEvents, upsertCustomCalendarEvent, deleteCustomCalendarEvent, isDateInRange, getOccurrences } from '../utils/calendarEvents'
+import { getCustomCalendarEvents, isDateInRange, getOccurrences } from '../utils/calendarEvents'
+import CustomEventModal from '../components/CustomEventModal.vue'
 
 const weekdaysList = [
   { value: 0, label: 'M' },
@@ -910,18 +791,6 @@ function toggleFormWeekday(dayValue) {
     taskForm.value.recurrenceWeekdays.splice(idx, 1)
   } else {
     taskForm.value.recurrenceWeekdays.push(dayValue)
-  }
-}
-
-function toggleCustomEventWeekday(dayValue) {
-  if (!customEventForm.value.recurrence_weekdays) {
-    customEventForm.value.recurrence_weekdays = []
-  }
-  const idx = customEventForm.value.recurrence_weekdays.indexOf(dayValue)
-  if (idx >= 0) {
-    customEventForm.value.recurrence_weekdays.splice(idx, 1)
-  } else {
-    customEventForm.value.recurrence_weekdays.push(dayValue)
   }
 }
 
@@ -975,22 +844,8 @@ const hives = ref([])
 const viewMode = ref('tiles')
 const customEvents = ref([])
 const selectedDateString = ref(todayStr())
-const customEventForm = ref({
-  id: null,
-  title: '',
-  notes: '',
-  start_date: todayStr(),
-  end_date: todayStr(),
-  color: '#2563eb',
-  is_recurring: false,
-  recurrence_interval_type: 'WEEKLY',
-  recurrence_interval_value: 1,
-  recurrence_weekdays: [],
-  recurrence_end_date: '',
-  is_all_day: true,
-  start_time: '',
-  end_time: ''
-})
+const showCustomEventModal = ref(false)
+const customEventModalRef = ref(null)
 
 // Filter state
 const filters = ref({
@@ -1113,7 +968,6 @@ onMounted(async () => {
 
 watch(() => apiaryStore.activeApiaryId, () => {
   fetchData()
-  resetCustomEventForm()
 })
 
 watch(viewMode, (newMode) => {
@@ -1372,87 +1226,34 @@ function onCalendarItemClick(customData) {
   } else if (customData.type === 'event') {
     const event = customEvents.value.find(e => e.id === customData.id)
     if (event) {
-      editCustomEvent(event)
+      openCustomEventModal(event)
     }
   }
+}
+
+function openCustomEventModal(event = null) {
+  showCustomEventModal.value = true
+  // If an event was passed, load it into the modal's form after it opens.
+  // The modal resets itself on open; we set the form once the ref is available.
+  if (event) {
+    nextTick(() => {
+      customEventModalRef.value?.loadEvent(event)
+    })
+  }
+}
+
+function refreshCustomEvents() {
+  if (!apiaryStore.activeApiaryId) {
+    customEvents.value = []
+    return
+  }
+  customEvents.value = getCustomCalendarEvents(apiaryStore.activeApiaryId)
 }
 
 function toDateString(value) {
   const dateValue = value instanceof Date ? value : new Date(value)
   if (Number.isNaN(dateValue.getTime())) return todayStr()
   return dateValue.toISOString().slice(0, 10)
-}
-
-function resetCustomEventForm() {
-  customEventForm.value = {
-    id: null,
-    title: '',
-    notes: '',
-    start_date: selectedDateString.value || todayStr(),
-    end_date: selectedDateString.value || todayStr(),
-    color: '#2563eb',
-    is_recurring: false,
-    recurrence_interval_type: 'WEEKLY',
-    recurrence_interval_value: 1,
-    recurrence_weekdays: [],
-    recurrence_end_date: '',
-    is_all_day: true,
-    start_time: '',
-    end_time: ''
-  }
-}
-
-async function saveCustomEvent() {
-  if (!apiaryStore.activeApiaryId) return
-  try {
-    const payload = {
-      ...customEventForm.value,
-      title: customEventForm.value.title.trim(),
-      notes: customEventForm.value.notes.trim(),
-      recurrence_weekdays: customEventForm.value.recurrence_weekdays.join(','),
-      is_all_day: customEventForm.value.is_all_day,
-      start_time: customEventForm.value.is_all_day ? '' : customEventForm.value.start_time,
-      end_time: customEventForm.value.is_all_day ? '' : customEventForm.value.end_time
-    }
-    upsertCustomCalendarEvent(apiaryStore.activeApiaryId, payload)
-    customEvents.value = getCustomCalendarEvents(apiaryStore.activeApiaryId)
-    resetCustomEventForm()
-  } catch (err) {
-    errorStore.showError(t('tasks.error_save'), err, t('sidebar.calendar'))
-  }
-}
-
-function editCustomEvent(event) {
-  const weekdays = event.recurrence_weekdays
-    ? event.recurrence_weekdays.split(',').map(d => parseInt(d)).filter(d => !isNaN(d))
-    : []
-  customEventForm.value = {
-    ...event,
-    is_recurring: !!event.is_recurring,
-    recurrence_interval_type: event.recurrence_interval_type || 'WEEKLY',
-    recurrence_interval_value: event.recurrence_interval_value || 1,
-    recurrence_weekdays: weekdays,
-    recurrence_end_date: event.recurrence_end_date || '',
-    is_all_day: event.is_all_day !== false,
-    start_time: event.start_time || '',
-    end_time: event.end_time || ''
-  }
-}
-
-async function removeCustomEvent(eventId) {
-  const confirmed = await confirmStore.ask({
-    title: t('tasks.confirm_delete_event_title'),
-    message: t('tasks.confirm_delete_event_msg'),
-    type: 'danger',
-    confirmText: t('tasks.confirm_delete_btn')
-  })
-  if (!confirmed) return
-
-  deleteCustomCalendarEvent(apiaryStore.activeApiaryId, eventId)
-  customEvents.value = getCustomCalendarEvents(apiaryStore.activeApiaryId)
-  if (customEventForm.value.id === eventId) {
-    resetCustomEventForm()
-  }
 }
 
 function resetFilters() {
