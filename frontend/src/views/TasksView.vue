@@ -408,11 +408,11 @@
           >
             <template #day-content="{ day, attributes }">
               <div 
-                class="flex flex-col h-full min-h-[75px] p-1.5 justify-between select-none transition-all duration-150 border-2"
+                class="flex flex-col flex-1 min-h-[75px] p-1.5 justify-between select-none transition-all duration-150 border-2"
                 :class="[
                   toDateString(day.date) === selectedDateString 
                     ? 'border-primary bg-primary/5 dark:bg-primary/10 rounded-2xl' 
-                    : 'border-transparent hover:bg-gray-50 dark:hover:bg-dark-bg/40 rounded-2xl'
+                    : 'border-transparent hover:bg-gray-50 dark:hover:bg-white/[0.04] rounded-2xl'
                 ]"
               >
                 <div class="flex justify-between items-center mb-1">
@@ -423,7 +423,7 @@
                         ? 'bg-amber-500 text-white shadow-sm shadow-amber-500/30' 
                         : day.inMonth 
                           ? 'text-gray-900 dark:text-gray-100' 
-                          : 'text-gray-400 dark:text-gray-600'
+                          : 'text-gray-400 dark:text-gray-500'
                     ]"
                   >
                     {{ day.day }}
@@ -434,7 +434,8 @@
                   <div 
                     v-for="attr in attributes.slice(0, 3)" 
                     :key="attr.key"
-                    class="text-[9px] px-1.5 py-0.5 rounded-lg truncate font-extrabold tracking-wide border transition-all duration-150 shadow-sm"
+                    @click.stop="onCalendarItemClick(attr.customData)"
+                    class="text-[9px] px-1.5 py-0.5 rounded-lg truncate font-extrabold tracking-wide border transition-all duration-150 shadow-sm cursor-pointer hover:brightness-95 hover:scale-[1.02] active:scale-[0.98]"
                     :class="getCalendarItemClasses(attr)"
                     :style="getCalendarItemStyle(attr)"
                     :title="attr.customData?.title"
@@ -577,12 +578,15 @@
                     <option value="YEARLY">{{ $t('tasks.year_unit') }}</option>
                   </select>
 
-                  <span class="font-bold text-gray-500 uppercase tracking-wider">{{ $t('tasks.until') }}</span>
-                  <input 
-                    v-model="customEventForm.recurrence_end_date" 
-                    type="date"
-                    class="px-1.5 py-0.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded font-bold text-[11px]"
-                  />
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <span class="font-bold text-gray-500 uppercase tracking-wider">{{ $t('tasks.until') }}</span>
+                    <input 
+                      v-model="customEventForm.recurrence_end_date" 
+                      type="date"
+                      :title="$t('tasks.recurrence_end_date_tooltip')"
+                      class="px-1.5 py-0.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded font-bold text-[11px]"
+                    />
+                  </div>
                 </div>
 
                 <!-- Weekday Selectors (Shown only when WEEKLY is selected) -->
@@ -816,12 +820,15 @@
                     <option value="YEARLY">{{ $t('tasks.year_unit') }}</option>
                   </select>
 
-                  <span class="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-auto sm:ml-0">{{ $t('tasks.until') }}</span>
-                  <input 
-                    v-model="taskForm.recurrenceEndDate" 
-                    type="date"
-                    class="px-2 py-1 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-bold"
-                  />
+                  <div class="flex items-center gap-1.5 shrink-0 ml-auto sm:ml-0">
+                    <span class="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ $t('tasks.until') }}</span>
+                    <input 
+                      v-model="taskForm.recurrenceEndDate" 
+                      type="date"
+                      :title="$t('tasks.recurrence_end_date_tooltip')"
+                      class="px-2 py-1 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-bold"
+                    />
+                  </div>
 
                   <button 
                     type="button"
@@ -1239,6 +1246,7 @@ const calendarAttributes = computed(() => {
         key: `task-${task.id}`,
         dates: new Date(`${task.due_date}T12:00:00`),
         customData: {
+          id: task.id,
           type: 'task',
           title: `✓ ${task.title}`,
           isDone: true,
@@ -1268,6 +1276,7 @@ const calendarAttributes = computed(() => {
         key: `task-${task.id}-${occDate}`,
         dates: new Date(`${occDate}T12:00:00`),
         customData: {
+          id: task.id,
           type: 'task',
           title: `${task.is_all_day ? '' : (task.due_time ? task.due_time + ' ' : '')}📋 ${task.title}`,
           isDone: false,
@@ -1301,6 +1310,7 @@ const calendarAttributes = computed(() => {
         key: `custom-${event.id}-${occDate}`,
         dates: new Date(`${occDate}T12:00:00`),
         customData: {
+          id: event.id,
           type: 'event',
           title: `${event.is_all_day ? '' : (event.start_time ? event.start_time + ' ' : '')}📅 ${event.title}`,
           color: event.color
@@ -1350,6 +1360,21 @@ const selectedDateCustomItems = computed(() => {
 function onCalendarDayClick(dayInfo) {
   const dateValue = dayInfo?.id || dayInfo?.date || dayInfo
   selectedDateString.value = toDateString(dateValue)
+}
+
+function onCalendarItemClick(customData) {
+  if (!customData || !customData.id) return
+  if (customData.type === 'task') {
+    const task = tasks.value.find(t => t.id === customData.id)
+    if (task) {
+      openEditTaskModal(task)
+    }
+  } else if (customData.type === 'event') {
+    const event = customEvents.value.find(e => e.id === customData.id)
+    if (event) {
+      editCustomEvent(event)
+    }
+  }
 }
 
 function toDateString(value) {
@@ -1632,37 +1657,81 @@ function getRecurrenceIntervalText(interval) {
 <style scoped>
 @reference "../style.css";
 
-/* Style overrides for v-calendar to make it look premium and fit our custom day cells */
+/* Style overrides for v-calendar to make it look premium and fit our custom day cells.
+   IMPORTANT: all theme colors come from CSS custom properties defined globally in
+   style.css (--cal-*). We cannot use .dark :deep(...) here because Vue would attach
+   the scope attribute to .dark, which lives on <html> outside the component subtree
+   and would never match. CSS variables inherit through the tree, so this just works. */
 :deep(.vc-container) {
   border: none !important;
   background: transparent !important;
   width: 100% !important;
   max-width: 100% !important;
-  overflow: hidden !important;
+  --calendar-not-month-bg: var(--cal-not-month-bg);
+  --calendar-not-month-opacity: var(--cal-not-month-opacity);
 }
+
+/* v-calendar v3 DOM:
+   .vc-container > .vc-pane > .vc-weeks > [ .vc-weekdays, .vc-week * 6 ] > .vc-day
+   Each .vc-week is already a 7-col grid, but rows auto-size → empty weeks end up
+   shorter than weeks with content. We use flexbox on .vc-weeks with flex:1 on every
+   .vc-week so all 6 rows share the available height equally.
+   Borders are produced via gap + background-color (the gap reveals the container bg)
+   instead of fragile per-cell borders that conflict with v-calendar's absolute layers. */
 :deep(.vc-weeks) {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1px !important;
+  background-color: var(--cal-grid-line) !important;
+  border: 1px solid var(--cal-grid-line) !important;
+  border-radius: 0.75rem;
+  overflow: hidden;
   padding: 0 !important;
-  width: 100% !important;
+  min-height: 620px !important;
+  box-shadow: var(--cal-shadow) !important;
 }
+
+:deep(.vc-weekdays) {
+  flex-shrink: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+  gap: 1px !important;
+  background-color: var(--cal-grid-line) !important;
+}
+:deep(.vc-weekday) {
+  background-color: var(--cal-header-bg) !important;
+  padding: 10px 0 !important;
+  text-align: center !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: var(--cal-header-text) !important;
+}
+
+:deep(.vc-week) {
+  flex: 1 1 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+  gap: 1px !important;
+  background-color: var(--cal-grid-line) !important;
+  min-height: 0 !important;
+}
+
 :deep(.vc-day) {
-  min-height: 85px !important;
-  border-bottom: 1px solid var(--color-gray-100, #f3f4f6) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  background-color: var(--cal-cell-bg) !important;
   padding: 0 !important;
+  position: relative !important;
+  z-index: 1 !important;
+  overflow: hidden !important;
+  transition: background-color 0.15s ease !important;
 }
-:deep(.vc-day:not(:nth-child(7n))) {
-  border-right: 1px solid var(--color-gray-100, #f3f4f6) !important;
-}
-.dark :deep(.vc-day) {
-  border-bottom-color: var(--color-gray-800, #1f2937) !important;
-}
-.dark :deep(.vc-day:not(:nth-child(7n))) {
-  border-right-color: var(--color-gray-800, #1f2937) !important;
-}
+
 :deep(.vc-day.is-not-in-month) {
-  background-color: var(--color-gray-50, #f9fafb) !important;
-  opacity: 0.5;
-}
-.dark :deep(.vc-day.is-not-in-month) {
-  background-color: rgba(0, 0, 0, 0.15) !important;
+  background-color: var(--calendar-not-month-bg) !important;
+  opacity: var(--calendar-not-month-opacity) !important;
 }
 </style>

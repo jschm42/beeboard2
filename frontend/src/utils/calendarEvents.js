@@ -94,6 +94,13 @@ export function classifyDueStatus(dueDate, todayStr) {
   return 'upcoming'
 }
 
+function toLocalISOString(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 export function getOccurrences(item, rangeStartStr, rangeEndStr) {
   const occurrences = []
   const startStr = item.start_date || item.due_date
@@ -131,7 +138,7 @@ export function getOccurrences(item, rangeStartStr, rangeEndStr) {
 
   if (intervalType === 'DAILY') {
     while (current <= actualLimit && current <= limitDate) {
-      const curStr = current.toISOString().split('T')[0]
+      const curStr = toLocalISOString(current)
       if (curStr >= rangeStartStr) {
         occurrences.push(curStr)
       }
@@ -149,7 +156,7 @@ export function getOccurrences(item, rangeStartStr, rangeEndStr) {
           const jsDay = current.getDay()
           const isoDay = jsDay === 0 ? 6 : jsDay - 1
           if (activeDays.includes(isoDay)) {
-            const curStr = current.toISOString().split('T')[0]
+            const curStr = toLocalISOString(current)
             if (curStr >= startStr && curStr >= rangeStartStr) {
               occurrences.push(curStr)
             }
@@ -159,7 +166,7 @@ export function getOccurrences(item, rangeStartStr, rangeEndStr) {
       }
     } else {
       while (current <= actualLimit && current <= limitDate) {
-        const curStr = current.toISOString().split('T')[0]
+        const curStr = toLocalISOString(current)
         if (curStr >= rangeStartStr) {
           occurrences.push(curStr)
         }
@@ -169,7 +176,7 @@ export function getOccurrences(item, rangeStartStr, rangeEndStr) {
   }
   else if (intervalType === 'MONTHLY') {
     while (current <= actualLimit && current <= limitDate) {
-      const curStr = current.toISOString().split('T')[0]
+      const curStr = toLocalISOString(current)
       if (curStr >= rangeStartStr) {
         occurrences.push(curStr)
       }
@@ -178,7 +185,7 @@ export function getOccurrences(item, rangeStartStr, rangeEndStr) {
   }
   else if (intervalType === 'YEARLY') {
     while (current <= actualLimit && current <= limitDate) {
-      const curStr = current.toISOString().split('T')[0]
+      const curStr = toLocalISOString(current)
       if (curStr >= rangeStartStr) {
         occurrences.push(curStr)
       }

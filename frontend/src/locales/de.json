@@ -579,6 +579,7 @@
     "month_unit": "Monat",
     "year_unit": "Jahr",
     "until": "Bis",
+    "recurrence_end_date_tooltip": "Enddatum für die Wiederholung",
     "disable_recurrence": "Wiederholung entfernen"
   },
   "honey_batches": {

@@ -65,3 +65,30 @@
 .dark ::-webkit-calendar-picker-indicator {
   filter: invert(1);
 }
+
+/* Calendar theme tokens (v-calendar in TasksView) — these are referenced via
+   var(--cal-*) in the scoped <style> block. Defining them globally (not scoped)
+   is required because the .dark class lives on <html>, outside the component's
+   scoped subtree, so .dark :deep(...) selectors would never match. */
+:root {
+  --cal-grid-line: #e5e7eb;
+  --cal-cell-bg: #ffffff;
+  --cal-header-bg: #ffffff;
+  --cal-header-text: #6b7280;
+  --cal-shadow:
+    0 4px 16px -4px rgba(0, 0, 0, 0.08),
+    0 2px 6px -2px rgba(0, 0, 0, 0.04);
+  --cal-not-month-bg: #f9fafb;
+  --cal-not-month-opacity: 0.6;
+}
+.dark {
+  --cal-grid-line: #2d2d34;
+  --cal-cell-bg: #1c1c1f;
+  --cal-header-bg: #1c1c1f;
+  --cal-header-text: #9ca3af;
+  --cal-shadow:
+    0 4px 16px -4px rgba(0, 0, 0, 0.5),
+    0 2px 6px -2px rgba(0, 0, 0, 0.3);
+  --cal-not-month-bg: rgba(255, 255, 255, 0.025);
+  --cal-not-month-opacity: 1;
+}
