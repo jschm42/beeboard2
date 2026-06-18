@@ -82,7 +82,7 @@
             </div>
 
             <!-- Image Upload Section -->
-            <div class="space-y-3">
+            <div class="space-y-2">
               <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                 {{ $t('logbook.table_images') }}
               </label>
@@ -109,6 +109,33 @@
                 <p class="text-[10px] text-gray-400 mt-1">
                   {{ $t('logbook.drag_drop_hint') }}
                 </p>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  class="px-3 py-2 rounded-xl border border-gray-200 dark:border-dark-border text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-border hover:text-primary dark:hover:text-primary transition-colors flex items-center justify-center gap-1.5"
+                  @click="triggerFileInput"
+                >
+                  <Upload class="w-4 h-4" />
+                  {{ $t('logbook.choose_file') }}
+                </button>
+                <button
+                  type="button"
+                  class="px-3 py-2 rounded-xl border border-gray-200 dark:border-dark-border text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-border hover:text-primary dark:hover:text-primary transition-colors flex items-center justify-center gap-1.5"
+                  @click="triggerCamera"
+                >
+                  <input
+                    ref="cameraFileInput"
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    class="hidden"
+                    @change="onFileSelect"
+                  />
+                  <Camera class="w-4 h-4" />
+                  {{ $t('logbook.take_photo') }}
+                </button>
               </div>
 
               <div v-if="entryFiles.length > 0" class="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-3">
@@ -341,6 +368,7 @@
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
+import { Camera, Upload } from 'lucide-vue-next'
 import { useErrorStore } from '../stores/error'
 import { useConfirmStore } from '../stores/confirm'
 
@@ -378,6 +406,7 @@ const entryForm = reactive({
 const entryFiles = ref([])
 const dragOver = ref(false)
 const modalFileInput = ref(null)
+const cameraFileInput = ref(null)
 const selectedTypeOption = ref('GENERAL')
 
 const CATEGORIES_STORAGE_KEY = 'beeboard_active_categories'
@@ -819,6 +848,10 @@ function onFileDrop(event) {
 
 function triggerFileInput() {
   modalFileInput.value?.click()
+}
+
+function triggerCamera() {
+  cameraFileInput.value?.click()
 }
 
 async function removeEntryFile(index) {

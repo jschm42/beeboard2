@@ -484,24 +484,40 @@
 
                   <!-- Images stream & upload gallery -->
                   <div class="space-y-2 border-t border-gray-100 dark:border-dark-border pt-4">
-                    <div class="flex justify-between items-center">
+                    <div class="flex justify-between items-center gap-2">
                       <span class="text-[10px] font-black uppercase text-gray-400">{{ $t('logbook.image_gallery', { count: entry.images?.length || 0 }) }}</span>
-                      
-                      <input 
-                        v-if="entry.images?.length < 5"
-                        type="file" 
-                        :id="`file-upload-${entry.id}`" 
-                        @change="uploadEntryImage($event, entry.id)" 
-                        accept="image/*" 
-                        class="hidden"
-                      />
-                      <label 
-                        v-if="entry.images?.length < 5"
-                        :for="`file-upload-${entry.id}`"
-                        class="text-[10px] font-bold text-primary hover:text-primary-hover hover:underline cursor-pointer uppercase font-sans"
-                      >
-                        {{ $t('logbook.add_image') }}
-                      </label>
+
+                      <div v-if="entry.images?.length < 5" class="flex items-center gap-2">
+                        <input
+                          type="file"
+                          :id="`file-upload-${entry.id}`"
+                          accept="image/*"
+                          class="hidden"
+                          @change="uploadEntryImage($event, entry.id)"
+                        />
+                        <label
+                          :for="`file-upload-${entry.id}`"
+                          class="text-[10px] font-bold text-primary hover:text-primary-hover hover:underline cursor-pointer uppercase font-sans"
+                        >
+                          {{ $t('logbook.add_image') }}
+                        </label>
+
+                        <input
+                          type="file"
+                          :id="`camera-upload-${entry.id}`"
+                          accept="image/*"
+                          capture="environment"
+                          class="hidden"
+                          @change="uploadEntryImage($event, entry.id)"
+                        />
+                        <label
+                          :for="`camera-upload-${entry.id}`"
+                          class="text-[10px] font-bold text-primary hover:text-primary-hover hover:underline cursor-pointer uppercase font-sans"
+                          :title="$t('logbook.take_photo')"
+                        >
+                          📷 {{ $t('logbook.take_photo') }}
+                        </label>
+                      </div>
                     </div>
 
                     <!-- Gallery Grid -->

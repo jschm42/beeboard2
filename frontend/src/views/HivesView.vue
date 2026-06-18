@@ -607,19 +607,36 @@
                     <div>
                       <p class="text-xs font-black text-gray-850 dark:text-gray-200">{{ $t('hives.photo_title') }}</p>
                       <p class="text-[10px] text-gray-400 mt-0.5">{{ $t('hives.photo_desc') }}</p>
-                      <input 
-                        type="file" 
-                        ref="photoInput" 
-                        @change="uploadPhoto" 
-                        accept="image/*" 
+                      <input
+                        type="file"
+                        ref="photoInput"
+                        accept="image/*"
                         class="hidden"
-                      />
-                      <button 
+                        @change="uploadPhoto"
+                      >
+                      <button
                         type="button"
-                        @click="$refs.photoInput.click()" 
                         class="text-[11px] font-black text-primary hover:text-primary-hover hover:underline uppercase tracking-wider mt-1.5 cursor-pointer flex items-center gap-1"
+                        @click="$refs.photoInput.click()"
                       >
                         <span>{{ $t('hives.photo_upload_btn') }}</span> 📤
+                      </button>
+                      <input
+                        type="file"
+                        ref="cameraPhotoInput"
+                        accept="image/*"
+                        capture="environment"
+                        class="hidden"
+                        @change="uploadPhoto"
+                      >
+                      <button
+                        type="button"
+                        class="text-[11px] font-black text-primary hover:text-primary-hover hover:underline uppercase tracking-wider mt-1.5 cursor-pointer flex items-center gap-1 ml-3"
+                        :title="$t('hives.take_photo')"
+                        @click="$refs.cameraPhotoInput.click()"
+                      >
+                        <Camera class="w-3.5 h-3.5" />
+                        <span>{{ $t('hives.take_photo') }}</span>
                       </button>
                     </div>
                   </div>
@@ -774,6 +791,7 @@ import { useConfirmStore } from '../stores/confirm'
 import { useApiaryStore } from '../stores/apiary'
 import { useI18n } from 'vue-i18n'
 import BeehiveVisualizer from '../components/BeehiveVisualizer.vue'
+import { Camera } from 'lucide-vue-next'
 import axios from 'axios'
 
 const apiaryStore = useApiaryStore()
