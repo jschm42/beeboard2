@@ -15,6 +15,12 @@
     "back_to_dashboard": "Back to Dashboard",
     "more": "more"
   },
+  "auth": {
+    "remember_user": "Remember logged-in user",
+    "login_button": "Log in",
+    "session_expired": "Your session has expired. Please log in again.",
+    "logged_out": "You have been logged out successfully."
+  },
   "sidebar": {
     "dashboard": "Dashboard",
     "locations": "Locations",

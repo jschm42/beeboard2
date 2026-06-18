@@ -96,6 +96,9 @@ export const useAuthStore = defineStore('auth', {
       this.user = null
       localStorage.removeItem('token')
       this.initAxiosHeaders()
+    },
+    forgetRememberedUsername() {
+      localStorage.removeItem('rememberedUsername')
     }
   }
 })

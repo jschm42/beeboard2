@@ -82,13 +82,14 @@ axios.interceptors.response.use(
       const detail = error.response.data?.detail
 
       if (status === 401) {
-        friendlyMessage = 'Sie sind nicht angemeldet oder Ihre Sitzung ist abgelaufen. Bitte loggen Sie sich erneut ein.'
-        if (authStore.isAuthenticated) {
+        const wasAuthenticated = authStore.isAuthenticated
+        if (wasAuthenticated) {
           authStore.logout()
         }
-        if (router.currentRoute.value.path !== '/login') {
-          router.push('/login')
+        if (wasAuthenticated && router.currentRoute.value.path !== '/login') {
+          router.push({ path: '/login', query: { reason: 'session_expired' } })
         }
+        return Promise.reject(error)
       } else if (status === 403) {
         friendlyMessage = detail || 'Sie haben keine ausreichenden Berechtigungen, um diese Aktion auszuführen.'
       } else if (status === 404) {

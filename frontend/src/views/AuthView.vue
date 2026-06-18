@@ -70,6 +70,12 @@
         <span>{{ successMessage }}</span>
       </div>
 
+      <!-- Session notice (subtle hint on session expiry or logout) -->
+      <div v-if="noticeMessage" class="bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-200 px-4 py-2.5 rounded-xl text-xs flex items-center space-x-2">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span>{{ noticeMessage }}</span>
+      </div>
+
       <!-- Onboarding Superadmin Setup Form -->
       <form v-if="setupRequired" class="space-y-4" @submit.prevent="handleOnboardingSetup">
         <div class="grid grid-cols-2 gap-4">
@@ -142,26 +148,36 @@
         <form v-if="isLoginTab" class="space-y-4" @submit.prevent="handleLogin">
           <div>
             <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Benutzername oder E-Mail</label>
-            <input 
-              v-model="loginForm.username" 
-              type="text" 
-              required 
+            <input
+              v-model="loginForm.username"
+              type="text"
+              required
               placeholder="imker123"
+              autocomplete="username"
               class="w-full px-4 py-3 bg-white/95 dark:bg-gray-800/70 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-150"
             />
           </div>
           <div>
             <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">Passwort</label>
-            <input 
-              v-model="loginForm.password" 
-              type="password" 
-              required 
+            <input
+              v-model="loginForm.password"
+              type="password"
+              required
               placeholder="••••••••"
+              autocomplete="current-password"
               class="w-full px-4 py-3 bg-white/95 dark:bg-gray-800/70 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-150"
             />
           </div>
-          <button 
-            type="submit" 
+          <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer select-none">
+            <input
+              v-model="rememberMe"
+              type="checkbox"
+              class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-2 focus:ring-primary cursor-pointer"
+            />
+            <span>{{ $t('auth.remember_user') }}</span>
+          </label>
+          <button
+            type="submit"
             :disabled="authStore.loading"
             class="w-full py-3 bg-primary hover:bg-primary-hover text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all duration-150 hover-scale flex items-center justify-center space-x-2"
           >
@@ -169,7 +185,7 @@
               <!-- Spinner -->
               <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
             </span>
-            <span>Einloggen</span>
+            <span>{{ $t('auth.login_button') }}</span>
           </button>
         </form>
 
@@ -244,15 +260,18 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import beeboardLogo from '../assets/beeboard-logo.svg'
 import { APP_VERSION } from '../config/app.js'
 import { useAuthStore } from '../stores/auth'
 import { useApiaryStore } from '../stores/apiary'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
+const route = useRoute()
+const { t } = useI18n()
 const authStore = useAuthStore()
 const apiaryStore = useApiaryStore()
 
@@ -260,11 +279,27 @@ const setupRequired = ref(false)
 const isLoginTab = ref(true)
 const errorMessage = ref('')
 const successMessage = ref('')
+const rememberMe = ref(false)
+
+const noticeMessage = computed(() => {
+  const reason = route.query.reason
+  if (reason === 'session_expired') return t('auth.session_expired')
+  if (reason === 'logged_out') return t('auth.logged_out')
+  return ''
+})
 
 const loginForm = reactive({
   username: '',
   password: ''
 })
+
+const REMEMBERED_USER_KEY = 'rememberedUsername'
+
+const savedUsername = localStorage.getItem(REMEMBERED_USER_KEY)
+if (savedUsername) {
+  loginForm.username = savedUsername
+  rememberMe.value = true
+}
 
 const registerForm = reactive({
   username: '',
@@ -276,6 +311,9 @@ const registerForm = reactive({
 
 // Check setup status when loaded
 onMounted(async () => {
+  if (route.query.reason) {
+    router.replace({ path: '/login', query: {} })
+  }
   try {
     const response = await axios.get('/api/auth/setup-status')
     setupRequired.value = response.data.setup_required
@@ -290,6 +328,11 @@ async function handleLogin() {
   try {
     const success = await authStore.login(loginForm.username, loginForm.password)
     if (success) {
+      if (rememberMe.value) {
+        localStorage.setItem(REMEMBERED_USER_KEY, loginForm.username)
+      } else {
+        localStorage.removeItem(REMEMBERED_USER_KEY)
+      }
       // Fetch user apiaries immediately
       await apiaryStore.fetchApiaries()
       router.push('/dashboard')

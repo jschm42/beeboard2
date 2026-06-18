@@ -15,6 +15,12 @@
     "back_to_dashboard": "Zurück zum Dashboard",
     "more": "mehr"
   },
+  "auth": {
+    "remember_user": "Angemeldeten Benutzer merken",
+    "login_button": "Einloggen",
+    "session_expired": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
+    "logged_out": "Du wurdest erfolgreich abgemeldet."
+  },
   "sidebar": {
     "dashboard": "Dashboard",
     "locations": "Standorte",

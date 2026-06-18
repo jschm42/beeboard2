@@ -8,9 +8,9 @@
         aria-modal="true"
         @click.self="close"
       >
-        <div class="bg-white dark:bg-dark-card rounded-3xl shadow-2xl max-w-4xl w-full my-8 flex flex-col max-h-[calc(100vh-4rem)] overflow-hidden animate-scale">
+        <div class="bg-white dark:bg-dark-card rounded-2xl md:rounded-3xl shadow-2xl max-w-4xl w-full my-2 md:my-8 flex flex-col max-h-[calc(100vh-1rem)] md:max-h-[calc(100vh-4rem)] overflow-hidden animate-scale">
           <!-- Header -->
-          <div class="flex justify-between items-center p-6 pb-4 border-b border-gray-100 dark:border-dark-border flex-shrink-0">
+          <div class="flex justify-between items-center p-4 pb-3 md:p-6 md:pb-4 border-b border-gray-100 dark:border-dark-border flex-shrink-0">
             <h3 class="text-xl font-bold text-gray-900 dark:text-white">
               {{ isEditMode ? $t('logbook.edit_entry_title') : $t('logbook.new_entry_title') }}
             </h3>
@@ -25,8 +25,8 @@
           </div>
 
           <!-- Form -->
-          <form class="p-6 space-y-4 overflow-y-auto flex-1" @submit.prevent="submitEntryForm">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form class="p-4 space-y-3 md:p-6 md:space-y-4 overflow-y-auto flex-1" @submit.prevent="submitEntryForm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               <div>
                 <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('logbook.hive_required') }}</label>
                 <select
@@ -53,7 +53,7 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               <div>
                 <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('logbook.entry_type_required') }}</label>
                 <select
@@ -77,7 +77,7 @@
                 v-model="entryForm.notes"
                 :placeholder="$t('logbook.notes_placeholder')"
                 rows="6"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm h-20 resize-y md:h-auto"
               />
             </div>
 
@@ -87,7 +87,7 @@
                 {{ $t('logbook.table_images') }}
               </label>
               <div
-                class="border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-200"
+                class="border-2 border-dashed rounded-2xl p-3 md:p-6 text-center cursor-pointer transition-all duration-200"
                 :class="dragOver ? 'border-primary bg-primary/5' : 'border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-dark-bg/30 hover:border-primary/50'"
                 @click="triggerFileInput"
                 @dragover.prevent="dragOver = true"
@@ -102,11 +102,11 @@
                   class="hidden"
                   @change="onFileSelect"
                 />
-                <div class="text-2xl mb-1">📸</div>
-                <p class="text-xs font-bold text-gray-700 dark:text-gray-300">
+                <div class="text-xl md:text-2xl mb-0.5 md:mb-1">📸</div>
+                <p class="text-[11px] md:text-xs font-bold text-gray-700 dark:text-gray-300">
                   {{ $t('logbook.drag_drop_area') }}
                 </p>
-                <p class="text-[10px] text-gray-400 mt-1">
+                <p class="text-[10px] text-gray-400 mt-0.5 md:mt-1">
                   {{ $t('logbook.drag_drop_hint') }}
                 </p>
               </div>
@@ -318,7 +318,7 @@
             <!-- SUB-FORM: VARROA TREATMENT DETAILS -->
             <div v-if="entryForm.entryType === 'VARROA_TREATMENT'" class="space-y-3 border-t border-gray-100 dark:border-dark-border pt-4">
               <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">{{ $t('logbook.treatment_method') }}</h4>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 <div>
                   <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('logbook.treatment_product_label') }}</label>
                   <input
@@ -351,7 +351,7 @@
               </div>
             </div>
 
-            <div class="flex justify-end space-x-2 pt-4 border-t border-gray-100 dark:border-dark-border">
+            <div class="flex justify-end space-x-2 pt-3 md:pt-4 border-t border-gray-100 dark:border-dark-border">
               <button type="button" class="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" @click="close">{{ $t('common.cancel') }}</button>
               <button type="submit" class="px-5 py-2 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md">
                 {{ $t('common.save') }}

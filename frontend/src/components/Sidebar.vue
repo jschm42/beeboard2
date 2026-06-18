@@ -533,7 +533,7 @@ function onApiaryChange(event) {
 
 function logout() {
   authStore.logout()
-  router.push('/login')
+  router.push({ path: '/login', query: { reason: 'logged_out' } })
 }
 </script>
 
