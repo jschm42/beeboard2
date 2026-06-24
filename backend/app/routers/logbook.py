@@ -244,16 +244,18 @@ def create_entry(
     """Creates a log entry, including nested inspection details, varroa counts, or treatments."""
     check_access(apiary_id, current_user, db)
     
-    # Verify hive exists and belongs to the active apiary
-    hive = db.query(Hive).options(
-        joinedload(Hive.boxes).joinedload(HiveBox.frame_type),
-        joinedload(Hive.frame_type)
-    ).filter(Hive.id == entry_in.hive_id, Hive.apiary_id == apiary_id).first()
-    if not hive:
-        raise HTTPException(status_code=400, detail="Bienenvolk gehört nicht zu dieser Imkerei oder existiert nicht")
+    # Verify hive exists and belongs to the active apiary if provided
+    hive_id = entry_in.hive_id if entry_in.hive_id else None
+    if hive_id:
+        hive = db.query(Hive).options(
+            joinedload(Hive.boxes).joinedload(HiveBox.frame_type),
+            joinedload(Hive.frame_type)
+        ).filter(Hive.id == hive_id, Hive.apiary_id == apiary_id).first()
+        if not hive:
+            raise HTTPException(status_code=400, detail="Bienenvolk gehört nicht zu dieser Imkerei oder existiert nicht")
 
     new_entry = LogEntry(
-        hive_id=entry_in.hive_id,
+        hive_id=hive_id,
         session_id=entry_in.session_id,
         date=entry_in.date,
         entry_type=entry_in.entry_type,

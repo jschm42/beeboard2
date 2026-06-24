@@ -28,15 +28,14 @@
           <form class="p-4 space-y-3 md:p-6 md:space-y-4 overflow-y-auto flex-1" @submit.prevent="submitEntryForm">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('logbook.hive_required') }}</label>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ isHiveSelectorDisabled ? $t('logbook.hive_required') : $t('logbook.hive_optional') }}</label>
                 <select
                   v-model="entryForm.hiveId"
-                  required
                   :disabled="isHiveSelectorDisabled"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                   @change="onHiveSelected"
                 >
-                  <option value="" disabled>{{ $t('logbook.select_hive_placeholder') }}</option>
+                  <option value="">{{ isHiveSelectorDisabled ? $t('logbook.select_hive_placeholder') : $t('logbook.select_hive_optional') }}</option>
                   <option v-for="hive in filteredHivesForEntry" :key="hive.id" :value="hive.id">
                     {{ hive.name }}
                   </option>
@@ -169,7 +168,11 @@
                 </h4>
               </div>
 
-              <div class="space-y-4 animate-scale">
+              <div v-if="!entryForm.hiveId" class="p-4 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 rounded-2xl text-xs text-amber-600 dark:text-amber-400 font-bold">
+                ⚠️ {{ $t('logbook.select_hive_for_inspection') }}
+              </div>
+
+              <div v-else class="space-y-4 animate-scale">
                 <div class="p-4 bg-gray-50 dark:bg-dark-bg/60 border border-gray-200 dark:border-dark-border rounded-2xl space-y-2.5">
                   <span class="block text-[10px] font-black text-gray-500 uppercase tracking-wide">{{ $t('logbook.categories_to_record') }}</span>
                   <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs font-bold text-gray-700 dark:text-gray-300">
@@ -500,7 +503,13 @@ function close() {
 }
 
 function resetForm() {
-  entryForm.hiveId = props.selectedSession?.hive_id || (filteredHivesForEntry.value[0]?.id || '')
+  if (props.selectedSession?.hive_id) {
+    entryForm.hiveId = props.selectedSession.hive_id
+  } else if (props.selectedSession?.scope_type === 'HIVE' && props.selectedSession.linked_hives?.length === 1) {
+    entryForm.hiveId = props.selectedSession.linked_hives[0].id
+  } else {
+    entryForm.hiveId = ''
+  }
   entryForm.date = new Date().toISOString().substring(0, 10)
   selectedTypeOption.value = 'GENERAL'
   entryForm.notes = ''
@@ -699,10 +708,15 @@ function onHiveSelected() {
 
 async function submitEntryForm() {
   try {
+    if (entryForm.entryType === 'INSPECTION' && !entryForm.hiveId) {
+      errorStore.showError(t('logbook.select_hive_for_inspection'))
+      return
+    }
+
     const isExact = entryForm.inspectionDetail.boxMode === 'exact'
 
     const payload = {
-      hive_id: entryForm.hiveId,
+      hive_id: entryForm.hiveId || null,
       session_id: props.selectedSession ? props.selectedSession.id : null,
       date: entryForm.date,
       entry_type: entryForm.entryType,

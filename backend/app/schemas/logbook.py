@@ -95,7 +95,7 @@ class LogEntryImageOut(BaseModel):
         from_attributes = True
 
 class LogEntryBase(BaseModel):
-    hive_id: str
+    hive_id: Optional[str] = None
     session_id: Optional[str] = None
     date: date
     entry_type: str  # INSPECTION, VARROA_COUNT, VARROA_TREATMENT, GENERAL

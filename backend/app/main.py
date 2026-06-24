@@ -12,7 +12,43 @@ from contextlib import asynccontextmanager
 from app.services.cron import start_scheduler
 
 # Initialize SQLite tables on startup
+from sqlalchemy import text
+with engine.connect() as conn:
+    try:
+        table_exists = conn.execute(text(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='log_entries'"
+        )).fetchone()
+        if table_exists:
+            result = conn.execute(text("PRAGMA table_info(log_entries)"))
+            log_entries_cols = result.fetchall()
+            hive_id_info = next((c for c in log_entries_cols if c[1] == "hive_id"), None)
+            if hive_id_info and hive_id_info[3] == 1:  # notnull == 1
+                conn.execute(text("PRAGMA foreign_keys=OFF"))
+                conn.execute(text("ALTER TABLE log_entries RENAME TO log_entries_old"))
+                conn.commit()
+    except Exception as e:
+        print(f"Error checking/renaming log_entries: {e}")
+
 Base.metadata.create_all(bind=engine)
+
+with engine.connect() as conn:
+    try:
+        old_exists = conn.execute(text(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='log_entries_old'"
+        )).fetchone()
+        if old_exists:
+            result = conn.execute(text("PRAGMA table_info(log_entries_old)"))
+            old_cols = [row[1] for row in result.fetchall()]
+            result_new = conn.execute(text("PRAGMA table_info(log_entries)"))
+            new_cols = [row[1] for row in result_new.fetchall()]
+            common_cols = [c for c in old_cols if c in new_cols]
+            cols_str = ", ".join(common_cols)
+            conn.execute(text(f"INSERT INTO log_entries ({cols_str}) SELECT {cols_str} FROM log_entries_old"))
+            conn.execute(text("DROP TABLE log_entries_old"))
+            conn.execute(text("PRAGMA foreign_keys=ON"))
+            conn.commit()
+    except Exception as e:
+        print(f"Error migrating/copying log_entries: {e}")
 
 # Database migrations for new columns
 from sqlalchemy import text

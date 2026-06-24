@@ -60,7 +60,7 @@ class LogSession(UUIDTimeStampedModel, CreatedByModel, ApiaryScopedModel):
 class LogEntry(UUIDTimeStampedModel, CreatedByModel, ApiaryScopedModel):
     __tablename__ = "log_entries"
 
-    hive_id: Mapped[str] = mapped_column(ForeignKey("hives.id", ondelete="CASCADE"))
+    hive_id: Mapped[Optional[str]] = mapped_column(ForeignKey("hives.id", ondelete="SET NULL"), nullable=True)
     session_id: Mapped[Optional[str]] = mapped_column(ForeignKey("log_sessions.id", ondelete="CASCADE"), nullable=True)
     date: Mapped[date] = mapped_column(Date)
     entry_type: Mapped[str] = mapped_column(String(30))  # INSPECTION, VARROA_COUNT, VARROA_TREATMENT, GENERAL

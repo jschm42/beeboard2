@@ -289,3 +289,43 @@ def test_logbook_box_creation_with_deselected_categories(client: TestClient, db:
     assert box_data["drone_eighths"] is None
 
 
+def test_logbook_entry_optional_hive(client: TestClient, db: Session):
+    # 1. Register and login
+    reg_response = client.post("/api/auth/register", json={
+        "username": "optionalhive",
+        "email": "optionalhive@example.com",
+        "password": "strongpassword123",
+        "first_name": "Optional",
+        "last_name": "Hive"
+    })
+    assert reg_response.status_code == 201
+    
+    login_response = client.post("/api/auth/login", data={
+        "username": "optionalhive",
+        "password": "strongpassword123"
+    })
+    token = login_response.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    # 2. Create apiary
+    apiary_resp = client.post("/api/apiaries", json={
+        "name": "Optional Hive Apiary",
+        "address": "Honey Road 4"
+    }, headers=headers)
+    apiary_id = apiary_resp.json()["id"]
+
+    # 3. Create entry with hive_id = None
+    entry_resp = client.post(f"/api/logbook/entries?apiary_id={apiary_id}", json={
+        "hive_id": None,
+        "session_id": None,
+        "date": "2026-06-24",
+        "entry_type": "GENERAL",
+        "notes": "Testing optional hive entry"
+    }, headers=headers)
+    assert entry_resp.status_code == 201
+    entry_data = entry_resp.json()
+    assert entry_data["hive_id"] is None
+    assert entry_data["notes"] == "Testing optional hive entry"
+
+
+
