@@ -115,6 +115,43 @@ def seed_database(db: Session):
             existing.name = range_data["name"]
             print(f"NumberRange {range_data['key']} bereits vorhanden.")
 
+    # 4. Seed Treatment Methods & Application Types
+    from app.models.treatment import TreatmentMethod, TreatmentApplicationType
+    methods = [
+        {"name": "Oxalsäure", "unit": "ml", "is_active": True},
+        {"name": "Ameisensäure", "unit": "ml", "is_active": True},
+        {"name": "Milchsäure", "unit": "ml", "is_active": True},
+        {"name": "Thymol", "unit": "g", "is_active": True},
+        {"name": "Amitraz-Streifen", "unit": "Streifen", "is_active": True},
+    ]
+
+    for method_data in methods:
+        existing = db.query(TreatmentMethod).filter(TreatmentMethod.name == method_data["name"]).first()
+        if not existing:
+            new_method = TreatmentMethod(**method_data)
+            db.add(new_method)
+            print(f"Erstellt TreatmentMethod: {method_data['name']} ({method_data['unit']})")
+        else:
+            existing.unit = method_data["unit"]
+            existing.is_active = method_data["is_active"]
+            print(f"TreatmentMethod {method_data['name']} bereits vorhanden.")
+
+    app_types = [
+        {"name": "sprühen", "is_active": True},
+        {"name": "verdampfen", "is_active": True},
+        {"name": "beträufeln", "is_active": True},
+    ]
+
+    for app_data in app_types:
+        existing_app = db.query(TreatmentApplicationType).filter(TreatmentApplicationType.name == app_data["name"]).first()
+        if not existing_app:
+            new_app = TreatmentApplicationType(**app_data)
+            db.add(new_app)
+            print(f"Erstellt TreatmentApplicationType: {app_data['name']}")
+        else:
+            existing_app.is_active = app_data["is_active"]
+            print(f"TreatmentApplicationType {app_data['name']} bereits vorhanden.")
+
     db.commit()
     print("Datenbank-Seeding erfolgreich abgeschlossen!")
 

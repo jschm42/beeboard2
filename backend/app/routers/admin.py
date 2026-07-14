@@ -492,3 +492,190 @@ def admin_update_number_range(
     db.refresh(nr)
     return nr
 
+
+# -----------------------------
+# TREATMENT METHOD ENDPOINTS
+# -----------------------------
+from app.models.treatment import TreatmentMethod, Treatment, TreatmentApplicationType
+from app.schemas.treatment import (
+    TreatmentMethodCreate, TreatmentMethodOut,
+    TreatmentApplicationTypeCreate, TreatmentApplicationTypeOut
+)
+
+@router.get("/treatment-methods", response_model=List[TreatmentMethodOut])
+def admin_list_treatment_methods(
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_admin)
+):
+    """Lists all treatment methods for admin view."""
+    return db.query(TreatmentMethod).order_by(TreatmentMethod.name).all()
+
+@router.post("/treatment-methods", response_model=TreatmentMethodOut, status_code=status.HTTP_201_CREATED)
+def admin_create_treatment_method(
+    payload: TreatmentMethodCreate,
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_admin)
+):
+    """Creates a new treatment method."""
+    existing = db.query(TreatmentMethod).filter(TreatmentMethod.name.ilike(payload.name)).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Eine Behandlungsmethode mit diesem Namen existiert bereits."
+        )
+    
+    new_method = TreatmentMethod(
+        name=payload.name,
+        unit=payload.unit,
+        is_active=payload.is_active
+    )
+    db.add(new_method)
+    db.commit()
+    db.refresh(new_method)
+    return new_method
+
+@router.put("/treatment-methods/{method_id}", response_model=TreatmentMethodOut)
+def admin_update_treatment_method(
+    method_id: str,
+    payload: TreatmentMethodCreate,
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_admin)
+):
+    """Updates a treatment method's name, unit and active status."""
+    method = db.query(TreatmentMethod).filter(TreatmentMethod.id == method_id).first()
+    if not method:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Behandlungsmethode nicht gefunden."
+        )
+    
+    if payload.name.lower() != method.name.lower():
+        existing = db.query(TreatmentMethod).filter(TreatmentMethod.name.ilike(payload.name)).first()
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Eine Behandlungsmethode mit diesem Namen existiert bereits."
+            )
+            
+    method.name = payload.name
+    method.unit = payload.unit
+    method.is_active = payload.is_active
+    
+    db.commit()
+    db.refresh(method)
+    return method
+
+@router.delete("/treatment-methods/{method_id}", status_code=status.HTTP_204_NO_CONTENT)
+def admin_delete_treatment_method(
+    method_id: str,
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_admin)
+):
+    """Deletes a treatment method if not referenced by any treatment record."""
+    method = db.query(TreatmentMethod).filter(TreatmentMethod.id == method_id).first()
+    if not method:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Behandlungsmethode nicht gefunden."
+        )
+        
+    # Check if referenced by any treatment record
+    used_count = db.query(Treatment).filter(Treatment.treatment_method_id == method_id).count()
+    if used_count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Diese Behandlungsmethode wird noch von aufgezeichneten Behandlungen verwendet und kann nicht gelöscht werden."
+        )
+        
+    db.delete(method)
+    db.commit()
+    return
+
+@router.get("/treatment-application-types", response_model=List[TreatmentApplicationTypeOut])
+def admin_list_treatment_application_types(
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_admin)
+):
+    """Lists all treatment application types for admin view."""
+    return db.query(TreatmentApplicationType).order_by(TreatmentApplicationType.name).all()
+
+@router.post("/treatment-application-types", response_model=TreatmentApplicationTypeOut, status_code=status.HTTP_201_CREATED)
+def admin_create_treatment_application_type(
+    payload: TreatmentApplicationTypeCreate,
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_admin)
+):
+    """Creates a new treatment application type."""
+    existing = db.query(TreatmentApplicationType).filter(TreatmentApplicationType.name.ilike(payload.name)).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Eine Applikationsmethode mit diesem Namen existiert bereits."
+        )
+    
+    new_app = TreatmentApplicationType(
+        name=payload.name,
+        is_active=payload.is_active
+    )
+    db.add(new_app)
+    db.commit()
+    db.refresh(new_app)
+    return new_app
+
+@router.put("/treatment-application-types/{app_id}", response_model=TreatmentApplicationTypeOut)
+def admin_update_treatment_application_type(
+    app_id: str,
+    payload: TreatmentApplicationTypeCreate,
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_admin)
+):
+    """Updates a treatment application type's name and active status."""
+    app_type = db.query(TreatmentApplicationType).filter(TreatmentApplicationType.id == app_id).first()
+    if not app_type:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Applikationsmethode nicht gefunden."
+        )
+    
+    if payload.name.lower() != app_type.name.lower():
+        existing = db.query(TreatmentApplicationType).filter(TreatmentApplicationType.name.ilike(payload.name)).first()
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Eine Applikationsmethode mit diesem Namen existiert bereits."
+            )
+            
+    app_type.name = payload.name
+    app_type.is_active = payload.is_active
+    
+    db.commit()
+    db.refresh(app_type)
+    return app_type
+
+@router.delete("/treatment-application-types/{app_id}", status_code=status.HTTP_204_NO_CONTENT)
+def admin_delete_treatment_application_type(
+    app_id: str,
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_admin)
+):
+    """Deletes a treatment application type if not referenced by any treatment record."""
+    app_type = db.query(TreatmentApplicationType).filter(TreatmentApplicationType.id == app_id).first()
+    if not app_type:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Applikationsmethode nicht gefunden."
+        )
+        
+    # Check if referenced by any treatment record
+    used_count = db.query(Treatment).filter(Treatment.application_type_id == app_id).count()
+    if used_count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Diese Applikationsmethode wird noch von aufgezeichneten Behandlungen verwendet und kann nicht gelöscht werden."
+        )
+        
+    db.delete(app_type)
+    db.commit()
+    return
+
+

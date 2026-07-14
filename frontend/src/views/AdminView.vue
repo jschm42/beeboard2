@@ -91,6 +91,28 @@
       >
         {{ $t('admin.tab_number_ranges') }}
       </button>
+      <button 
+        @click="activeTab = 'treatment-methods'"
+        class="pb-4 text-sm font-bold tracking-wide border-b-2 transition-all duration-200"
+        :class="[
+          activeTab === 'treatment-methods' 
+            ? 'border-primary text-primary' 
+            : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+        ]"
+      >
+        {{ $t('admin.tab_treatment_methods') }}
+      </button>
+      <button 
+        @click="activeTab = 'treatment-application-types'"
+        class="pb-4 text-sm font-bold tracking-wide border-b-2 transition-all duration-200"
+        :class="[
+          activeTab === 'treatment-application-types' 
+            ? 'border-primary text-primary' 
+            : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+        ]"
+      >
+        {{ $t('admin.tab_treatment_application_types') }}
+      </button>
     </div>
 
     <!-- Tab Content: User Management -->
@@ -885,6 +907,260 @@
       </div>
     </div>
 
+    <!-- Tab Content: Treatment Methods Management -->
+    <div v-if="activeTab === 'treatment-methods'" class="space-y-6">
+      <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm animate-scale flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+        <div>
+          <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ $t('admin.treatment_methods_title') }}</h2>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            {{ $t('admin.treatment_methods_subtitle') }}
+          </p>
+        </div>
+        <button 
+          @click="openCreateTreatmentMethod" 
+          class="px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl shadow-md hover-scale flex items-center gap-1.5"
+        >
+          <span>{{ $t('admin.new_treatment_method') }}</span>
+        </button>
+      </div>
+
+      <!-- Create/Edit Form (inline/embedded) -->
+      <div v-if="showTreatmentMethodForm" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm animate-scale">
+        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">
+          {{ isEditTreatmentMethod ? $t('admin.edit_treatment_method', { name: formTreatmentMethod.name }) : $t('admin.new_treatment_method') }}
+        </h3>
+        <form @submit.prevent="submitTreatmentMethodForm" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.form_method_name') }}</label>
+              <input 
+                v-model="formTreatmentMethod.name" 
+                type="text" 
+                required 
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.form_method_unit') }}</label>
+              <input 
+                v-model="formTreatmentMethod.unit" 
+                type="text" 
+                required 
+                :placeholder="$t('admin.form_method_unit_placeholder')"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+          </div>
+
+          <div class="flex items-center pt-2">
+            <label class="flex items-center space-x-2 cursor-pointer">
+              <input 
+                v-model="formTreatmentMethod.is_active" 
+                type="checkbox" 
+                class="rounded text-primary focus:ring-primary h-4 w-4"
+              />
+              <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $t('admin.form_method_active') }}</span>
+            </label>
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-2">
+            <button 
+              type="button" 
+              @click="showTreatmentMethodForm = false" 
+              class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-100 dark:hover:bg-dark-border text-gray-700 dark:text-gray-300"
+            >
+              {{ $t('common.cancel') }}
+            </button>
+            <button 
+              type="submit" 
+              class="px-5 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl shadow-md hover-scale"
+              :disabled="savingTreatmentMethod"
+            >
+              {{ $t('common.save') }}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Table -->
+      <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl overflow-hidden shadow-sm">
+        <div v-if="loadingTreatmentMethods" class="flex flex-col items-center justify-center py-20">
+          <svg class="animate-spin h-8 w-8 text-primary mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span class="text-xs text-gray-400 font-bold">{{ $t('admin.loading_frame_types') }}</span>
+        </div>
+
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
+                <th class="px-6 py-4">{{ $t('admin.table_method_name') }}</th>
+                <th class="px-6 py-4">{{ $t('admin.table_method_unit') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('admin.table_method_status') }}</th>
+                <th class="px-6 py-4 text-right">{{ $t('common.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-dark-border text-sm">
+              <tr 
+                v-for="m in treatmentMethods" 
+                :key="m.id" 
+                class="hover:bg-gray-50/50 dark:hover:bg-dark-bg/30 transition-colors duration-150"
+              >
+                <td class="px-6 py-4 font-bold text-gray-800 dark:text-gray-200">
+                  {{ m.name }}
+                </td>
+                <td class="px-6 py-4 font-mono text-gray-600 dark:text-gray-300">
+                  {{ m.unit }}
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <span 
+                    class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                    :class="m.is_active ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'"
+                  >
+                    {{ m.is_active ? $t('common.active') : $t('common.inactive') }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-right space-x-2">
+                  <button 
+                    @click="openEditTreatmentMethod(m)" 
+                    class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border rounded-lg transition-all duration-150 inline-flex hover-scale"
+                    :title="$t('admin.edit_tooltip')"
+                  >
+                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                  </button>
+                  <button 
+                    @click="deleteTreatmentMethod(m)" 
+                    class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all duration-150 inline-flex hover-scale"
+                    :title="$t('admin.delete_tooltip')"
+                  >
+                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Content: Treatment Application Types Management -->
+    <div v-if="activeTab === 'treatment-application-types'" class="space-y-6">
+      <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm animate-scale flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+        <div>
+          <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ $t('admin.treatment_apps_title') }}</h2>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            {{ $t('admin.treatment_apps_subtitle') }}
+          </p>
+        </div>
+        <button 
+          @click="openCreateTreatmentApp" 
+          class="px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl shadow-md hover-scale flex items-center gap-1.5"
+        >
+          <span>{{ $t('admin.new_treatment_app') }}</span>
+        </button>
+      </div>
+
+      <!-- Create/Edit Form (inline/embedded) -->
+      <div v-if="showTreatmentAppForm" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm animate-scale">
+        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">
+          {{ isEditTreatmentApp ? $t('admin.edit_treatment_app', { name: formTreatmentApp.name }) : $t('admin.new_treatment_app') }}
+        </h3>
+        <form @submit.prevent="submitTreatmentAppForm" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.form_app_name') }}</label>
+            <input 
+              v-model="formTreatmentApp.name" 
+              type="text" 
+              required 
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+
+          <div class="flex items-center pt-2">
+            <label class="flex items-center space-x-2 cursor-pointer">
+              <input 
+                v-model="formTreatmentApp.is_active" 
+                type="checkbox" 
+                class="rounded text-primary focus:ring-primary h-4 w-4"
+              />
+              <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $t('admin.form_app_active') }}</span>
+            </label>
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-2">
+            <button 
+              type="button" 
+              @click="showTreatmentAppForm = false" 
+              class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-100 dark:hover:bg-dark-border text-gray-700 dark:text-gray-300"
+            >
+              {{ $t('common.cancel') }}
+            </button>
+            <button 
+              type="submit" 
+              class="px-5 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl shadow-md hover-scale"
+              :disabled="savingTreatmentApp"
+            >
+              {{ $t('common.save') }}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Table -->
+      <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl overflow-hidden shadow-sm">
+        <div v-if="loadingTreatmentApps" class="flex flex-col items-center justify-center py-20">
+          <svg class="animate-spin h-8 w-8 text-primary mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span class="text-xs text-gray-400 font-bold">{{ $t('admin.loading_frame_types') }}</span>
+        </div>
+
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
+                <th class="px-6 py-4">{{ $t('admin.table_app_name') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('admin.table_method_status') }}</th>
+                <th class="px-6 py-4 text-right">{{ $t('common.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-dark-border text-sm">
+              <tr 
+                v-for="app in treatmentApps" 
+                :key="app.id" 
+                class="hover:bg-gray-50/50 dark:hover:bg-dark-bg/30 transition-colors duration-150"
+              >
+                <td class="px-6 py-4 font-bold text-gray-800 dark:text-gray-200">
+                  {{ app.name }}
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <span 
+                    class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                    :class="app.is_active ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'"
+                  >
+                    {{ app.is_active ? $t('common.active') : $t('common.inactive') }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-right space-x-2">
+                  <button 
+                    @click="openEditTreatmentApp(app)" 
+                    class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border rounded-lg transition-all duration-150 inline-flex hover-scale"
+                    :title="$t('admin.edit_tooltip')"
+                  >
+                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                  </button>
+                  <button 
+                    @click="deleteTreatmentApp(app)" 
+                    class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all duration-150 inline-flex hover-scale"
+                    :title="$t('admin.delete_tooltip')"
+                  >
+                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -1429,12 +1705,192 @@ async function submitNumberRangeForm() {
   }
 }
 
+// Treatment Methods States
+const treatmentMethods = ref([])
+const loadingTreatmentMethods = ref(false)
+const savingTreatmentMethod = ref(false)
+const showTreatmentMethodForm = ref(false)
+const isEditTreatmentMethod = ref(false)
+const editingTreatmentMethodId = ref(null)
+
+const formTreatmentMethod = reactive({
+  name: '',
+  unit: 'ml',
+  is_active: true
+})
+
+async function fetchTreatmentMethods() {
+  loadingTreatmentMethods.value = true
+  try {
+    const res = await axios.get('/api/admin/treatment-methods')
+    treatmentMethods.value = res.data
+  } catch (err) {
+    console.error('Fetch treatment methods error:', err)
+    showToast(t('admin.toast_methods_load_error'), 'error')
+  } finally {
+    loadingTreatmentMethods.value = false
+  }
+}
+
+function openCreateTreatmentMethod() {
+  isEditTreatmentMethod.value = false
+  editingTreatmentMethodId.value = null
+  formTreatmentMethod.name = ''
+  formTreatmentMethod.unit = 'ml'
+  formTreatmentMethod.is_active = true
+  showTreatmentMethodForm.value = true
+}
+
+function openEditTreatmentMethod(m) {
+  isEditTreatmentMethod.value = true
+  editingTreatmentMethodId.value = m.id
+  formTreatmentMethod.name = m.name
+  formTreatmentMethod.unit = m.unit
+  formTreatmentMethod.is_active = m.is_active
+  showTreatmentMethodForm.value = true
+}
+
+async function submitTreatmentMethodForm() {
+  if (!formTreatmentMethod.name.trim() || !formTreatmentMethod.unit.trim()) return
+  savingTreatmentMethod.value = true
+  try {
+    const payload = {
+      name: formTreatmentMethod.name.trim(),
+      unit: formTreatmentMethod.unit.trim(),
+      is_active: formTreatmentMethod.is_active
+    }
+    if (isEditTreatmentMethod.value) {
+      await axios.put(`/api/admin/treatment-methods/${editingTreatmentMethodId.value}`, payload)
+      showToast(t('admin.toast_method_updated', { name: payload.name }))
+    } else {
+      await axios.post('/api/admin/treatment-methods', payload)
+      showToast(t('admin.toast_method_created', { name: payload.name }))
+    }
+    showTreatmentMethodForm.value = false
+    await fetchTreatmentMethods()
+  } catch (err) {
+    console.error('Save treatment method error:', err)
+    const errDetail = err.response?.data?.detail || t('admin.toast_method_save_error')
+    showToast(errDetail, 'error')
+  } finally {
+    savingTreatmentMethod.value = false
+  }
+}
+
+async function deleteTreatmentMethod(m) {
+  const confirmed = await confirmStore.ask({
+    title: t('admin.toast_method_delete_title'),
+    message: t('admin.toast_method_delete_msg', { name: m.name }),
+    type: 'danger',
+    confirmText: t('common.delete')
+  })
+  if (!confirmed) return
+  try {
+    await axios.delete(`/api/admin/treatment-methods/${m.id}`)
+    showToast(t('admin.toast_method_deleted', { name: m.name }))
+    await fetchTreatmentMethods()
+  } catch (err) {
+    console.error('Delete treatment method error:', err)
+    const errDetail = err.response?.data?.detail || t('admin.toast_method_delete_error')
+    showToast(errDetail, 'error')
+  }
+}
+
+// Treatment Application Types States
+const treatmentApps = ref([])
+const loadingTreatmentApps = ref(false)
+const savingTreatmentApp = ref(false)
+const showTreatmentAppForm = ref(false)
+const isEditTreatmentApp = ref(false)
+const editingTreatmentAppId = ref(null)
+
+const formTreatmentApp = reactive({
+  name: '',
+  is_active: true
+})
+
+async function fetchTreatmentApps() {
+  loadingTreatmentApps.value = true
+  try {
+    const res = await axios.get('/api/admin/treatment-application-types')
+    treatmentApps.value = res.data
+  } catch (err) {
+    console.error('Fetch treatment application types error:', err)
+    showToast(t('admin.toast_apps_load_error'), 'error')
+  } finally {
+    loadingTreatmentApps.value = false
+  }
+}
+
+function openCreateTreatmentApp() {
+  isEditTreatmentApp.value = false
+  editingTreatmentAppId.value = null
+  formTreatmentApp.name = ''
+  formTreatmentApp.is_active = true
+  showTreatmentAppForm.value = true
+}
+
+function openEditTreatmentApp(app) {
+  isEditTreatmentApp.value = true
+  editingTreatmentAppId.value = app.id
+  formTreatmentApp.name = app.name
+  formTreatmentApp.is_active = app.is_active
+  showTreatmentAppForm.value = true
+}
+
+async function submitTreatmentAppForm() {
+  if (!formTreatmentApp.name.trim()) return
+  savingTreatmentApp.value = true
+  try {
+    const payload = {
+      name: formTreatmentApp.name.trim(),
+      is_active: formTreatmentApp.is_active
+    }
+    if (isEditTreatmentApp.value) {
+      await axios.put(`/api/admin/treatment-application-types/${editingTreatmentAppId.value}`, payload)
+      showToast(t('admin.toast_app_updated', { name: payload.name }))
+    } else {
+      await axios.post('/api/admin/treatment-application-types', payload)
+      showToast(t('admin.toast_app_created', { name: payload.name }))
+    }
+    showTreatmentAppForm.value = false
+    await fetchTreatmentApps()
+  } catch (err) {
+    console.error('Save treatment application type error:', err)
+    const errDetail = err.response?.data?.detail || t('admin.toast_app_save_error')
+    showToast(errDetail, 'error')
+  } finally {
+    savingTreatmentApp.value = false
+  }
+}
+
+async function deleteTreatmentApp(app) {
+  const confirmed = await confirmStore.ask({
+    title: t('admin.toast_app_delete_title'),
+    message: t('admin.toast_app_delete_msg', { name: app.name }),
+    type: 'danger',
+    confirmText: t('common.delete')
+  })
+  if (!confirmed) return
+  try {
+    await axios.delete(`/api/admin/treatment-application-types/${app.id}`)
+    showToast(t('admin.toast_app_deleted', { name: app.name }))
+    await fetchTreatmentApps()
+  } catch (err) {
+    console.error('Delete treatment application type error:', err)
+    const errDetail = err.response?.data?.detail || t('admin.toast_app_delete_error')
+    showToast(errDetail, 'error')
+  }
+}
+
 onMounted(() => {
   fetchUsers()
   fetchLLMConfig()
   fetchAIInsightJobs()
   fetchFrameTypes()
   fetchNumberRanges()
+  fetchTreatmentMethods()
+  fetchTreatmentApps()
 })
 </script>
 
