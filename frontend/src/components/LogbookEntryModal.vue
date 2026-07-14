@@ -65,7 +65,6 @@
                   <option value="INSPECTION_EXACT">{{ $t('logbook.type_inspection_exact') }}</option>
                   <option value="INSPECTION_EIGHTHS">{{ $t('logbook.type_inspection_eighths') }}</option>
                   <option value="VARROA_COUNT">{{ $t('logbook.type_varroa_count') }}</option>
-                  <option value="VARROA_TREATMENT">{{ $t('logbook.type_varroa_treatment') }}</option>
                 </select>
               </div>
             </div>

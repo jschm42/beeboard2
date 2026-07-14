@@ -29,7 +29,7 @@ DEFAULT_DRAFT_PROMPT = (
     "STRUCTURE:\n"
     "{\n"
     "  \"hive_name\": \"Name of the colony/hive (e.g., Volk 3 or Hive 3), or null if not mentioned\",\n"
-    "  \"entry_type\": \"One of: 'INSPECTION', 'VARROA_COUNT', 'VARROA_TREATMENT', 'GENERAL'\",\n"
+    "  \"entry_type\": \"One of: 'INSPECTION', 'VARROA_COUNT', 'GENERAL'\",\n"
     "  \"notes\": \"Summary of the note in the requested target language: {target_lang}\",\n"
     "  \"date\": \"Date in YYYY-MM-DD format (default: '{date_str}')\",\n"
     "  \"inspection_detail\": {\n"
@@ -45,11 +45,7 @@ DEFAULT_DRAFT_PROMPT = (
     "  }, // Present only if entry_type = 'INSPECTION', otherwise null\n"
     "  \"varroa_count_detail\": {\n"
     "    \"raw_count\": 0 // Raw count of varroa mites (integer)\n"
-    "  }, // Present only if entry_type = 'VARROA_COUNT', otherwise null\n"
-    "  \"varroa_treatment_detail\": {\n"
-    "    \"product\": \"Name of the treatment product\",\n"
-    "    \"dosage\": \"Dosage used (e.g., 50ml)\"\n"
-    "  } // Present only if entry_type = 'VARROA_TREATMENT', otherwise null\n"
+    "  } // Present only if entry_type = 'VARROA_COUNT', otherwise null\n"
     "}"
 )
 
@@ -518,9 +514,7 @@ def get_fallback_draft(freetext: str, date_str: str, error: Optional[str] = None
     # Basic rule-based classification for seamless UX without AI keys
     entry_type = "GENERAL"
     if "milben" in text_lower or "varroa" in text_lower or "zählung" in text_lower or "gezählt" in text_lower:
-        if "behandlung" in text_lower or "behandelt" in text_lower or "präparat" in text_lower:
-            entry_type = "VARROA_TREATMENT"
-        else:
+        if not ("behandlung" in text_lower or "behandelt" in text_lower or "präparat" in text_lower):
             entry_type = "VARROA_COUNT"
     elif "kontrolliert" in text_lower or "inspektion" in text_lower or "brut" in text_lower or "wabe" in text_lower:
         entry_type = "INSPECTION"
@@ -549,14 +543,11 @@ def get_fallback_draft(freetext: str, date_str: str, error: Optional[str] = None
         "notes": notes,
         "date": date_str,
         "inspection_detail": None,
-        "varroa_count_detail": None,
-        "varroa_treatment_detail": None
+        "varroa_count_detail": None
     }
 
     if entry_type == "VARROA_COUNT":
         draft["varroa_count_detail"] = {"raw_count": raw_count}
-    elif entry_type == "VARROA_TREATMENT":
-        draft["varroa_treatment_detail"] = {"product": "Unbekannt", "dosage": ""}
     elif entry_type == "INSPECTION":
         draft["inspection_detail"] = {"frames": []}
 
