@@ -205,25 +205,93 @@
     </div>
     <!-- MCP Integration Guide -->
     <div v-if="mcpInfo" class="mt-8 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
-      <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-        <span>🤖</span> MCP-Client-Konfiguration (z. B. für Claude Desktop oder Hermes)
-      </h3>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-        Um die KI-Agenten über das Model Context Protocol (MCP) an Beeboard2 anzubinden, füge folgende Konfiguration in deine Client-Konfiguration ein (z. B. in Claude Desktop unter <code class="px-1 py-0.5 bg-gray-100 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded font-mono text-xs text-gray-700 dark:text-gray-300 font-bold">%APPDATA%/Claude/claude_desktop_config.json</code>):
-      </p>
-
-      <div class="relative bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl p-4 font-mono text-xs overflow-x-auto text-gray-800 dark:text-gray-200">
-        <button 
-          type="button"
-          @click="copyConfigToClipboard" 
-          class="absolute top-3 right-3 px-3 py-1.5 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border hover:text-primary rounded-xl text-gray-500 text-xs font-bold shadow-sm transition-all hover-scale cursor-pointer flex items-center gap-1.5"
-          title="In Zwischenablage kopieren"
-        >
-          <span v-if="configCopySuccess" class="text-emerald-500">Kopiert!</span>
-          <span v-else>Kopieren</span>
-        </button>
-        <pre class="leading-relaxed select-all">{{ formattedMcpConfig }}</pre>
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-dark-border">
+        <div>
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <span>🤖</span> Model Context Protocol (MCP) Integration
+          </h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Binde Beeboard2 als Toolset in deine KI-Agenten (Hermes, Claude Desktop, etc.) ein.</p>
+        </div>
+        <!-- Tab Selector -->
+        <div class="flex bg-gray-100 dark:bg-dark-bg p-1 rounded-xl">
+          <button 
+            type="button"
+            @click="activeTab = 'sse'" 
+            class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer"
+            :class="activeTab === 'sse' ? 'bg-white dark:bg-dark-card text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
+          >
+            Docker & API (SSE)
+          </button>
+          <button 
+            type="button"
+            @click="activeTab = 'stdio'" 
+            class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer"
+            :class="activeTab === 'stdio' ? 'bg-white dark:bg-dark-card text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
+          >
+            Lokaler Prozess (Stdio)
+          </button>
+        </div>
       </div>
+
+      <!-- Option 1: SSE / Docker (Selected) -->
+      <div v-if="activeTab === 'sse'" class="space-y-4 animate-fade-in">
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Empfohlen für Docker-Setups oder wenn die KI von außerhalb auf Beeboard2 zugreifen soll. Der MCP-Server wird direkt über das HTTP-API-Gateway bereitgestellt.
+        </p>
+        
+        <div>
+          <label class="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">Ziel-API-Endpunkt (SSE URL)</label>
+          <div class="flex items-center gap-2 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-xl p-3 font-mono text-xs break-all relative">
+            <span class="text-gray-800 dark:text-gray-200 font-bold select-all flex-grow">{{ sseUrl }}</span>
+            <button 
+              type="button"
+              @click="copySseUrl" 
+              class="shrink-0 px-3 py-1.5 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border hover:text-primary rounded-xl text-gray-500 text-xs font-bold shadow-sm transition-all hover-scale cursor-pointer"
+            >
+              <span v-if="sseCopySuccess" class="text-emerald-500">Kopiert!</span>
+              <span v-else>Kopieren</span>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">Claude / Hermes Client-Konfiguration</label>
+          <div class="relative bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl p-4 font-mono text-xs overflow-x-auto text-gray-800 dark:text-gray-200">
+            <button 
+              type="button"
+              @click="copyConfigToClipboard" 
+              class="absolute top-3 right-3 px-3 py-1.5 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border hover:text-primary rounded-xl text-gray-500 text-xs font-bold shadow-sm transition-all hover-scale cursor-pointer"
+            >
+              <span v-if="configCopySuccess" class="text-emerald-500">Kopiert!</span>
+              <span v-else>Kopieren</span>
+            </button>
+            <pre class="leading-relaxed select-all">{{ formattedMcpConfig }}</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Option 2: Stdio (Local Process) -->
+      <div v-else class="space-y-4 animate-fade-in">
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Verwendet den lokalen Python-Prozess direkt im Workspace. Gut geeignet für Entwicklungszwecke, wenn der Client auf demselben Rechner läuft.
+        </p>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">Stdio Client-Konfiguration</label>
+          <div class="relative bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-2xl p-4 font-mono text-xs overflow-x-auto text-gray-800 dark:text-gray-200">
+            <button 
+              type="button"
+              @click="copyStdioConfig" 
+              class="absolute top-3 right-3 px-3 py-1.5 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border hover:text-primary rounded-xl text-gray-500 text-xs font-bold shadow-sm transition-all hover-scale cursor-pointer"
+            >
+              <span v-if="stdioCopySuccess" class="text-emerald-500">Kopiert!</span>
+              <span v-else>Kopieren</span>
+            </button>
+            <pre class="leading-relaxed select-all">{{ formattedStdioConfig }}</pre>
+          </div>
+        </div>
+      </div>
+
       <p class="text-xs text-amber-600 dark:text-amber-400 mt-3 flex items-center gap-1.5">
         <span>⚠️</span> Ersetze <code class="px-1 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-900 rounded font-mono font-bold">DEIN_API_KEY</code> durch einen oben generierten API-Schlüssel.
       </p>
@@ -238,7 +306,10 @@ import axios from 'axios'
 const apiKeys = ref([])
 const loading = ref(true)
 const mcpInfo = ref(null)
+const activeTab = ref('sse')
 const configCopySuccess = ref(false)
+const sseCopySuccess = ref(false)
+const stdioCopySuccess = ref(false)
 const showModal = ref(false)
 const showGeneratedModal = ref(false)
 const saving = ref(false)
@@ -333,7 +404,21 @@ async function fetchMcpInfo() {
   }
 }
 
+const sseUrl = computed(() => {
+  return `${window.location.origin}/mcp/sse?api_key=DEIN_API_KEY`
+})
+
 const formattedMcpConfig = computed(() => {
+  if (!mcpInfo.value) return ''
+  const configObj = {
+    beeboard: {
+      url: sseUrl.value
+    }
+  }
+  return JSON.stringify(configObj, null, 2)
+})
+
+const formattedStdioConfig = computed(() => {
   if (!mcpInfo.value) return ''
   const configObj = {
     beeboard: {
@@ -353,6 +438,22 @@ function copyConfigToClipboard() {
   configCopySuccess.value = true
   setTimeout(() => {
     configCopySuccess.value = false
+  }, 2000)
+}
+
+function copySseUrl() {
+  navigator.clipboard.writeText(sseUrl.value)
+  sseCopySuccess.value = true
+  setTimeout(() => {
+    sseCopySuccess.value = false
+  }, 2000)
+}
+
+function copyStdioConfig() {
+  navigator.clipboard.writeText(formattedStdioConfig.value)
+  stdioCopySuccess.value = true
+  setTimeout(() => {
+    stdioCopySuccess.value = false
   }, 2000)
 }
 

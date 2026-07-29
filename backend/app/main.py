@@ -1,7 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
+import hashlib
+from datetime import datetime, timezone
+from app.mcp_server import mcp
 
 from app.core.config import settings, APP_NAME, APP_VERSION, APP_DESCRIPTION
 from app.core.database import engine
@@ -190,6 +194,54 @@ app = FastAPI(
     version=APP_VERSION,
     lifespan=lifespan
 )
+
+@app.middleware("http")
+async def mcp_auth_middleware(request: Request, call_next):
+    # Intercept requests to /mcp (except CORS preflight OPTIONS requests)
+    if request.url.path.startswith("/mcp") and request.method != "OPTIONS":
+        # 1. Try to get API Key from header 'X-API-Key'
+        api_key = request.headers.get("X-API-Key")
+        
+        # 2. Fallback to query parameter 'api_key'
+        if not api_key:
+            api_key = request.query_params.get("api_key")
+            
+        # 3. Fallback to Authorization header
+        if not api_key:
+            auth_header = request.headers.get("Authorization")
+            if auth_header and auth_header.startswith("Bearer "):
+                api_key = auth_header[7:]
+                
+        if not api_key:
+            return JSONResponse(
+                status_code=401,
+                content={"detail": "Fehlender API-Schlüssel. Bitte übergeben Sie den Header 'X-API-Key' oder den Query-Parameter 'api_key'."}
+            )
+            
+        # Verify in database
+        from app.core.database import SessionLocal
+        from app.models.api_key import ApiKey
+        db = SessionLocal()
+        try:
+            key_hash = hashlib.sha256(api_key.encode("utf-8")).hexdigest()
+            key_record = db.query(ApiKey).filter(
+                ApiKey.key_hash == key_hash,
+                ApiKey.is_active == True
+            ).first()
+            if not key_record:
+                return JSONResponse(status_code=401, content={"detail": "Ungültiger API-Schlüssel."})
+                
+            # Check expiration
+            if key_record.expires_at and key_record.expires_at.replace(tzinfo=timezone.utc) <= datetime.now(timezone.utc):
+                return JSONResponse(status_code=401, content={"detail": "Abgelaufener API-Schlüssel."})
+        finally:
+            db.close()
+            
+    response = await call_next(request)
+    return response
+
+# Mount the MCP SSE application
+app.mount("/mcp", mcp.http_app(transport="sse"))
 
 # Configure CORS so that our Vue 3 SPA frontend can talk to the API
 app.add_middleware(
