@@ -40,7 +40,8 @@
     "toggle_language": "Sprache wechseln",
     "collapse": "Sidebar einklappen",
     "expand": "Sidebar ausklappen",
-    "treatments": "Behandlungen"
+    "treatments": "Behandlungen",
+    "api_keys": "API-Schlüssel"
   },
   "apiary": {
     "manage_title": "Imkerei verwalten",

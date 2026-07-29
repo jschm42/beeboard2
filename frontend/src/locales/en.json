@@ -40,7 +40,8 @@
     "toggle_language": "Change Language",
     "collapse": "Collapse sidebar",
     "expand": "Expand sidebar",
-    "treatments": "Treatments"
+    "treatments": "Treatments",
+    "api_keys": "API Keys"
   },
   "apiary": {
     "manage_title": "Manage Apiary",

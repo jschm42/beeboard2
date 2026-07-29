@@ -76,6 +76,11 @@ const routes = [
     meta: { requiresAdmin: true }
   },
   {
+    path: '/api-keys',
+    name: 'api-keys',
+    component: () => import('../views/ApiKeysView.vue')
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/dashboard'
   }

@@ -418,6 +418,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   HeartPulse,
+  Key,
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -443,7 +444,8 @@ const navItems = computed(() => [
   { name: t('sidebar.honey_batches'), path: '/honey-batches', icon: Droplets },
   { name: t('sidebar.sales'), path: '/sales', icon: ShoppingBag },
   { name: t('sidebar.stats'), path: '/stats', icon: BarChart3 },
-  { name: t('sidebar.ai_insights'), path: '/ai-insights', icon: Sparkles }
+  { name: t('sidebar.ai_insights'), path: '/ai-insights', icon: Sparkles },
+  { name: t('sidebar.api_keys'), path: '/api-keys', icon: Key }
 ])
 
 const filteredNavItems = computed(() => {
