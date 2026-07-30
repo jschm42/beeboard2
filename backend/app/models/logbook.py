@@ -1,5 +1,5 @@
 from __future__ import annotations
-from sqlalchemy import String, ForeignKey, Integer, Float, Text, Date, Table, Column
+from sqlalchemy import String, ForeignKey, Integer, Float, Text, Date, Table, Column, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import date
 from typing import List, Optional
@@ -65,6 +65,7 @@ class LogEntry(UUIDTimeStampedModel, CreatedByModel, ApiaryScopedModel):
     date: Mapped[date] = mapped_column(Date)
     entry_type: Mapped[str] = mapped_column(String(30))  # INSPECTION, VARROA_COUNT, VARROA_TREATMENT, GENERAL
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_via_mcp: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
 
     # Relationships
     hive: Mapped["Hive"] = relationship("Hive", back_populates="log_entries", foreign_keys=[hive_id])

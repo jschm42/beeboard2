@@ -351,6 +351,13 @@
                       <span class="text-[10px] font-black uppercase rounded tracking-wider bg-gray-100 dark:bg-dark-bg text-gray-500 px-2 py-0.5">
                         {{ getEntryTypeName(entry) }}
                       </span>
+                      <span 
+                        v-if="entry.created_via_mcp" 
+                        class="text-[10px] font-black uppercase rounded tracking-wider bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 px-2 py-0.5 flex items-center space-x-1"
+                        title="Erstellt über den Model Context Protocol (MCP) Server"
+                      >
+                        <span>🤖 MCP</span>
+                      </span>
                       <span class="text-xs font-bold text-primary">{{ $t('logbook.hive_label', { name: entry.hive?.name || $t('logbook.unknown') }) }}</span>
                       <span class="text-[10px] text-gray-400 font-mono">{{ formatDate(entry.date) }}</span>
                     </div>
@@ -702,9 +709,18 @@
                   
                   <!-- Type -->
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="px-2 py-0.5 text-[9px] font-black uppercase rounded tracking-wider bg-gray-100 dark:bg-dark-bg text-gray-500">
-                      {{ getEntryTypeName(entry) }}
-                    </span>
+                    <div class="flex items-center space-x-1.5">
+                      <span class="px-2 py-0.5 text-[9px] font-black uppercase rounded tracking-wider bg-gray-100 dark:bg-dark-bg text-gray-500">
+                        {{ getEntryTypeName(entry) }}
+                      </span>
+                      <span 
+                        v-if="entry.created_via_mcp" 
+                        class="px-1.5 py-0.5 text-[9px] font-black uppercase rounded bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"
+                        title="Erstellt über MCP"
+                      >
+                        🤖 MCP
+                      </span>
+                    </div>
                   </td>
                   
                   <!-- Notes & details -->

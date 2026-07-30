@@ -100,6 +100,7 @@ class LogEntryBase(BaseModel):
     date: date
     entry_type: str  # INSPECTION, VARROA_COUNT, VARROA_TREATMENT, GENERAL
     notes: Optional[str] = None
+    created_via_mcp: bool = False
 
 class LogEntryCreate(LogEntryBase):
     inspection_detail: Optional[InspectionDetailCreate] = None
