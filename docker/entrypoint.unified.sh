@@ -5,11 +5,19 @@ set -e
 # 1. SSL-Zertifikate pruefen & generieren (falls nicht gemountet/vorhanden)
 mkdir -p /etc/nginx/certs
 if [ ! -f /etc/nginx/certs/nginx.crt ] || [ ! -f /etc/nginx/certs/nginx.key ]; then
-    echo "SSL-Zertifikate nicht gefunden. Generiere selbstsignierte SSL-Zertifikate direkt im Container..."
+    echo "SSL-Zertifikate nicht gefunden. Generiere selbstsignierte SSL-Zertifikate..."
+    
+    SAN="DNS:localhost,DNS:127.0.0.1,IP:127.0.0.1"
+    if [ -n "$BEEBOARD_SSL_SAN" ]; then
+        echo "[+] Fuege benutzerdefinierte Subject Alternative Names (SAN) hinzu: $BEEBOARD_SSL_SAN"
+        SAN="$SAN,$BEEBOARD_SSL_SAN"
+    fi
+    
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
         -keyout /etc/nginx/certs/nginx.key \
         -out /etc/nginx/certs/nginx.crt \
-        -subj '/CN=localhost'
+        -subj '/CN=beeboard' \
+        -addext "subjectAltName = $SAN"
     echo "[+] SSL-Zertifikate erfolgreich generiert."
 else
     echo "[+] Vorhandene SSL-Zertifikate werden verwendet."
