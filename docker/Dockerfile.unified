@@ -23,8 +23,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy requirements and install backend dependencies
 COPY backend/requirements.txt /app/
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip uv \
+    && uv pip install --no-cache-dir --system -r requirements.txt
 
 # Copy backend source code
 COPY backend/ /app/
