@@ -57,7 +57,7 @@
           class="flex-1 px-3 py-2 border border-amber-300 dark:border-amber-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm placeholder-gray-400 dark:placeholder-gray-600"
         ></textarea>
         <button 
-          @click="generateAIDraft"
+          @click="generateAIDraft" 
           :disabled="aiLoading || !aiDraftText.trim()"
           class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-sm rounded-xl shadow-md transition-all duration-200 shrink-0 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed hover-scale"
         >
@@ -67,7 +67,7 @@
       </div>
     </div>
 
-    <!-- Create/Edit Modal Form -->
+    <!-- Batch Create/Edit Modal Form -->
     <div v-if="showModal" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl shadow-md w-full max-w-3xl mx-auto p-6 mb-8 animate-scale">
       <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100 dark:border-dark-border">
         <h3 class="text-xl font-bold text-gray-900 dark:text-white">
@@ -85,7 +85,7 @@
           <div>
             <h4 class="text-sm font-bold text-amber-500 uppercase tracking-wider mb-3">{{ $t('honey_batches.section_basic_info') }}</h4>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div :class="selectedHoneyTypePreset === 'custom' ? 'md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4' : 'md:col-span-1'">
+              <div :class="selectedHoneyTypePreset === 'custom' ? 'md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4' : 'md:col-span-2'">
                 <div :class="selectedHoneyTypePreset === 'custom' ? 'md:col-span-1' : 'w-full'">
                   <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('honey_batches.honey_type_label') }}</label>
                   <select 
@@ -127,25 +127,14 @@
                 </div>
               </div>
 
-              <div :class="selectedHoneyTypePreset === 'custom' ? 'md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4' : 'contents'">
-                <div>
-                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('honey_batches.harvest_date_label') }}</label>
-                  <input 
-                    v-model="form.harvest_date" 
-                    type="date" 
-                    required
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('honey_batches.bottling_date_label') }}</label>
-                  <input 
-                    v-model="form.bottling_date" 
-                    type="date" 
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
-                  />
-                </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('honey_batches.harvest_date_label') }}</label>
+                <input 
+                  v-model="form.harvest_date" 
+                  type="date" 
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
+                />
               </div>
             </div>
           </div>
@@ -159,7 +148,7 @@
                 <input 
                   v-model="form.quantity_kg" 
                   type="number" 
-                  step="0.01"
+                  step="0.01" 
                   required
                   min="0.01"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
@@ -251,72 +240,7 @@
             </div>
           </div>
 
-          <!-- Section 4: D.I.B. Gewährverschlüsse -->
-          <div>
-            <h4 class="text-sm font-bold text-amber-500 uppercase tracking-wider mb-3">{{ $t('honey_batches.section_dib_labels') }}</h4>
-            
-            <div class="space-y-4">
-              <div 
-                v-for="(range, idx) in form.dib_ranges" 
-                :key="idx" 
-                class="bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-gray-800 rounded-2xl p-4 relative"
-              >
-                <!-- Title & Delete Button -->
-                <div class="flex justify-between items-center mb-3">
-                  <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    {{ $t('honey_batches.dib_range_title', { index: idx + 1 }) }}
-                  </span>
-                  <button 
-                    v-if="form.dib_ranges.length > 1" 
-                    type="button" 
-                    @click="removeDIBRange(idx)" 
-                    class="text-red-500 hover:text-red-600 p-1 rounded hover:bg-red-500/10 transition-colors"
-                    :title="$t('honey_batches.remove_dib_range_tooltip')"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('honey_batches.dib_label_start_label') }}</label>
-                    <input 
-                      v-model="range.dib_label_start" 
-                      type="text" 
-                      :placeholder="$t('honey_batches.dib_label_start_placeholder')"
-                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('honey_batches.dib_label_end_label') }}</label>
-                    <input 
-                      v-model="range.dib_label_end" 
-                      type="text" 
-                      :placeholder="$t('honey_batches.dib_label_end_placeholder')"
-                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <button 
-              type="button" 
-              @click="addDIBRange" 
-              class="mt-3 px-4 py-2 border border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center space-x-1.5 w-full md:w-auto hover-scale"
-            >
-              <span>{{ $t('honey_batches.add_dib_range_btn') }}</span>
-            </button>
-
-            <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-2 italic">
-              {{ $t('honey_batches.dib_label_desc') }}
-            </p>
-          </div>
-
-          <!-- Section 5: Reserve Sample -->
+          <!-- Section 4: Reserve Sample -->
           <div>
             <h4 class="text-sm font-bold text-amber-500 uppercase tracking-wider mb-3">{{ $t('honey_batches.section_reserve_sample') }}</h4>
             <div class="bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-4">
@@ -367,7 +291,7 @@
             </div>
           </div>
 
-          <!-- Section 6: Notes -->
+          <!-- Section 5: Notes -->
           <div>
             <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('honey_batches.section_notes') }}</label>
             <textarea 
@@ -415,102 +339,113 @@
       </button>
     </div>
 
-    <!-- Batches List (Responsive Table) -->
+    <!-- Batches List (Compact Interactive Table) -->
     <div v-else class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl overflow-hidden shadow-sm">
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-left">
+        <table class="w-full divide-y divide-gray-200 dark:divide-gray-800 text-left">
           <thead class="bg-gray-50 dark:bg-dark-bg text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
             <tr>
-              <th scope="col" class="px-6 py-4">{{ $t('honey_batches.table_batch_mhd') }}</th>
-              <th scope="col" class="px-6 py-4">{{ $t('honey_batches.table_honey_type') }}</th>
-              <th scope="col" class="px-6 py-4">{{ $t('honey_batches.table_harvest_date') }}</th>
-              <th scope="col" class="px-6 py-4">{{ $t('honey_batches.table_quantity') }}</th>
-              <th scope="col" class="px-6 py-4">{{ $t('honey_batches.table_quality') }}</th>
-              <th scope="col" class="px-6 py-4">{{ $t('honey_batches.table_dib_label') }}</th>
-              <th scope="col" class="px-6 py-4">{{ $t('honey_batches.table_reserve_sample') }}</th>
-              <th scope="col" class="px-6 py-4 text-right">{{ $t('common.actions') }}</th>
+              <th scope="col" class="px-4 py-3.5">{{ $t('honey_batches.table_batch_mhd') }}</th>
+              <th scope="col" class="px-3 py-3.5">{{ $t('honey_batches.table_honey_type') }}</th>
+              <th scope="col" class="px-3 py-3.5">{{ $t('honey_batches.table_harvest_date') }}</th>
+              <th scope="col" class="px-3 py-3.5">{{ $t('honey_batches.table_harvest_qty') }}</th>
+              <th scope="col" class="px-3 py-3.5">{{ $t('honey_batches.table_bottlings') }}</th>
+              <th scope="col" class="px-3 py-3.5">{{ $t('honey_batches.table_quality') }}</th>
+              <th scope="col" class="px-3 py-3.5">{{ $t('honey_batches.table_reserve_sample') }}</th>
+              <th scope="col" class="px-4 py-3.5 text-right w-20">{{ $t('common.actions') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200 dark:divide-gray-800 text-sm">
             <tr 
               v-for="b in batches" 
               :key="b.id" 
-              class="hover:bg-gray-50 dark:hover:bg-dark-bg/50 transition-colors duration-150"
+              @click="openBottlingsModal(b)"
+              class="hover:bg-amber-500/5 dark:hover:bg-amber-500/10 cursor-pointer transition-colors duration-150 group"
+              :title="$t('honey_batches.click_to_manage_bottlings')"
             >
               <!-- Los-Nr. / MHD -->
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="font-mono font-bold text-gray-900 dark:text-white">
-                  {{ b.batch_number || $t('honey_batches.mhd_exemption') }}
-                </div>
-                <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center space-x-1 mt-0.5">
-                  <span>MHD: {{ formatDate(b.best_before_date) }}</span>
-                  <span 
-                    class="px-1.5 py-0.5 text-[9px] font-bold rounded-full"
-                    :class="b.is_exact_date ? 'bg-green-500/10 text-green-600' : 'bg-amber-500/10 text-amber-600'"
-                  >
-                    {{ b.is_exact_date ? $t('honey_batches.exact_date_badge') : $t('honey_batches.month_year_badge') }}
-                  </span>
+              <td class="px-4 py-3 whitespace-nowrap">
+                <div class="flex items-center space-x-2">
+                  <span class="text-base group-hover:scale-110 transition-transform duration-150">🍯</span>
+                  <div>
+                    <div class="font-mono font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors">
+                      {{ b.batch_number || $t('honey_batches.mhd_exemption') }}
+                    </div>
+                    <div class="text-[11px] text-gray-500 dark:text-gray-400 flex items-center space-x-1 mt-0.5">
+                      <span>MHD: {{ formatDate(b.best_before_date) }}</span>
+                      <span 
+                        class="px-1.5 py-0.2 text-[9px] font-bold rounded-full"
+                        :class="b.is_exact_date ? 'bg-green-500/10 text-green-600' : 'bg-amber-500/10 text-amber-600'"
+                      >
+                        {{ b.is_exact_date ? $t('honey_batches.exact_date_badge') : $t('honey_batches.month_year_badge') }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </td>
 
               <!-- Sorte -->
-              <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-700 dark:text-gray-300">
+              <td class="px-3 py-3 whitespace-nowrap font-semibold text-gray-700 dark:text-gray-300">
                 {{ $t('honey_types.' + b.honey_type, b.honey_type) }}
               </td>
 
               <!-- Erntedatum -->
-              <td class="px-6 py-4 whitespace-nowrap font-mono text-xs text-gray-600 dark:text-gray-400">
+              <td class="px-3 py-3 whitespace-nowrap font-mono text-xs text-gray-600 dark:text-gray-400">
                 {{ formatDate(b.harvest_date) }}
-                <div v-if="b.bottling_date" class="text-[10px] text-gray-400 dark:text-gray-500">
-                  {{ $t('honey_batches.bottled_prefix', { date: formatDate(b.bottling_date) }) }}
+              </td>
+
+              <!-- Erntemenge (Gesamtmenge) -->
+              <td class="px-3 py-3 whitespace-nowrap font-bold text-gray-900 dark:text-white">
+                {{ formatNumber(b.quantity_kg) }} kg
+              </td>
+
+              <!-- Abfüllungen Status & Restmenge -->
+              <td class="px-3 py-3 whitespace-nowrap">
+                <div class="flex flex-col space-y-0.5">
+                  <div class="flex items-center space-x-1.5">
+                    <span 
+                      class="px-2 py-0.5 rounded-full text-xs font-bold inline-flex items-center space-x-1"
+                      :class="b.bottlings && b.bottlings.length > 0 ? 'bg-primary/10 text-primary' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'"
+                    >
+                      <span>🫙</span>
+                      <span>{{ b.bottlings && b.bottlings.length > 0 ? $t('honey_batches.bottlings_badge', { count: b.bottlings.length, bottled: formatNumber(b.total_bottled_kg) }) : $t('honey_batches.no_bottlings_yet') }}</span>
+                    </span>
+                  </div>
+
+                  <!-- Progress / Remaining -->
+                  <div class="text-[11px] font-medium" :class="getRemainingKg(b) <= 0.001 ? 'text-green-600 dark:text-green-400 font-bold' : 'text-gray-500 dark:text-gray-400'">
+                    <span>{{ getRemainingKg(b) <= 0.001 ? $t('honey_batches.fully_bottled') : $t('honey_batches.remaining_kg', { remaining: formatNumber(getRemainingKg(b)) }) }}</span>
+                  </div>
                 </div>
               </td>
 
-              <!-- Menge -->
-              <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900 dark:text-white">
-                {{ b.quantity_kg.toLocaleString(locale === 'de' ? 'de-DE' : 'en-US') }} kg
-              </td>
-
               <!-- Qualität -->
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex flex-col space-y-1">
+              <td class="px-3 py-3 whitespace-nowrap">
+                <div class="flex flex-col space-y-0.5">
                   <!-- Water percent -->
                   <div v-if="b.water_content_percent !== null" class="flex items-center space-x-1">
                     <span class="text-xs text-gray-500 dark:text-gray-400">{{ $t('honey_batches.water_label') }}</span>
                     <span 
-                      class="px-2 py-0.5 rounded-full text-xs font-bold"
+                      class="px-1.5 py-0.2 rounded-full text-xs font-bold"
                       :class="b.water_content_percent <= 18 ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'"
                     >
                       {{ b.water_content_percent }} %
                     </span>
                   </div>
                   <!-- Heating temp -->
-                  <div v-if="b.heating_temperature_celsius !== null" class="text-xs text-gray-500 dark:text-gray-400">
+                  <div v-if="b.heating_temperature_celsius !== null" class="text-[11px] text-gray-500 dark:text-gray-400">
                     {{ $t('honey_batches.heating_label') }} <span class="font-mono text-gray-700 dark:text-gray-300">{{ b.heating_temperature_celsius }} °C</span>
                   </div>
                 </div>
               </td>
 
-              <!-- D.I.B. Labels -->
-              <td class="px-6 py-4 whitespace-nowrap text-xs">
-                <div v-if="b.dib_ranges && b.dib_ranges.length > 0" class="flex flex-col space-y-1">
-                  <div v-for="r in b.dib_ranges" :key="r.id" class="font-mono text-gray-700 dark:text-gray-300">
-                    {{ r.dib_label_start || '?' }} &rarr; {{ r.dib_label_end || '?' }}
-                  </div>
-                  <div class="text-[10px] text-gray-500 dark:text-gray-400 font-bold mt-0.5">
-                    {{ $t('honey_batches.dib_count_suffix', { count: getDIBTotalCount(b.dib_ranges) }) }}
-                  </div>
-                </div>
-                <span v-else class="text-gray-400 dark:text-gray-600 italic">{{ $t('honey_batches.no_dib_data') }}</span>
-              </td>
-
               <!-- Rückstellprobe -->
-              <td class="px-6 py-4 whitespace-nowrap">
+              <td class="px-3 py-3 whitespace-nowrap">
                 <div v-if="b.reserve_sample_taken" class="flex flex-col">
                   <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 w-max">
                     {{ $t('honey_batches.reserve_sample_taken_badge') }}
                   </span>
-                  <span v-if="b.reserve_sample_id" class="text-[10px] font-mono text-gray-500 dark:text-gray-400 mt-1">
+                  <span v-if="b.reserve_sample_id" class="text-[10px] font-mono text-gray-500 dark:text-gray-400 mt-0.5">
                     ID: {{ b.reserve_sample_id }}
                   </span>
                 </div>
@@ -518,27 +453,350 @@
               </td>
 
               <!-- Actions -->
-              <td class="px-6 py-4 whitespace-nowrap text-right text-xs font-medium">
-                <div class="flex items-center justify-end space-x-2">
+              <td class="px-4 py-3 whitespace-nowrap text-right text-xs font-medium" @click.stop>
+                <div class="flex items-center justify-end space-x-1">
                   <button 
                     @click="openEditModal(b)" 
-                    class="p-2 text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border rounded-xl transition-all duration-150 hover-scale"
+                    class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border rounded-lg transition-all duration-150 hover-scale"
                     :title="$t('common.edit')"
                   >
-                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                   </button>
                   <button 
                     @click="deleteBatch(b)" 
-                    class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all duration-150 hover-scale"
+                    class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all duration-150 hover-scale"
                     :title="$t('common.delete')"
                   >
-                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                   </button>
                 </div>
               </td>
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- BOTTLINGS MANAGEMENT MODAL (Drilldown per batch) -->
+    <div v-if="showBottlingsModal" class="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-scale">
+        
+        <!-- Modal Header -->
+        <div class="px-6 py-5 border-b border-gray-100 dark:border-dark-border flex justify-between items-start bg-gradient-to-r from-amber-500/5 to-primary/5">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-2xl">🫙</span>
+              <h3 class="text-xl font-extrabold text-gray-900 dark:text-white">
+                {{ $t('honey_batches.bottlings_modal_title', { number: selectedBatch?.batch_number || $t('honey_batches.mhd_exemption') }) }}
+              </h3>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              {{ $t('honey_types.' + selectedBatch?.honey_type, selectedBatch?.honey_type) }} &bull; {{ $t('honey_batches.table_harvest_date') }}: {{ formatDate(selectedBatch?.harvest_date) }}
+            </p>
+          </div>
+          
+          <button @click="closeBottlingsModal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 rounded-xl">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <!-- Summary Metric Cards -->
+        <div class="p-6 bg-gray-50/50 dark:bg-dark-bg/40 border-b border-gray-100 dark:border-dark-border grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="bg-white dark:bg-dark-card p-3.5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
+            <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">{{ $t('honey_batches.summary_harvest') }}</span>
+            <span class="text-lg font-extrabold text-gray-900 dark:text-white block mt-0.5">{{ formatNumber(selectedBatch?.quantity_kg) }} kg</span>
+          </div>
+          <div class="bg-white dark:bg-dark-card p-3.5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
+            <span class="text-[11px] font-bold text-amber-500 uppercase tracking-wider block">{{ $t('honey_batches.summary_bottled') }}</span>
+            <span class="text-lg font-extrabold text-amber-600 dark:text-amber-400 block mt-0.5">{{ formatNumber(selectedBatch?.total_bottled_kg) }} kg</span>
+          </div>
+          <div class="bg-white dark:bg-dark-card p-3.5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
+            <span class="text-[11px] font-bold uppercase tracking-wider block" :class="getRemainingKg(selectedBatch) <= 0.001 ? 'text-green-600' : 'text-primary'">{{ $t('honey_batches.summary_remaining') }}</span>
+            <span class="text-lg font-extrabold block mt-0.5" :class="getRemainingKg(selectedBatch) <= 0.001 ? 'text-green-600' : 'text-primary'">{{ formatNumber(getRemainingKg(selectedBatch)) }} kg</span>
+          </div>
+          <div class="bg-white dark:bg-dark-card p-3.5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
+            <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">{{ $t('honey_batches.summary_jars') }}</span>
+            <span class="text-lg font-extrabold text-gray-900 dark:text-white block mt-0.5">{{ selectedBatch?.total_bottled_jars || 0 }} Stk.</span>
+          </div>
+        </div>
+
+        <!-- Modal Body: Bottlings List & Form -->
+        <div class="p-6 flex-1 overflow-y-auto space-y-6">
+          
+          <!-- Top Action: Add bottling button -->
+          <div class="flex justify-between items-center" v-if="!showBottlingForm">
+            <h4 class="text-base font-bold text-gray-900 dark:text-white flex items-center space-x-2">
+              <span>{{ $t('honey_batches.table_bottlings') }} ({{ selectedBatch?.bottlings?.length || 0 }})</span>
+            </h4>
+            <button 
+              @click="openAddBottlingForm" 
+              class="px-4 py-2 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs rounded-xl shadow-md hover-scale flex items-center space-x-1.5"
+            >
+              <span>{{ $t('honey_batches.new_bottling_btn') }}</span>
+            </button>
+          </div>
+
+          <!-- Bottling Entry / Edit Form -->
+          <div v-if="showBottlingForm" class="bg-amber-500/5 border border-amber-500/20 rounded-3xl p-5 shadow-sm animate-scale">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-amber-500/10">
+              <h4 class="text-sm font-extrabold text-gray-900 dark:text-white flex items-center space-x-2">
+                <span>{{ isEditBottlingMode ? $t('honey_batches.edit_bottling_title') : $t('honey_batches.create_bottling_title') }}</span>
+              </h4>
+              <button @click="closeBottlingForm" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xs font-bold">
+                ✕ {{ $t('common.cancel') }}
+              </button>
+            </div>
+
+            <form @submit.prevent="submitBottlingForm" class="space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                
+                <!-- Abfülldatum -->
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('honey_batches.bottling_date_label') }}</label>
+                  <input 
+                    v-model="bottlingForm.bottling_date" 
+                    type="date" 
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
+                  />
+                </div>
+
+                <!-- Glasgröße Preset -->
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('honey_batches.jar_size_label') }}</label>
+                  <select 
+                    v-model="selectedJarSizePreset" 
+                    @change="onJarSizePresetChange"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                  >
+                    <option value="500">{{ $t('honey_batches.jar_size_500') }}</option>
+                    <option value="250">{{ $t('honey_batches.jar_size_250') }}</option>
+                    <option value="1000">{{ $t('honey_batches.jar_size_1000') }}</option>
+                    <option value="125">{{ $t('honey_batches.jar_size_125') }}</option>
+                    <option value="custom">{{ $t('honey_batches.jar_size_custom') }}</option>
+                  </select>
+                </div>
+
+                <!-- Custom Jar Size if custom -->
+                <div v-if="selectedJarSizePreset === 'custom'">
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('honey_batches.jar_size_custom_label') }}</label>
+                  <input 
+                    v-model="bottlingForm.jar_size_g" 
+                    type="number" 
+                    min="1"
+                    step="1"
+                    @input="recalculateBottledKg"
+                    placeholder="z.B. 350"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                  />
+                </div>
+
+                <!-- Anzahl Gläser -->
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('honey_batches.quantity_jars_label') }}</label>
+                  <input 
+                    v-model="bottlingForm.quantity_jars" 
+                    type="number" 
+                    min="0"
+                    step="1"
+                    @input="recalculateBottledKg"
+                    :placeholder="$t('honey_batches.quantity_jars_placeholder')"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono font-bold"
+                  />
+                </div>
+
+                <!-- Abgefüllte Menge kg (mit Auto-Calc) -->
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('honey_batches.bottled_quantity_kg_label') }}</label>
+                  <input 
+                    v-model="bottlingForm.quantity_kg" 
+                    type="number" 
+                    step="0.01" 
+                    min="0"
+                    placeholder="z.B. 25.0"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-bold text-amber-600 dark:text-amber-400"
+                  />
+                </div>
+              </div>
+
+              <!-- DIB / Etikettennummern-Bereiche -->
+              <div class="pt-2">
+                <div class="flex justify-between items-center mb-2">
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                    {{ $t('honey_batches.bottling_dib_title') }}
+                  </label>
+                  <button 
+                    type="button" 
+                    @click="addBottlingDIBRange" 
+                    class="text-xs font-bold text-primary hover:text-primary-hover flex items-center space-x-1"
+                  >
+                    <span>{{ $t('honey_batches.add_dib_range_btn') }}</span>
+                  </button>
+                </div>
+
+                <div class="space-y-3">
+                  <div 
+                    v-for="(range, idx) in bottlingForm.dib_ranges" 
+                    :key="idx" 
+                    class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-800 rounded-2xl p-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 items-center relative"
+                  >
+                    <div class="md:col-span-2">
+                      <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-0.5">{{ $t('honey_batches.dib_label_start_label') }}</label>
+                      <input 
+                        v-model="range.dib_label_start" 
+                        type="text" 
+                        :placeholder="$t('honey_batches.dib_label_start_placeholder')"
+                        class="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs font-mono"
+                      />
+                    </div>
+                    <div class="md:col-span-2">
+                      <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-0.5">{{ $t('honey_batches.dib_label_end_label') }}</label>
+                      <input 
+                        v-model="range.dib_label_end" 
+                        type="text" 
+                        :placeholder="$t('honey_batches.dib_label_end_placeholder')"
+                        class="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs font-mono"
+                      />
+                    </div>
+                    <div class="flex items-center justify-between sm:justify-end space-x-2 pt-2 sm:pt-0">
+                      <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400">
+                        {{ getDIBCount(range.dib_label_start, range.dib_label_end) }} Banderolen
+                      </span>
+                      <button 
+                        v-if="bottlingForm.dib_ranges.length > 1" 
+                        type="button" 
+                        @click="removeBottlingDIBRange(idx)"
+                        class="text-red-500 hover:text-red-600 p-1 rounded-lg hover:bg-red-500/10"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Notizen -->
+              <div>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('honey_batches.bottling_notes_label') }}</label>
+                <input 
+                  v-model="bottlingForm.notes" 
+                  type="text" 
+                  :placeholder="$t('honey_batches.bottling_notes_placeholder')"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-xs"
+                />
+              </div>
+
+              <!-- Form Buttons -->
+              <div class="flex justify-end space-x-2 pt-2">
+                <button 
+                  type="button" 
+                  @click="closeBottlingForm" 
+                  class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                >
+                  {{ $t('common.cancel') }}
+                </button>
+                <button 
+                  type="submit" 
+                  :disabled="bottlingSubmitting"
+                  class="px-5 py-2 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs rounded-xl shadow-md hover-scale disabled:opacity-50"
+                >
+                  {{ $t('common.save') }}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Empty Bottlings State -->
+          <div v-if="!selectedBatch?.bottlings || selectedBatch.bottlings.length === 0" class="p-8 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-3xl bg-gray-50/50 dark:bg-dark-bg/30">
+            <div class="text-3xl mb-2">🫙</div>
+            <h4 class="text-sm font-bold text-gray-800 dark:text-white mb-1">{{ $t('honey_batches.empty_bottlings_title') }}</h4>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">{{ $t('honey_batches.empty_bottlings_desc') }}</p>
+            <button 
+              v-if="!showBottlingForm" 
+              @click="openAddBottlingForm" 
+              class="px-4 py-2 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs rounded-xl shadow-md hover-scale"
+            >
+              {{ $t('honey_batches.new_bottling_btn') }}
+            </button>
+          </div>
+
+          <!-- Bottlings List Table -->
+          <div v-else class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-left text-xs">
+              <thead class="bg-gray-50 dark:bg-dark-bg font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <tr>
+                  <th scope="col" class="px-4 py-3">{{ $t('honey_batches.bottling_date_label') }}</th>
+                  <th scope="col" class="px-4 py-3">{{ $t('honey_batches.jar_size_label') }}</th>
+                  <th scope="col" class="px-4 py-3">{{ $t('honey_batches.quantity_jars_label') }}</th>
+                  <th scope="col" class="px-4 py-3">{{ $t('honey_batches.bottled_quantity_kg_label') }}</th>
+                  <th scope="col" class="px-4 py-3">{{ $t('honey_batches.table_dib_label') }}</th>
+                  <th scope="col" class="px-4 py-3">{{ $t('honey_batches.section_notes') }}</th>
+                  <th scope="col" class="px-4 py-3 text-right">{{ $t('common.actions') }}</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                <tr v-for="bt in selectedBatch.bottlings" :key="bt.id" class="hover:bg-gray-50 dark:hover:bg-dark-bg/50">
+                  <td class="px-4 py-3 font-mono font-bold text-gray-900 dark:text-white whitespace-nowrap">
+                    {{ formatDate(bt.bottling_date) }}
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap text-gray-700 dark:text-gray-300 font-medium">
+                    {{ bt.jar_size_g ? bt.jar_size_g + ' g' : '—' }}
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap font-bold text-gray-900 dark:text-white">
+                    {{ bt.quantity_jars !== null ? bt.quantity_jars + ' Stk.' : '—' }}
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap font-extrabold text-amber-600 dark:text-amber-400">
+                    {{ bt.quantity_kg !== null && bt.quantity_kg !== undefined ? formatNumber(bt.quantity_kg) + ' kg' : '—' }}
+                  </td>
+                  <td class="px-4 py-3">
+                    <div v-if="bt.dib_ranges && bt.dib_ranges.length > 0" class="flex flex-col space-y-0.5">
+                      <div v-for="r in bt.dib_ranges" :key="r.id" class="font-mono text-gray-700 dark:text-gray-300">
+                        {{ r.dib_label_start || '?' }} &rarr; {{ r.dib_label_end || '?' }}
+                      </div>
+                      <span class="text-[10px] text-gray-400 font-bold">
+                        {{ $t('honey_batches.dib_count_suffix', { count: getDIBTotalCount(bt.dib_ranges) }) }}
+                      </span>
+                    </div>
+                    <span v-else class="text-gray-400 italic">—</span>
+                  </td>
+                  <td class="px-4 py-3 text-gray-600 dark:text-gray-400 max-w-xs truncate">
+                    {{ bt.notes || '—' }}
+                  </td>
+                  <td class="px-4 py-3 text-right whitespace-nowrap">
+                    <div class="flex items-center justify-end space-x-1">
+                      <button 
+                        @click="openEditBottlingForm(bt)" 
+                        class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border rounded-lg transition-colors"
+                        :title="$t('common.edit')"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                      </button>
+                      <button 
+                        @click="deleteBottling(bt)" 
+                        class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                        :title="$t('common.delete')"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-6 py-4 bg-gray-50 dark:bg-dark-bg border-t border-gray-100 dark:border-dark-border flex justify-end">
+          <button 
+            @click="closeBottlingsModal" 
+            class="px-5 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-extrabold text-sm rounded-xl transition-all hover-scale"
+          >
+            {{ $t('common.close') }}
+          </button>
+        </div>
+
       </div>
     </div>
 
@@ -610,21 +868,38 @@ const alertClass = ref('')
 const aiDraftText = ref('')
 const aiLoading = ref(false)
 
+// Bottlings drilldown state
+const showBottlingsModal = ref(false)
+const selectedBatch = ref(null)
+const showBottlingForm = ref(false)
+const isEditBottlingMode = ref(false)
+const editingBottlingId = ref(null)
+const bottlingSubmitting = ref(false)
+
+const selectedJarSizePreset = ref('500')
+
 const form = reactive({
   batch_number: '',
   honey_type: 'Blütenhonig',
   harvest_date: new Date().toISOString().substring(0, 10),
-  bottling_date: '',
   quantity_kg: 0,
   water_content_percent: null,
   heating_temperature_celsius: null,
   best_before_date: '',
   is_exact_date: false,
-  dib_ranges: [{ dib_label_start: '', dib_label_end: '' }],
   reserve_sample_taken: false,
   reserve_sample_date: '',
   reserve_sample_id: '',
   notes: ''
+})
+
+const bottlingForm = reactive({
+  bottling_date: new Date().toISOString().substring(0, 10),
+  jar_size_g: 500,
+  quantity_jars: null,
+  quantity_kg: 0,
+  notes: '',
+  dib_ranges: [{ dib_label_start: '', dib_label_end: '' }]
 })
 
 const selectedHoneyTypePreset = ref('Blütenhonig')
@@ -701,25 +976,11 @@ onMounted(async () => {
       form.batch_number = draft.batch_number || ''
       form.honey_type = draft.honey_type || 'Blütenhonig'
       form.harvest_date = draft.harvest_date ? draft.harvest_date.substring(0, 10) : new Date().toISOString().substring(0, 10)
-      form.bottling_date = draft.bottling_date ? draft.bottling_date.substring(0, 10) : ''
       form.quantity_kg = draft.quantity_kg || 0
       form.water_content_percent = draft.water_content_percent
       form.heating_temperature_celsius = draft.heating_temperature_celsius
       form.best_before_date = draft.best_before_date ? draft.best_before_date.substring(0, 10) : ''
       form.is_exact_date = draft.is_exact_date || false
-      if (draft.dib_ranges && draft.dib_ranges.length > 0) {
-        form.dib_ranges = draft.dib_ranges.map(r => ({
-          dib_label_start: r.dib_label_start || '',
-          dib_label_end: r.dib_label_end || ''
-        }))
-      } else if (draft.dib_label_start || draft.dib_label_end) {
-        form.dib_ranges = [{
-          dib_label_start: draft.dib_label_start || '',
-          dib_label_end: draft.dib_label_end || ''
-        }]
-      } else {
-        form.dib_ranges = [{ dib_label_start: '', dib_label_end: '' }]
-      }
       form.reserve_sample_taken = draft.reserve_sample_taken || false
       form.reserve_sample_date = draft.reserve_sample_date ? draft.reserve_sample_date.substring(0, 10) : ''
       form.reserve_sample_id = draft.reserve_sample_id || ''
@@ -744,6 +1005,13 @@ async function fetchBatches() {
       params: { apiary_id: apiaryStore.activeApiaryId }
     })
     batches.value = response.data
+    // If a batch was selected, refresh its reference
+    if (selectedBatch.value) {
+      const updated = batches.value.find(b => b.id === selectedBatch.value.id)
+      if (updated) {
+        selectedBatch.value = updated
+      }
+    }
   } catch (err) {
     console.error('Fetch honey batches error:', err)
     showAlert(t('honey_batches.error_fetch'), 'error')
@@ -775,23 +1043,17 @@ function openCreateModal() {
   form.batch_number = ''
   form.honey_type = 'Blütenhonig'
   form.harvest_date = new Date().toISOString().substring(0, 10)
-  form.bottling_date = ''
   form.quantity_kg = 0
   form.water_content_percent = null
   form.heating_temperature_celsius = null
   form.is_exact_date = false
-  form.dib_ranges = [{ dib_label_start: '', dib_label_end: '' }]
   form.reserve_sample_taken = false
   form.reserve_sample_date = ''
   form.reserve_sample_id = ''
   form.notes = ''
   
   syncPresetFromHoneyType()
-  
-  // Suggest next batch number
   fetchSuggestion('batch_number')
-  
-  // initial watch will trigger BB date
   showModal.value = true
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
@@ -803,27 +1065,17 @@ function openEditModal(b) {
   form.batch_number = b.batch_number || ''
   form.honey_type = b.honey_type
   form.harvest_date = b.harvest_date ? b.harvest_date.substring(0, 10) : ''
-  form.bottling_date = b.bottling_date ? b.bottling_date.substring(0, 10) : ''
   form.quantity_kg = b.quantity_kg
   form.water_content_percent = b.water_content_percent
   form.heating_temperature_celsius = b.heating_temperature_celsius
   form.best_before_date = b.best_before_date ? b.best_before_date.substring(0, 10) : ''
   form.is_exact_date = b.is_exact_date
-  if (b.dib_ranges && b.dib_ranges.length > 0) {
-    form.dib_ranges = b.dib_ranges.map(r => ({
-      dib_label_start: r.dib_label_start || '',
-      dib_label_end: r.dib_label_end || ''
-    }))
-  } else {
-    form.dib_ranges = [{ dib_label_start: '', dib_label_end: '' }]
-  }
   form.reserve_sample_taken = b.reserve_sample_taken
   form.reserve_sample_date = b.reserve_sample_date ? b.reserve_sample_date.substring(0, 10) : ''
   form.reserve_sample_id = b.reserve_sample_id || ''
   form.notes = b.notes || ''
   
   syncPresetFromHoneyType()
-  
   showModal.value = true
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
@@ -835,49 +1087,47 @@ function closeModal() {
 async function submitForm() {
   if (!form.honey_type.trim()) return
   
-  // Custom checks
   if (!form.is_exact_date && (!form.batch_number || !form.batch_number.trim())) {
     showAlert(t('honey_batches.error_batch_number_required'), 'error')
     return
   }
 
   try {
-    const cleaned_dib_ranges = form.dib_ranges
-      .map(r => ({
-        dib_label_start: r.dib_label_start.trim() || null,
-        dib_label_end: r.dib_label_end.trim() || null
-      }))
-      .filter(r => r.dib_label_start !== null || r.dib_label_end !== null)
-
     const payload = {
       batch_number: form.batch_number.trim() || null,
       honey_type: form.honey_type.trim(),
       harvest_date: form.harvest_date,
-      bottling_date: form.bottling_date || null,
       quantity_kg: parseFloat(form.quantity_kg),
-      water_content_percent: form.water_content_percent !== null ? parseFloat(form.water_content_percent) : null,
-      heating_temperature_celsius: form.heating_temperature_celsius !== null ? parseFloat(form.heating_temperature_celsius) : null,
+      water_content_percent: form.water_content_percent !== null && form.water_content_percent !== '' ? parseFloat(form.water_content_percent) : null,
+      heating_temperature_celsius: form.heating_temperature_celsius !== null && form.heating_temperature_celsius !== '' ? parseFloat(form.heating_temperature_celsius) : null,
       best_before_date: form.best_before_date,
       is_exact_date: form.is_exact_date,
-      dib_ranges: cleaned_dib_ranges,
       reserve_sample_taken: form.reserve_sample_taken,
       reserve_sample_date: form.reserve_sample_taken ? form.reserve_sample_date : null,
       reserve_sample_id: form.reserve_sample_taken ? form.reserve_sample_id.trim() || null : null,
       notes: form.notes.trim() || null
     }
 
+    let createdBatch = null
     if (isEditMode.value) {
-      await axios.put(`/api/honey-batches/${editingId.value}`, payload)
+      const resp = await axios.put(`/api/honey-batches/${editingId.value}`, payload)
+      createdBatch = resp.data
       showAlert(t('honey_batches.success_update'), 'success')
     } else {
-      await axios.post('/api/honey-batches', payload, {
+      const resp = await axios.post('/api/honey-batches', payload, {
         params: { apiary_id: apiaryStore.activeApiaryId }
       })
+      createdBatch = resp.data
       showAlert(t('honey_batches.success_create'), 'success')
     }
     
     showModal.value = false
     await fetchBatches()
+
+    // If new batch created, offer/open bottlings drilldown
+    if (!isEditMode.value && createdBatch) {
+      openBottlingsModal(createdBatch)
+    }
   } catch (err) {
     console.error('Submit honey batch error:', err)
     showAlert(err.response?.data?.detail || t('honey_batches.error_save'), 'error')
@@ -896,11 +1146,178 @@ async function deleteBatch(b) {
   try {
     await axios.delete(`/api/honey-batches/${b.id}`)
     showAlert(t('honey_batches.success_delete'), 'success')
+    if (selectedBatch.value && selectedBatch.value.id === b.id) {
+      closeBottlingsModal()
+    }
     await fetchBatches()
   } catch (err) {
     console.error('Delete honey batch error:', err)
     showAlert(err.response?.data?.detail || t('honey_batches.error_delete'), 'error')
   }
+}
+
+// --- BOTTLINGS MANAGEMENT METHODS ---
+
+function openBottlingsModal(b) {
+  selectedBatch.value = b
+  showBottlingForm.value = false
+  showBottlingsModal.value = true
+}
+
+function closeBottlingsModal() {
+  showBottlingsModal.value = false
+  selectedBatch.value = null
+  showBottlingForm.value = false
+}
+
+function openAddBottlingForm() {
+  isEditBottlingMode.value = false
+  editingBottlingId.value = null
+  selectedJarSizePreset.value = '500'
+  
+  bottlingForm.bottling_date = new Date().toISOString().substring(0, 10)
+  bottlingForm.jar_size_g = 500
+  bottlingForm.quantity_jars = null
+  bottlingForm.quantity_kg = null
+  bottlingForm.notes = ''
+  bottlingForm.dib_ranges = [{ dib_label_start: '', dib_label_end: '' }]
+  
+  showBottlingForm.value = true
+}
+
+function openEditBottlingForm(bt) {
+  isEditBottlingMode.value = true
+  editingBottlingId.value = bt.id
+  
+  bottlingForm.bottling_date = bt.bottling_date ? bt.bottling_date.substring(0, 10) : new Date().toISOString().substring(0, 10)
+  bottlingForm.jar_size_g = bt.jar_size_g || 500
+  bottlingForm.quantity_jars = bt.quantity_jars !== null && bt.quantity_jars !== undefined ? bt.quantity_jars : null
+  bottlingForm.quantity_kg = bt.quantity_kg !== null && bt.quantity_kg !== undefined ? bt.quantity_kg : null
+  bottlingForm.notes = bt.notes || ''
+  
+  if (['500', '250', '1000', '125'].includes(String(bt.jar_size_g))) {
+    selectedJarSizePreset.value = String(bt.jar_size_g)
+  } else {
+    selectedJarSizePreset.value = 'custom'
+  }
+
+  if (bt.dib_ranges && bt.dib_ranges.length > 0) {
+    bottlingForm.dib_ranges = bt.dib_ranges.map(r => ({
+      dib_label_start: r.dib_label_start || '',
+      dib_label_end: r.dib_label_end || ''
+    }))
+  } else {
+    bottlingForm.dib_ranges = [{ dib_label_start: '', dib_label_end: '' }]
+  }
+
+  showBottlingForm.value = true
+}
+
+function closeBottlingForm() {
+  showBottlingForm.value = false
+}
+
+function onJarSizePresetChange() {
+  if (selectedJarSizePreset.value !== 'custom') {
+    bottlingForm.jar_size_g = parseInt(selectedJarSizePreset.value)
+  }
+  recalculateBottledKg()
+}
+
+function recalculateBottledKg() {
+  if (bottlingForm.jar_size_g && bottlingForm.quantity_jars !== null && bottlingForm.quantity_jars !== '' && !isNaN(Number(bottlingForm.quantity_jars))) {
+    const calculated = (bottlingForm.jar_size_g * Number(bottlingForm.quantity_jars)) / 1000
+    bottlingForm.quantity_kg = parseFloat(calculated.toFixed(2))
+  }
+}
+
+function addBottlingDIBRange() {
+  bottlingForm.dib_ranges.push({ dib_label_start: '', dib_label_end: '' })
+}
+
+function removeBottlingDIBRange(idx) {
+  if (bottlingForm.dib_ranges.length > 1) {
+    bottlingForm.dib_ranges.splice(idx, 1)
+  }
+}
+
+async function submitBottlingForm() {
+  if (!selectedBatch.value) return
+  bottlingSubmitting.value = true
+
+  try {
+    const cleaned_dib_ranges = bottlingForm.dib_ranges
+      .map(r => ({
+        dib_label_start: r.dib_label_start.trim() || null,
+        dib_label_end: r.dib_label_end.trim() || null
+      }))
+      .filter(r => r.dib_label_start !== null || r.dib_label_end !== null)
+
+    const qtyKg = (bottlingForm.quantity_kg !== null && bottlingForm.quantity_kg !== '' && !isNaN(parseFloat(bottlingForm.quantity_kg)))
+      ? parseFloat(bottlingForm.quantity_kg)
+      : null
+    const qtyJars = (bottlingForm.quantity_jars !== null && bottlingForm.quantity_jars !== '' && !isNaN(parseInt(bottlingForm.quantity_jars)))
+      ? parseInt(bottlingForm.quantity_jars)
+      : null
+    const jarSize = (bottlingForm.jar_size_g !== null && bottlingForm.jar_size_g !== '' && !isNaN(parseInt(bottlingForm.jar_size_g)))
+      ? parseInt(bottlingForm.jar_size_g)
+      : null
+
+    const payload = {
+      bottling_date: bottlingForm.bottling_date,
+      jar_size_g: jarSize,
+      quantity_jars: qtyJars,
+      quantity_kg: qtyKg,
+      notes: bottlingForm.notes.trim() || null,
+      dib_ranges: cleaned_dib_ranges
+    }
+
+    if (isEditBottlingMode.value) {
+      await axios.put(`/api/honey-batches/${selectedBatch.value.id}/bottlings/${editingBottlingId.value}`, payload)
+      showAlert(t('honey_batches.success_bottling_update'), 'success')
+    } else {
+      await axios.post(`/api/honey-batches/${selectedBatch.value.id}/bottlings`, payload)
+      showAlert(t('honey_batches.success_bottling_create'), 'success')
+    }
+
+    showBottlingForm.value = false
+    await fetchBatches()
+  } catch (err) {
+    console.error('Submit bottling error:', err)
+    showAlert(err.response?.data?.detail || t('honey_batches.error_bottling_save'), 'error')
+  } finally {
+    bottlingSubmitting.value = false
+  }
+}
+
+async function deleteBottling(bt) {
+  const confirmed = await confirmStore.ask({
+    title: t('honey_batches.bottling_delete_title'),
+    message: t('honey_batches.bottling_delete_confirm', { qty: formatNumber(bt.quantity_kg), date: formatDate(bt.bottling_date) }),
+    type: 'danger',
+    confirmText: t('honey_batches.confirm_delete_btn')
+  })
+  if (!confirmed) return
+
+  try {
+    await axios.delete(`/api/honey-batches/${selectedBatch.value.id}/bottlings/${bt.id}`)
+    showAlert(t('honey_batches.success_bottling_delete'), 'success')
+    await fetchBatches()
+  } catch (err) {
+    console.error('Delete bottling error:', err)
+    showAlert(err.response?.data?.detail || t('honey_batches.error_bottling_delete'), 'error')
+  }
+}
+
+function getRemainingKg(b) {
+  if (!b) return 0
+  const remaining = (b.quantity_kg || 0) - (b.total_bottled_kg || 0)
+  return Math.max(0, parseFloat(remaining.toFixed(2)))
+}
+
+function formatNumber(num) {
+  if (num === null || num === undefined) return '0'
+  return num.toLocaleString(locale.value === 'de' ? 'de-DE' : 'en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 })
 }
 
 async function generateAIDraft() {
@@ -913,29 +1330,14 @@ async function generateAIDraft() {
     
     const draft = response.data.draft
     if (draft) {
-      // Pre-fill the form using the draft data
       form.batch_number = draft.batch_number || ''
       form.honey_type = draft.honey_type || 'Blütenhonig'
       form.harvest_date = draft.harvest_date ? draft.harvest_date.substring(0, 10) : new Date().toISOString().substring(0, 10)
-      form.bottling_date = draft.bottling_date ? draft.bottling_date.substring(0, 10) : ''
       form.quantity_kg = draft.quantity_kg || 0
       form.water_content_percent = draft.water_content_percent
       form.heating_temperature_celsius = draft.heating_temperature_celsius
       form.best_before_date = draft.best_before_date ? draft.best_before_date.substring(0, 10) : ''
       form.is_exact_date = draft.is_exact_date || false
-      if (draft.dib_ranges && draft.dib_ranges.length > 0) {
-        form.dib_ranges = draft.dib_ranges.map(r => ({
-          dib_label_start: r.dib_label_start || '',
-          dib_label_end: r.dib_label_end || ''
-        }))
-      } else if (draft.dib_label_start || draft.dib_label_end) {
-        form.dib_ranges = [{
-          dib_label_start: draft.dib_label_start || '',
-          dib_label_end: draft.dib_label_end || ''
-        }]
-      } else {
-        form.dib_ranges = [{ dib_label_start: '', dib_label_end: '' }]
-      }
       form.reserve_sample_taken = draft.reserve_sample_taken || false
       form.reserve_sample_date = draft.reserve_sample_date ? draft.reserve_sample_date.substring(0, 10) : ''
       form.reserve_sample_id = draft.reserve_sample_id || ''
@@ -962,19 +1364,13 @@ async function generateAIDraft() {
 async function exportCSV() {
   if (!apiaryStore.activeApiaryId) return
   try {
-    // We navigate to the export endpoint directly to trigger download
     const url = `/api/honey-batches/export/csv?apiary_id=${apiaryStore.activeApiaryId}`
-    const token = localStorage.getItem('token')
-    
-    // Create an anchor element, fetch file with authentication or request download
-    // Since backend requires auth, we can fetch it via axios with blob response
     const response = await axios.get(url, { responseType: 'blob' })
     const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' })
     
     const link = document.createElement('a')
     const urlBlob = URL.createObjectURL(blob)
     
-    // Get filename from Content-Disposition header if possible
     let filename = `honigbuch_${new Date().toISOString().slice(0,10)}.csv`
     const disposition = response.headers['content-disposition']
     if (disposition && disposition.indexOf('attachment') !== -1) {
@@ -1016,16 +1412,6 @@ function getDIBCount(start, end) {
   const eNum = parseInt(end.replace(/\D/g, ''))
   if (isNaN(sNum) || isNaN(eNum)) return 0
   return Math.max(0, eNum - sNum + 1)
-}
-
-function addDIBRange() {
-  form.dib_ranges.push({ dib_label_start: '', dib_label_end: '' })
-}
-
-function removeDIBRange(index) {
-  if (form.dib_ranges.length > 1) {
-    form.dib_ranges.splice(index, 1)
-  }
 }
 
 function getDIBTotalCount(ranges) {

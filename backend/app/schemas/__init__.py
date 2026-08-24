@@ -12,7 +12,10 @@ from app.schemas.logbook import (
     LogEntryImageOut, LogEntryBase, LogEntryCreate, LogEntryOut
 )
 from app.schemas.ai import AIChatQuery, AIChatResponse, AIDraftQuery, AIDraftResponse
-from app.schemas.honey import HoneyBatchBase, HoneyBatchCreate, HoneyBatchUpdate, HoneyBatchOut
+from app.schemas.honey import (
+    HoneyBatchBase, HoneyBatchCreate, HoneyBatchUpdate, HoneyBatchOut,
+    HoneyBottlingBase, HoneyBottlingCreate, HoneyBottlingUpdate, HoneyBottlingOut
+)
 
 # Export all schemas
 __all__ = [
@@ -28,5 +31,6 @@ __all__ = [
     "VarroaTreatmentDetailCreate", "VarroaTreatmentDetailOut",
     "LogEntryImageOut", "LogEntryBase", "LogEntryCreate", "LogEntryOut",
     "AIChatQuery", "AIChatResponse", "AIDraftQuery", "AIDraftResponse",
-    "HoneyBatchBase", "HoneyBatchCreate", "HoneyBatchUpdate", "HoneyBatchOut"
+    "HoneyBatchBase", "HoneyBatchCreate", "HoneyBatchUpdate", "HoneyBatchOut",
+    "HoneyBottlingBase", "HoneyBottlingCreate", "HoneyBottlingUpdate", "HoneyBottlingOut"
 ]

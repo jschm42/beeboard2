@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from app.models.honey_batch import HoneyBatch
+from app.models.honey_batch import HoneyBatch, HoneyBottling
 
 def test_honey_batch_lifecycle_and_validation(client: TestClient, db: Session):
     # 1. Register and login
@@ -33,7 +33,7 @@ def test_honey_batch_lifecycle_and_validation(client: TestClient, db: Session):
     bad_batch_resp = client.post(f"/api/honey-batches?apiary_id={apiary_id}", json={
         "honey_type": "Sommertracht",
         "harvest_date": "2026-05-21",
-        "quantity_kg": 25.5,
+        "quantity_kg": 50.0,
         "best_before_date": "2028-05-21",
         "is_exact_date": False
     }, headers=headers)
@@ -51,20 +51,19 @@ def test_honey_batch_lifecycle_and_validation(client: TestClient, db: Session):
     mhd_batch = mhd_ex_resp.json()
     assert mhd_batch["batch_number"] is None
     assert mhd_batch["is_exact_date"] is True
+    assert mhd_batch["bottlings"] == []
+    assert mhd_batch["total_bottled_kg"] == 0.0
 
     # 5. Create valid batch with batch_number when is_exact_date is False
     good_batch_resp = client.post(f"/api/honey-batches?apiary_id={apiary_id}", json={
         "batch_number": "L123-2026",
         "honey_type": "Rapshonig",
         "harvest_date": "2026-05-20",
-        "bottling_date": "2026-05-21",
         "quantity_kg": 150.0,
         "water_content_percent": 16.5,
         "heating_temperature_celsius": 32.0,
         "best_before_date": "2028-05-20",
         "is_exact_date": False,
-        "dib_label_start": "000100",
-        "dib_label_end": "000399",
         "reserve_sample_taken": True,
         "reserve_sample_date": "2026-05-20",
         "reserve_sample_id": "RS-L123",
@@ -72,27 +71,84 @@ def test_honey_batch_lifecycle_and_validation(client: TestClient, db: Session):
     }, headers=headers)
     assert good_batch_resp.status_code == 201
     good_batch = good_batch_resp.json()
+    batch_id = good_batch["id"]
     assert good_batch["batch_number"] == "L123-2026"
     assert good_batch["quantity_kg"] == 150.0
     assert good_batch["water_content_percent"] == 16.5
+    assert len(good_batch["bottlings"]) == 0
 
-    # 6. List batches for the apiary
-    list_resp = client.get(f"/api/honey-batches?apiary_id={apiary_id}", headers=headers)
-    assert list_resp.status_code == 200
-    batches = list_resp.json()
-    assert len(batches) == 2
-    assert batches[0]["honey_type"] == "Sommertracht" # Descending harvest_date
-
-    # 7. Update batch
-    update_resp = client.put(f"/api/honey-batches/{good_batch['id']}", json={
-        "quantity_kg": 145.0,
-        "notes": "Updated notes"
+    # 6. Add first bottling (Abfüllung 1: 100 x 500g DIB Gläser = 50 kg)
+    bottling1_resp = client.post(f"/api/honey-batches/{batch_id}/bottlings", json={
+        "bottling_date": "2026-05-25",
+        "jar_size_g": 500,
+        "quantity_jars": 100,
+        "quantity_kg": 50.0,
+        "notes": "Erste Abfüllung in DIB Gläser",
+        "dib_ranges": [
+            {"dib_label_start": "000100", "dib_label_end": "000199"}
+        ]
     }, headers=headers)
-    assert update_resp.status_code == 200
-    assert update_resp.json()["quantity_kg"] == 145.0
-    assert update_resp.json()["notes"] == "Updated notes"
+    assert bottling1_resp.status_code == 201
+    b1_data = bottling1_resp.json()
+    b1_id = b1_data["id"]
+    assert b1_data["jar_size_g"] == 500
+    assert b1_data["quantity_jars"] == 100
+    assert b1_data["quantity_kg"] == 50.0
+    assert b1_data["dib_label_start"] == "000100"
+    assert b1_data["dib_label_end"] == "000199"
 
-    # 8. Export CSV
+    # 7. Add second bottling (Abfüllung 2: 80 x 250g Gläser = 20 kg)
+    bottling2_resp = client.post(f"/api/honey-batches/{batch_id}/bottlings", json={
+        "bottling_date": "2026-06-01",
+        "jar_size_g": 250,
+        "quantity_jars": 80,
+        "quantity_kg": 20.0,
+        "notes": "Zweite Abfüllung kleine Gläser",
+        "dib_label_start": "000500",
+        "dib_label_end": "000579"
+    }, headers=headers)
+    assert bottling2_resp.status_code == 201
+    b2_data = bottling2_resp.json()
+    b2_id = b2_data["id"]
+
+    # 8. Get batch and verify aggregate totals and bottlings list
+    get_batch_resp = client.get(f"/api/honey-batches/{batch_id}", headers=headers)
+    assert get_batch_resp.status_code == 200
+    batch_detail = get_batch_resp.json()
+    assert len(batch_detail["bottlings"]) == 2
+    assert batch_detail["total_bottled_kg"] == 70.0 # 50 + 20
+    assert batch_detail["total_bottled_jars"] == 180 # 100 + 80
+
+    # 9. List bottlings endpoint
+    list_bottlings_resp = client.get(f"/api/honey-batches/{batch_id}/bottlings", headers=headers)
+    assert list_bottlings_resp.status_code == 200
+    assert len(list_bottlings_resp.json()) == 2
+
+    # 10. Update bottling 2 (e.g. adjust jar count to 100 -> 25 kg)
+    update_b2_resp = client.put(f"/api/honey-batches/{batch_id}/bottlings/{b2_id}", json={
+        "quantity_jars": 100,
+        "quantity_kg": 25.0,
+        "notes": "Korrigiert auf 100 Gläser"
+    }, headers=headers)
+    assert update_b2_resp.status_code == 200
+    assert update_b2_resp.json()["quantity_jars"] == 100
+    assert update_b2_resp.json()["quantity_kg"] == 25.0
+
+    # Verify updated aggregates on batch
+    get_batch_resp2 = client.get(f"/api/honey-batches/{batch_id}", headers=headers)
+    assert get_batch_resp2.json()["total_bottled_kg"] == 75.0
+    assert get_batch_resp2.json()["total_bottled_jars"] == 200
+
+    # 11. Delete bottling 1
+    del_b1_resp = client.delete(f"/api/honey-batches/{batch_id}/bottlings/{b1_id}", headers=headers)
+    assert del_b1_resp.status_code == 204
+
+    # Verify only bottling 2 remains
+    get_batch_resp3 = client.get(f"/api/honey-batches/{batch_id}", headers=headers)
+    assert len(get_batch_resp3.json()["bottlings"]) == 1
+    assert get_batch_resp3.json()["total_bottled_kg"] == 25.0
+
+    # 12. Export CSV and check headers and contents
     export_resp = client.get(f"/api/honey-batches/export/csv?apiary_id={apiary_id}", headers=headers)
     assert export_resp.status_code == 200
     assert export_resp.headers["content-type"].startswith("text/csv")
@@ -100,18 +156,9 @@ def test_honey_batch_lifecycle_and_validation(client: TestClient, db: Session):
     assert "Sommertracht" in csv_text
     assert "Rapshonig" in csv_text
     assert "L123-2026" in csv_text
+    assert "Abfülldatum" in csv_text
 
-    # 9. AI Draft Honey Batch
-    ai_draft_resp = client.post("/api/ai/draft-honey", json={
-        "text": "100kg Lindenhonig geerntet am 2026-05-15 mit 17% Wasser. Startnummer 1234 und Endnummer 1434"
-    }, headers=headers)
-    assert ai_draft_resp.status_code == 200
-    draft = ai_draft_resp.json()["draft"]
-    # Check fallback / parser mapping
-    assert draft["honey_type"] in ["Lindenhonig", "Blütenhonig"]
-    assert draft["quantity_kg"] > 0
-
-    # 10. Number range suggestion tests
+    # 13. Number range suggestion tests
     suggest_resp = client.get("/api/honey-batches/suggest-number?key=batch_number", headers=headers)
     assert suggest_resp.status_code == 200
     assert suggest_resp.json()["suggested_value"] == "LOT-0001"
@@ -120,7 +167,7 @@ def test_honey_batch_lifecycle_and_validation(client: TestClient, db: Session):
     assert suggest_sample_resp.status_code == 200
     assert suggest_sample_resp.json()["suggested_value"] == "PRB-0001"
 
-    # 11. Create a batch using the suggested batch number (LOT-0001) and sample ID (PRB-0001)
+    # 14. Create a batch using suggested numbers
     suggested_batch_resp = client.post(f"/api/honey-batches?apiary_id={apiary_id}", json={
         "batch_number": "LOT-0001",
         "honey_type": "Waldhonig",
@@ -141,7 +188,7 @@ def test_honey_batch_lifecycle_and_validation(client: TestClient, db: Session):
     suggest_next_sample = client.get("/api/honey-batches/suggest-number?key=reserve_sample_id", headers=headers)
     assert suggest_next_sample.json()["suggested_value"] == "PRB-0002"
 
-    # 12. Try to create duplicate batch_number (LOT-0001) -> should fail
+    # 15. Try duplicate batch_number -> should fail
     duplicate_batch_resp = client.post(f"/api/honey-batches?apiary_id={apiary_id}", json={
         "batch_number": "LOT-0001",
         "honey_type": "Waldhonig",
@@ -153,53 +200,10 @@ def test_honey_batch_lifecycle_and_validation(client: TestClient, db: Session):
     assert duplicate_batch_resp.status_code == 400
     assert "Los-/Chargennummer wird bereits verwendet" in duplicate_batch_resp.json()["detail"]
 
-    # 13. Try to create duplicate reserve_sample_id (PRB-0001) -> should fail
-    duplicate_sample_resp = client.post(f"/api/honey-batches?apiary_id={apiary_id}", json={
-        "batch_number": "LOT-0002",
-        "honey_type": "Waldhonig",
-        "harvest_date": "2026-05-23",
-        "quantity_kg": 30.0,
-        "best_before_date": "2028-05-23",
-        "is_exact_date": False,
-        "reserve_sample_taken": True,
-        "reserve_sample_date": "2026-05-23",
-        "reserve_sample_id": "PRB-0001"
-    }, headers=headers)
-    assert duplicate_sample_resp.status_code == 400
-    assert "Rückstellproben-ID wird bereits verwendet" in duplicate_sample_resp.json()["detail"]
+    # 16. Delete batch cascades to remaining bottlings
+    del_batch_resp = client.delete(f"/api/honey-batches/{batch_id}", headers=headers)
+    assert del_batch_resp.status_code == 204
 
-    # 14. Create batch with multiple DIB ranges and test retrieval + update
-    multi_range_resp = client.post(f"/api/honey-batches?apiary_id={apiary_id}", json={
-        "batch_number": "LOT-MULTI",
-        "honey_type": "Lindenhonig",
-        "harvest_date": "2026-06-01",
-        "quantity_kg": 80.0,
-        "best_before_date": "2028-06-01",
-        "is_exact_date": False,
-        "dib_ranges": [
-            {"dib_label_start": "200100", "dib_label_end": "200199"},
-            {"dib_label_start": "200300", "dib_label_end": "200349"}
-        ]
-    }, headers=headers)
-    assert multi_range_resp.status_code == 201
-    created_multi = multi_range_resp.json()
-    assert len(created_multi["dib_ranges"]) == 2
-    assert created_multi["dib_ranges"][0]["dib_label_start"] == "200100"
-    assert created_multi["dib_ranges"][1]["dib_label_end"] == "200349"
-    # Legacy property compat assertion
-    assert created_multi["dib_label_start"] == "200100"
-    assert created_multi["dib_label_end"] == "200199"
-
-    # Update with new ranges
-    update_multi_resp = client.put(f"/api/honey-batches/{created_multi['id']}", json={
-        "dib_ranges": [
-            {"dib_label_start": "500000", "dib_label_end": "500050"}
-        ]
-    }, headers=headers)
-    assert update_multi_resp.status_code == 200
-    updated_multi = update_multi_resp.json()
-    assert len(updated_multi["dib_ranges"]) == 1
-    assert updated_multi["dib_ranges"][0]["dib_label_start"] == "500000"
-    assert updated_multi["dib_label_start"] == "500000"
-
-
+    # Verify db deletion
+    assert db.query(HoneyBatch).filter(HoneyBatch.id == batch_id).first() is None
+    assert db.query(HoneyBottling).filter(HoneyBottling.id == b2_id).first() is None

@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.models.user import User
 from app.models.apiary import Apiary, ApiaryMembership
+from app.models.location import Location
 from app.models.hive import Hive
 from app.models.sales import ProductConfig, HoneySale
 from app.models.task import Task
@@ -67,7 +68,20 @@ def test_apiary(db: Session, test_user: User):
     return apiary
 
 @pytest.fixture
-def test_hive(db: Session, test_apiary: Apiary):
+def test_location(db: Session, test_apiary: Apiary, test_user: User):
+    location = Location(
+        name="MCP Location",
+        address="Location Street 1",
+        apiary_id=test_apiary.id,
+        created_by_id=test_user.id
+    )
+    db.add(location)
+    db.commit()
+    db.refresh(location)
+    return location
+
+@pytest.fixture
+def test_hive(db: Session, test_apiary: Apiary, test_location: Location):
     # Get a frame type seeded by default
     from app.models.administration import FrameType
     zander = db.query(FrameType).filter(FrameType.name == "Zander").first()
@@ -75,6 +89,7 @@ def test_hive(db: Session, test_apiary: Apiary):
     hive = Hive(
         name="MCP Hive 1",
         apiary_id=test_apiary.id,
+        location_id=test_location.id,
         is_active=True,
         frame_type_id=zander.id
     )
