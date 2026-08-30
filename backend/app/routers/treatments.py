@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
 from fastapi.responses import StreamingResponse
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 from datetime import date
 from typing import List, Optional
 import os
@@ -14,20 +14,45 @@ from app.core.security import get_current_user
 from app.core.config import settings
 from app.models.user import User
 from app.models.hive import Hive
+from app.models.location import Location
+from app.models.apiary import Apiary
 from app.models.treatment import TreatmentMethod, Treatment, TreatmentImage, TreatmentApplicationType
 from app.schemas.treatment import (
     TreatmentMethodOut, TreatmentOut, TreatmentCreate, TreatmentUpdate, TreatmentImageOut,
     TreatmentApplicationTypeOut
 )
+from app.schemas.user import UserSimpleOut
 from app.routers.apiaries import check_access
+from app.services.pdf_export import generate_bestandsbuch_pdf
 
 router = APIRouter(prefix="/treatments", tags=["treatments"])
+
+
+@router.get("/users", response_model=List[UserSimpleOut])
+def list_treatment_users(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Lists all active users for selecting the operator / treated_by in treatments."""
+    users = db.query(User).filter(User.is_active == True).order_by(User.first_name, User.last_name, User.username).all()
+    result = []
+    for u in users:
+        fn = f"{u.first_name or ''} {u.last_name or ''}".strip()
+        full_name = fn if fn else u.username
+        result.append(UserSimpleOut(
+            id=u.id,
+            username=u.username,
+            first_name=u.first_name,
+            last_name=u.last_name,
+            full_name=full_name
+        ))
+    return result
 
 
 @router.get("/methods", response_model=List[TreatmentMethodOut])
 def list_active_methods(db: Session = Depends(get_db)):
     """Lists all active treatment methods (for beekeepers to select in dropdown)."""
-    return db.query(TreatmentMethod).filter(TreatmentMethod.is_active == True).order_by(TreatmentMethod.name).all()
+    return db.query(TreatmentMethod).options(selectinload(TreatmentMethod.attachments)).filter(TreatmentMethod.is_active == True).order_by(TreatmentMethod.name).all()
 
 
 @router.get("/application-types", response_model=List[TreatmentApplicationTypeOut])
@@ -63,7 +88,8 @@ def export_treatments_csv(
     treatments = query.options(
         joinedload(Treatment.treatment_method),
         joinedload(Treatment.application_type),
-        joinedload(Treatment.hive).joinedload(Hive.location)
+        joinedload(Treatment.hive).joinedload(Hive.location),
+        joinedload(Treatment.created_by)
     ).order_by(Treatment.date.desc()).all()
 
     # Generate CSV in memory with utf-8-sig BOM for Excel compatibility
@@ -74,24 +100,28 @@ def export_treatments_csv(
     # Headers
     writer.writerow([
         "Datum",
+        "Enddatum",
         "Volk",
         "Standort",
         "Behandlungsmethode",
         "Menge",
         "Einheit",
         "Applikationsmethode",
+        "Bearbeiter",
         "Notizen"
     ])
 
     for t in treatments:
         writer.writerow([
             t.date.strftime("%Y-%m-%d") if t.date else "",
+            t.end_date.strftime("%Y-%m-%d") if t.end_date else "",
             t.hive.name if t.hive else "",
             t.hive.location.name if t.hive and t.hive.location else "",
             t.treatment_method.name if t.treatment_method else "",
             t.amount,
             t.treatment_method.unit if t.treatment_method else "",
             t.application_type.name if t.application_type else "",
+            t.treated_by or (f"{t.created_by.first_name} {t.created_by.last_name}".strip() if t.created_by else "") or "",
             t.notes or ""
         ])
 
@@ -102,6 +132,65 @@ def export_treatments_csv(
         io.BytesIO(response_data),
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename=behandlungen_{date.today().strftime('%Y-%m-%d')}.csv"}
+    )
+
+
+@router.get("/export/pdf")
+def export_treatments_pdf(
+    apiary_id: str = Query(..., description="Scope search to a specific apiary"),
+    hive_id: Optional[str] = Query(None, description="Filter by a specific hive"),
+    location_id: Optional[str] = Query(None, description="Filter by a specific location"),
+    start_date: Optional[date] = Query(None, description="Filter by start date"),
+    end_date: Optional[date] = Query(None, description="Filter by end date"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Exports treatments in the apiary to official Bestandsbuch PDF report."""
+    check_access(apiary_id, current_user, db)
+
+    apiary = db.query(Apiary).filter(Apiary.id == apiary_id).first()
+    apiary_name = apiary.name if apiary else "Imkerei"
+
+    location_name = None
+    if location_id:
+        loc = db.query(Location).filter(Location.id == location_id).first()
+        if loc:
+            location_name = f"{loc.name} ({loc.address})" if loc.address else loc.name
+
+    beekeeper_name = f"{current_user.first_name} {current_user.last_name}".strip() or current_user.username
+
+    query = db.query(Treatment).join(Hive).filter(Treatment.apiary_id == apiary_id)
+
+    if hive_id:
+        query = query.filter(Treatment.hive_id == hive_id)
+    if location_id:
+        query = query.filter(Hive.location_id == location_id)
+    if start_date:
+        query = query.filter(Treatment.date >= start_date)
+    if end_date:
+        query = query.filter(Treatment.date <= end_date)
+
+    treatments = query.options(
+        joinedload(Treatment.treatment_method),
+        joinedload(Treatment.application_type),
+        joinedload(Treatment.hive).joinedload(Hive.location),
+        joinedload(Treatment.created_by)
+    ).order_by(Treatment.date.asc(), Treatment.created_at.asc()).all()
+
+    pdf_bytes = generate_bestandsbuch_pdf(
+        treatments=treatments,
+        apiary_name=apiary_name,
+        beekeeper_name=beekeeper_name,
+        location_name=location_name,
+        start_date=start_date,
+        end_date=end_date
+    )
+
+    filename = f"bestandsbuch_{date.today().strftime('%Y-%m-%d')}.pdf"
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"inline; filename={filename}"}
     )
 
 
@@ -169,12 +258,17 @@ def create_treatment(
                 detail="Ausgewählte Applikationsmethode existiert nicht."
             )
 
+    user_full_name = f"{current_user.first_name} {current_user.last_name}".strip() or current_user.username
+    treated_by = treatment_in.treated_by.strip() if treatment_in.treated_by else user_full_name
+
     new_treatment = Treatment(
         hive_id=treatment_in.hive_id,
         treatment_method_id=treatment_in.treatment_method_id,
         application_type_id=treatment_in.application_type_id,
         date=treatment_in.date,
+        end_date=treatment_in.end_date,
         amount=treatment_in.amount,
+        treated_by=treated_by,
         notes=treatment_in.notes,
         apiary_id=hive.apiary_id,
         created_by_id=current_user.id
@@ -242,8 +336,12 @@ def update_treatment(
 
     if treatment_in.date is not None:
         treatment.date = treatment_in.date
+    if treatment_in.end_date is not None:
+        treatment.end_date = treatment_in.end_date
     if treatment_in.amount is not None:
         treatment.amount = treatment_in.amount
+    if treatment_in.treated_by is not None:
+        treatment.treated_by = treatment_in.treated_by.strip() if treatment_in.treated_by else None
     if treatment_in.notes is not None:
         treatment.notes = treatment_in.notes
 

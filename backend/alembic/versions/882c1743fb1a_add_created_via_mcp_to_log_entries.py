@@ -18,8 +18,14 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    with op.batch_alter_table('log_entries', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('created_via_mcp', sa.Boolean(), server_default='0', nullable=False))
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    tables = inspector.get_table_names()
+    if 'log_entries' in tables:
+        columns = [c['name'] for c in inspector.get_columns('log_entries')]
+        if 'created_via_mcp' not in columns:
+            with op.batch_alter_table('log_entries', schema=None) as batch_op:
+                batch_op.add_column(sa.Column('created_via_mcp', sa.Boolean(), server_default='0', nullable=False))
 
 
 def downgrade() -> None:

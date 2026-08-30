@@ -2,10 +2,23 @@ from pydantic import BaseModel
 from datetime import date as dt_date, datetime
 from typing import Optional, List
 
+class TreatmentMethodAttachmentOut(BaseModel):
+    id: str
+    treatment_method_id: str
+    file_name: str
+    file_path: str
+    file_type: Optional[str] = None
+    file_size: Optional[int] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
 class TreatmentMethodBase(BaseModel):
     name: str
     unit: str = "ml"
     is_active: bool = True
+    manufacturer_info: Optional[str] = None
 
 class TreatmentMethodCreate(TreatmentMethodBase):
     pass
@@ -13,6 +26,7 @@ class TreatmentMethodCreate(TreatmentMethodBase):
 class TreatmentMethodOut(TreatmentMethodBase):
     id: str
     created_at: datetime
+    attachments: List[TreatmentMethodAttachmentOut] = []
 
     class Config:
         from_attributes = True
@@ -45,7 +59,9 @@ class TreatmentBase(BaseModel):
     treatment_method_id: str
     application_type_id: Optional[str] = None
     date: dt_date
+    end_date: Optional[dt_date] = None
     amount: float
+    treated_by: Optional[str] = None
     notes: Optional[str] = None
 
 class TreatmentCreate(TreatmentBase):
@@ -56,7 +72,9 @@ class TreatmentUpdate(BaseModel):
     treatment_method_id: Optional[str] = None
     application_type_id: Optional[str] = None
     date: Optional[dt_date] = None
+    end_date: Optional[dt_date] = None
     amount: Optional[float] = None
+    treated_by: Optional[str] = None
     notes: Optional[str] = None
 
 class LocationSimpleOut(BaseModel):

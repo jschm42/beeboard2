@@ -763,16 +763,23 @@ def create_treatment(
 
 @mcp.tool()
 def list_treatment_methods() -> str:
-    """Lists all active treatment methods and their units."""
+    """Lists all active treatment methods, their units, manufacturer info, and attachments."""
     db = SessionLocal()
     try:
         from app.models.treatment import TreatmentMethod
-        methods = db.query(TreatmentMethod).filter(TreatmentMethod.is_active == True).order_by(TreatmentMethod.name).all()
+        from sqlalchemy.orm import selectinload
+        methods = db.query(TreatmentMethod).options(selectinload(TreatmentMethod.attachments)).filter(TreatmentMethod.is_active == True).order_by(TreatmentMethod.name).all()
         if not methods:
             return "Keine Behandlungsmethoden konfiguriert."
         result = []
         for m in methods:
-            result.append(f"- ID: {m.id} | Name: {m.name} (Einheit: {m.unit})")
+            info = f"- ID: {m.id} | Name: {m.name} (Einheit: {m.unit})"
+            if m.manufacturer_info:
+                info += f" | Herstellerangaben: {m.manufacturer_info.replace(chr(10), ' ')}"
+            if m.attachments:
+                att_names = ", ".join(a.file_name for a in m.attachments)
+                info += f" | Anhänge: [{att_names}]"
+            result.append(info)
         return "\n".join(result)
     finally:
         db.close()

@@ -952,6 +952,111 @@
             </div>
           </div>
 
+          <!-- Multi-line Manufacturer Details -->
+          <div>
+            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
+              {{ $t('admin.form_method_manufacturer_info') }}
+            </label>
+            <textarea 
+              v-model="formTreatmentMethod.manufacturer_info" 
+              rows="3"
+              :placeholder="$t('admin.form_method_manufacturer_placeholder')"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y"
+            ></textarea>
+          </div>
+
+          <!-- Attachments (PDF / Text / Screenshots) -->
+          <div class="space-y-2 pt-1">
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                  {{ $t('admin.form_method_attachments') }}
+                </label>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400">
+                  {{ $t('admin.form_method_attachments_hint') }}
+                </p>
+              </div>
+              <button 
+                type="button" 
+                @click="triggerMethodFileInput" 
+                class="px-3 py-1.5 bg-gray-100 dark:bg-dark-border hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl flex items-center gap-1.5 hover-scale transition-colors"
+                :disabled="uploadingMethodAttachment"
+              >
+                <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                <span>{{ uploadingMethodAttachment ? $t('common.loading') : $t('admin.form_method_upload_button') }}</span>
+              </button>
+              <input 
+                ref="treatmentMethodFileInput" 
+                type="file" 
+                multiple 
+                accept=".pdf,.txt,.md,.doc,.docx,.odt,.rtf,.csv,.json,.png,.jpg,.jpeg,.webp,.gif"
+                class="hidden" 
+                @change="handleMethodFileSelect" 
+              />
+            </div>
+
+            <!-- Existing Attachments -->
+            <div v-if="formTreatmentMethod.attachments && formTreatmentMethod.attachments.length > 0" class="flex flex-wrap gap-2 pt-1">
+              <div 
+                v-for="att in formTreatmentMethod.attachments" 
+                :key="att.id" 
+                class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-dark-border rounded-xl text-xs"
+              >
+                <span class="text-base">{{ getFileEmoji(att.file_name) }}</span>
+                <span class="font-medium text-gray-700 dark:text-gray-200 truncate max-w-[180px]" :title="att.file_name">
+                  {{ att.file_name }}
+                </span>
+                <span v-if="att.file_size" class="text-[10px] text-gray-400 font-mono">
+                  ({{ formatFileSize(att.file_size) }})
+                </span>
+                <a 
+                  :href="`/uploads/${att.file_path}`" 
+                  target="_blank" 
+                  class="text-primary hover:text-primary-hover p-0.5" 
+                  :title="$t('admin.view_attachment')"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                </a>
+                <button 
+                  type="button" 
+                  @click="deleteMethodAttachment(att)" 
+                  class="text-red-500 hover:text-red-700 p-0.5 hover-scale"
+                  :title="$t('common.delete')"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Staged Files (for new method) -->
+            <div v-if="stagedMethodFiles.length > 0" class="flex flex-wrap gap-2 pt-1">
+              <div 
+                v-for="(sf, idx) in stagedMethodFiles" 
+                :key="idx" 
+                class="flex items-center gap-2 px-3 py-1.5 bg-primary/5 dark:bg-primary/10 border border-primary/20 rounded-xl text-xs"
+              >
+                <span class="text-base">{{ getFileEmoji(sf.name) }}</span>
+                <span class="font-medium text-gray-800 dark:text-gray-200 truncate max-w-[180px]" :title="sf.name">
+                  {{ sf.name }}
+                </span>
+                <span class="text-[10px] text-gray-400 font-mono">
+                  ({{ formatFileSize(sf.size) }})
+                </span>
+                <button 
+                  type="button" 
+                  @click="removeStagedMethodFile(idx)" 
+                  class="text-red-500 hover:text-red-700 p-0.5 hover-scale"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div v-if="(!formTreatmentMethod.attachments || formTreatmentMethod.attachments.length === 0) && stagedMethodFiles.length === 0" class="text-xs text-gray-400 italic">
+              {{ $t('admin.form_method_no_attachments') }}
+            </div>
+          </div>
+
           <div class="flex items-center pt-2">
             <label class="flex items-center space-x-2 cursor-pointer">
               <input 
@@ -995,6 +1100,8 @@
               <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
                 <th class="px-6 py-4">{{ $t('admin.table_method_name') }}</th>
                 <th class="px-6 py-4">{{ $t('admin.table_method_unit') }}</th>
+                <th class="px-6 py-4">{{ $t('admin.table_method_manufacturer') }}</th>
+                <th class="px-6 py-4">{{ $t('admin.table_method_attachments') }}</th>
                 <th class="px-6 py-4 text-center">{{ $t('admin.table_method_status') }}</th>
                 <th class="px-6 py-4 text-right">{{ $t('common.actions') }}</th>
               </tr>
@@ -1010,6 +1117,25 @@
                 </td>
                 <td class="px-6 py-4 font-mono text-gray-600 dark:text-gray-300">
                   {{ m.unit }}
+                </td>
+                <td class="px-6 py-4 max-w-[220px] text-xs text-gray-600 dark:text-gray-300 truncate" :title="m.manufacturer_info || ''">
+                  {{ m.manufacturer_info || '-' }}
+                </td>
+                <td class="px-6 py-4">
+                  <div v-if="m.attachments && m.attachments.length > 0" class="flex flex-wrap gap-1 max-w-[220px]">
+                    <a 
+                      v-for="att in m.attachments" 
+                      :key="att.id"
+                      :href="`/uploads/${att.file_path}`"
+                      target="_blank"
+                      class="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-dark-border hover:bg-primary/10 hover:text-primary text-gray-700 dark:text-gray-300 rounded-lg text-[11px] font-medium transition-colors"
+                      :title="att.file_name"
+                    >
+                      <span>{{ getFileEmoji(att.file_name) }}</span>
+                      <span class="truncate max-w-[100px]">{{ att.file_name }}</span>
+                    </a>
+                  </div>
+                  <span v-else class="text-xs text-gray-400">-</span>
                 </td>
                 <td class="px-6 py-4 text-center">
                   <span 
@@ -1712,12 +1838,98 @@ const savingTreatmentMethod = ref(false)
 const showTreatmentMethodForm = ref(false)
 const isEditTreatmentMethod = ref(false)
 const editingTreatmentMethodId = ref(null)
+const treatmentMethodFileInput = ref(null)
+const stagedMethodFiles = ref([])
+const uploadingMethodAttachment = ref(false)
 
 const formTreatmentMethod = reactive({
   name: '',
   unit: 'ml',
-  is_active: true
+  is_active: true,
+  manufacturer_info: '',
+  attachments: []
 })
+
+function formatFileSize(bytes) {
+  if (!bytes || bytes === 0) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
+}
+
+function getFileEmoji(fileName) {
+  if (!fileName) return '📄'
+  const ext = fileName.split('.').pop().toLowerCase()
+  if (['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp'].includes(ext)) return '🖼️'
+  if (ext === 'pdf') return '📕'
+  if (['doc', 'docx', 'odt', 'rtf'].includes(ext)) return '📝'
+  if (['txt', 'md', 'csv', 'json'].includes(ext)) return '📃'
+  return '📎'
+}
+
+function triggerMethodFileInput() {
+  if (treatmentMethodFileInput.value) {
+    treatmentMethodFileInput.value.click()
+  }
+}
+
+async function handleMethodFileSelect(event) {
+  const files = Array.from(event.target.files || [])
+  if (files.length === 0) return
+
+  if (isEditTreatmentMethod.value && editingTreatmentMethodId.value) {
+    // Immediate upload for existing method
+    uploadingMethodAttachment.value = true
+    try {
+      for (const file of files) {
+        const formData = new FormData()
+        formData.append('file', file)
+        const res = await axios.post(`/api/admin/treatment-methods/${editingTreatmentMethodId.value}/attachments`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        })
+        formTreatmentMethod.attachments.push(res.data)
+        showToast(t('admin.toast_attachment_uploaded', { name: file.name }))
+      }
+      await fetchTreatmentMethods()
+    } catch (err) {
+      console.error('Upload attachment error:', err)
+      const errDetail = err.response?.data?.detail || t('admin.toast_attachment_error')
+      showToast(errDetail, 'error')
+    } finally {
+      uploadingMethodAttachment.value = false
+      if (treatmentMethodFileInput.value) treatmentMethodFileInput.value.value = ''
+    }
+  } else {
+    // Stage files for new method
+    stagedMethodFiles.value.push(...files)
+    if (treatmentMethodFileInput.value) treatmentMethodFileInput.value.value = ''
+  }
+}
+
+function removeStagedMethodFile(index) {
+  stagedMethodFiles.value.splice(index, 1)
+}
+
+async function deleteMethodAttachment(att) {
+  const confirmed = await confirmStore.ask({
+    title: t('admin.toast_attachment_deleted', { name: att.file_name }),
+    message: t('admin.toast_attachment_delete_confirm', { name: att.file_name }),
+    type: 'danger',
+    confirmText: t('common.delete')
+  })
+  if (!confirmed) return
+
+  try {
+    await axios.delete(`/api/admin/treatment-methods/attachments/${att.id}`)
+    formTreatmentMethod.attachments = formTreatmentMethod.attachments.filter(a => a.id !== att.id)
+    showToast(t('admin.toast_attachment_deleted', { name: att.file_name }))
+    await fetchTreatmentMethods()
+  } catch (err) {
+    console.error('Delete attachment error:', err)
+    showToast(t('admin.toast_attachment_error'), 'error')
+  }
+}
 
 async function fetchTreatmentMethods() {
   loadingTreatmentMethods.value = true
@@ -1738,6 +1950,9 @@ function openCreateTreatmentMethod() {
   formTreatmentMethod.name = ''
   formTreatmentMethod.unit = 'ml'
   formTreatmentMethod.is_active = true
+  formTreatmentMethod.manufacturer_info = ''
+  formTreatmentMethod.attachments = []
+  stagedMethodFiles.value = []
   showTreatmentMethodForm.value = true
 }
 
@@ -1747,6 +1962,9 @@ function openEditTreatmentMethod(m) {
   formTreatmentMethod.name = m.name
   formTreatmentMethod.unit = m.unit
   formTreatmentMethod.is_active = m.is_active
+  formTreatmentMethod.manufacturer_info = m.manufacturer_info || ''
+  formTreatmentMethod.attachments = m.attachments ? [...m.attachments] : []
+  stagedMethodFiles.value = []
   showTreatmentMethodForm.value = true
 }
 
@@ -1757,14 +1975,32 @@ async function submitTreatmentMethodForm() {
     const payload = {
       name: formTreatmentMethod.name.trim(),
       unit: formTreatmentMethod.unit.trim(),
-      is_active: formTreatmentMethod.is_active
+      is_active: formTreatmentMethod.is_active,
+      manufacturer_info: formTreatmentMethod.manufacturer_info ? formTreatmentMethod.manufacturer_info.trim() : null
     }
+    let res
     if (isEditTreatmentMethod.value) {
-      await axios.put(`/api/admin/treatment-methods/${editingTreatmentMethodId.value}`, payload)
+      res = await axios.put(`/api/admin/treatment-methods/${editingTreatmentMethodId.value}`, payload)
       showToast(t('admin.toast_method_updated', { name: payload.name }))
     } else {
-      await axios.post('/api/admin/treatment-methods', payload)
+      res = await axios.post('/api/admin/treatment-methods', payload)
       showToast(t('admin.toast_method_created', { name: payload.name }))
+      
+      // Upload staged files for newly created method
+      const newMethodId = res.data.id
+      if (stagedMethodFiles.value.length > 0) {
+        for (const file of stagedMethodFiles.value) {
+          try {
+            const formData = new FormData()
+            formData.append('file', file)
+            await axios.post(`/api/admin/treatment-methods/${newMethodId}/attachments`, formData, {
+              headers: { 'Content-Type': 'multipart/form-data' }
+            })
+          } catch (uploadErr) {
+            console.error('Error uploading staged file:', uploadErr)
+          }
+        }
+      }
     }
     showTreatmentMethodForm.value = false
     await fetchTreatmentMethods()

@@ -15,4 +15,5 @@ email-validator>=2.0.0
 apscheduler>=3.10.4
 alembic>=1.13.0
 fastmcp>=3.0.0
+reportlab>=4.0.0
 

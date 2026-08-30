@@ -13,20 +13,29 @@
         <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">❤️ {{ $t('treatments.title') }}</h1>
         <p class="text-gray-500 dark:text-gray-400 mt-1">{{ $t('treatments.subtitle') }}</p>
       </div>
-      <div class="flex items-center gap-3 self-end sm:self-auto shrink-0">
+      <div class="flex items-center gap-2.5 self-end sm:self-auto shrink-0">
         <button 
           v-if="apiaryStore.activeApiaryId"
           @click="exportCSV" 
-          class="px-4 py-2.5 bg-gray-100 hover:bg-gray-205 dark:bg-gray-800 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-bold text-sm rounded-xl transition duration-150 flex items-center justify-center space-x-2 hover-scale"
+          class="px-3.5 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-bold text-xs rounded-xl transition duration-150 flex items-center justify-center space-x-1.5 hover-scale"
+          :title="$t('treatments.export_csv_btn')"
         >
-          <span>{{ $t('treatments.export_csv_btn') }}</span>
+          <span>📊 {{ $t('treatments.export_csv_btn') }}</span>
+        </button>
+        <button 
+          v-if="apiaryStore.activeApiaryId"
+          @click="exportPDF" 
+          class="px-3.5 py-2.5 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 border border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-300 font-bold text-xs rounded-xl transition duration-150 flex items-center justify-center space-x-1.5 hover-scale"
+          :title="$t('treatments.export_pdf_hint')"
+        >
+          <span>📄 {{ $t('treatments.export_pdf_btn') }}</span>
         </button>
         <button 
           v-if="apiaryStore.activeApiaryId"
           @click="openCreateModal" 
-          class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-2"
+          class="px-4 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-1.5"
         >
-          <span>{{ $t('treatments.new_treatment') }}</span>
+          <span>+ {{ $t('treatments.new_treatment') }}</span>
         </button>
       </div>
     </div>
@@ -116,15 +125,16 @@
           <table class="w-full text-left border-collapse hidden md:table">
             <thead>
               <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
-                <th class="px-6 py-4">{{ $t('treatments.table_date') }}</th>
-                <th class="px-6 py-4">{{ $t('treatments.table_hive') }}</th>
-                <th class="px-6 py-4">{{ $t('treatments.table_location') }}</th>
-                <th class="px-6 py-4">{{ $t('treatments.table_method') }}</th>
-                <th class="px-6 py-4 text-right">{{ $t('treatments.table_amount') }}</th>
-                <th class="px-6 py-4">{{ $t('treatments.table_app_type') }}</th>
-                <th class="px-6 py-4">{{ $t('treatments.table_images') }}</th>
-                <th class="px-6 py-4">{{ $t('treatments.table_notes') }}</th>
-                <th class="px-6 py-4 text-right">{{ $t('common.actions') }}</th>
+                <th class="px-5 py-4">{{ $t('treatments.table_period') }}</th>
+                <th class="px-4 py-4">{{ $t('treatments.table_hive') }}</th>
+                <th class="px-4 py-4">{{ $t('treatments.table_location') }}</th>
+                <th class="px-4 py-4">{{ $t('treatments.table_method') }}</th>
+                <th class="px-4 py-4 text-right">{{ $t('treatments.table_amount') }}</th>
+                <th class="px-4 py-4">{{ $t('treatments.table_app_type') }}</th>
+                <th class="px-4 py-4">{{ $t('treatments.table_treated_by') }}</th>
+                <th class="px-4 py-4">{{ $t('treatments.table_images') }}</th>
+                <th class="px-4 py-4">{{ $t('treatments.table_notes') }}</th>
+                <th class="px-4 py-4 text-right">{{ $t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-dark-border text-sm">
@@ -133,40 +143,46 @@
                 :key="t.id" 
                 class="hover:bg-gray-50/50 dark:hover:bg-dark-bg/30 transition-colors duration-150"
               >
-                <td class="px-6 py-4 font-mono font-bold text-gray-900 dark:text-white shrink-0">
-                  {{ formatDate(t.date) }}
+                <td class="px-5 py-4 font-mono font-bold text-gray-900 dark:text-white shrink-0 text-xs whitespace-nowrap">
+                  {{ formatDatePeriod(t.date, t.end_date) }}
                 </td>
-                <td class="px-6 py-4 font-bold text-primary">
+                <td class="px-4 py-4 font-bold text-primary whitespace-nowrap">
                   {{ t.hive?.name || $t('dashboard.unknown_hive') }}
                 </td>
-                <td class="px-6 py-4 text-gray-600 dark:text-gray-300">
+                <td class="px-4 py-4 text-gray-600 dark:text-gray-300 whitespace-nowrap text-xs">
                   📍 {{ t.hive?.location?.name || '-' }}
                 </td>
-                <td class="px-6 py-4 text-gray-900 dark:text-white font-semibold">
+                <td class="px-4 py-4 text-gray-900 dark:text-white font-semibold">
                   {{ t.treatment_method?.name || '-' }}
                 </td>
-                <td class="px-6 py-4 text-right font-mono font-bold text-amber-600 dark:text-amber-500">
+                <td class="px-4 py-4 text-right font-mono font-bold text-amber-600 dark:text-amber-500 whitespace-nowrap">
                   {{ t.amount }} {{ t.treatment_method?.unit }}
                 </td>
-                <td class="px-6 py-4 text-gray-600 dark:text-gray-300 font-medium">
+                <td class="px-4 py-4 text-gray-600 dark:text-gray-300 font-medium text-xs whitespace-nowrap">
                   {{ t.application_type?.name || '-' }}
                 </td>
-                <td class="px-6 py-4">
-                  <div class="flex gap-1.5 overflow-hidden max-w-[120px]">
+                <td class="px-4 py-4 text-gray-700 dark:text-gray-300 text-xs whitespace-nowrap">
+                  <span class="inline-flex items-center gap-1">
+                    <span class="text-xs text-gray-400">👤</span>
+                    <span>{{ t.treated_by || (t.created_by ? `${t.created_by.first_name || ''} ${t.created_by.last_name || ''}`.trim() : '-') || '-' }}</span>
+                  </span>
+                </td>
+                <td class="px-4 py-4">
+                  <div class="flex gap-1.5 overflow-hidden max-w-[100px]">
                     <div 
                       v-for="img in t.images" 
                       :key="img.id" 
                       @click="openLightbox(`/uploads/${img.image_path}`)"
-                      class="w-8 h-8 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 cursor-pointer hover:opacity-80 shrink-0"
+                      class="w-7 h-7 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 cursor-pointer hover:opacity-80 shrink-0"
                     >
                       <img :src="`/uploads/${img.thumbnail_path || img.image_path}`" alt="Thumbnail" class="w-full h-full object-cover" />
                     </div>
                   </div>
                 </td>
-                <td class="px-6 py-4 max-w-[200px] truncate text-gray-500 dark:text-gray-400" :title="t.notes">
+                <td class="px-4 py-4 max-w-[160px] truncate text-gray-500 dark:text-gray-400 text-xs" :title="t.notes">
                   {{ t.notes || '-' }}
                 </td>
-                <td class="px-6 py-4 text-right space-x-1.5 whitespace-nowrap">
+                <td class="px-4 py-4 text-right space-x-1 whitespace-nowrap">
                   <button 
                     @click="openEditModal(t)" 
                     class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border rounded-lg transition-all duration-150 inline-flex hover-scale"
@@ -194,13 +210,16 @@
               class="p-4 space-y-3"
             >
               <div class="flex justify-between items-center">
-                <span class="font-mono text-xs text-gray-500 dark:text-gray-400">{{ formatDate(t.date) }}</span>
+                <span class="font-mono text-xs font-bold text-gray-700 dark:text-gray-300">{{ formatDatePeriod(t.date, t.end_date) }}</span>
                 <span class="font-mono font-bold text-amber-600 dark:text-amber-500">{{ t.amount }} {{ t.treatment_method?.unit }}</span>
               </div>
               <div class="flex justify-between items-start">
                 <div>
                   <h4 class="font-bold text-primary text-sm">{{ t.hive?.name || $t('dashboard.unknown_hive') }}</h4>
                   <p class="text-xs text-gray-600 dark:text-gray-300">📍 {{ t.hive?.location?.name || '-' }}</p>
+                  <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                    👤 {{ t.treated_by || (t.created_by ? `${t.created_by.first_name || ''} ${t.created_by.last_name || ''}`.trim() : '-') || '-' }}
+                  </p>
                 </div>
                 <div class="flex flex-col items-end gap-1">
                   <div class="px-2.5 py-1 bg-gray-100 dark:bg-dark-bg text-gray-800 dark:text-gray-200 text-xs rounded-lg font-semibold">
@@ -287,18 +306,45 @@
                 </select>
               </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Date selector -->
-                <div>
-                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('treatments.form_date') }}</label>
-                  <input 
-                    v-model="form.date" 
-                    type="date" 
-                    required 
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-                  />
+              <!-- Date & Period Box -->
+              <div class="p-3.5 bg-gray-50 dark:bg-dark-bg/40 border border-gray-200 dark:border-dark-border rounded-2xl space-y-3">
+                <div class="flex items-center justify-between">
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                    📅 {{ $t('treatments.table_period') }}
+                  </label>
+                  <label class="inline-flex items-center gap-2 cursor-pointer text-xs font-semibold text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">
+                    <input 
+                      v-model="isPeriodMode" 
+                      type="checkbox" 
+                      class="rounded text-primary focus:ring-primary focus:ring-offset-0 border-gray-300 dark:border-gray-700"
+                    />
+                    <span>{{ $t('treatments.form_period_toggle') }}</span>
+                  </label>
                 </div>
 
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[11px] font-bold text-gray-600 dark:text-gray-400 mb-1">{{ $t('treatments.form_start_date') }}</label>
+                    <input 
+                      v-model="form.date" 
+                      type="date" 
+                      required 
+                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
+                    />
+                  </div>
+                  <div v-if="isPeriodMode">
+                    <label class="block text-[11px] font-bold text-gray-600 dark:text-gray-400 mb-1">{{ $t('treatments.form_end_date') }}</label>
+                    <input 
+                      v-model="form.endDate" 
+                      type="date" 
+                      :min="form.date"
+                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Method selector -->
                 <div>
                   <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('treatments.form_method') }}</label>
@@ -311,36 +357,80 @@
                     <option v-for="m in treatmentMethods" :key="m.id" :value="m.id">{{ m.name }}</option>
                   </select>
                 </div>
-              </div>
 
-              <!-- Quantity Amount -->
-              <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('treatments.form_amount') }}</label>
-                <div class="relative flex items-center">
-                  <input 
-                    v-model.number="form.amount" 
-                    type="number" 
-                    step="any"
-                    min="0.01"
-                    required 
-                    class="w-full pl-3 pr-16 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
-                  />
-                  <div class="absolute right-3 text-xs font-extrabold text-gray-400 dark:text-gray-500 select-none">
-                    {{ selectedMethodUnit }}
-                  </div>
+                <!-- Application Method -->
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('treatments.form_app_type') }}</label>
+                  <select 
+                    v-model="form.applicationTypeId" 
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer"
+                  >
+                    <option value="">{{ $t('treatments.select_app_type') }}</option>
+                    <option v-for="app in treatmentApplicationTypes" :key="app.id" :value="app.id">{{ app.name }}</option>
+                  </select>
                 </div>
               </div>
 
-              <!-- Application Method -->
-              <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('treatments.form_app_type') }}</label>
-                <select 
-                  v-model="form.applicationTypeId" 
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer"
-                >
-                  <option value="">{{ $t('treatments.select_app_type') }}</option>
-                  <option v-for="app in treatmentApplicationTypes" :key="app.id" :value="app.id">{{ app.name }}</option>
-                </select>
+              <!-- Treatment Method Info & Attachments Card (if available) -->
+              <div 
+                v-if="selectedMethod && (selectedMethod.manufacturer_info || (selectedMethod.attachments && selectedMethod.attachments.length > 0))" 
+                class="p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl space-y-2 text-xs"
+              >
+                <div class="flex items-center gap-1.5 font-bold text-amber-700 dark:text-amber-400">
+                  <span>ℹ️</span>
+                  <span>{{ $t('admin.treatment_method_info_title') }}</span>
+                </div>
+                <p v-if="selectedMethod.manufacturer_info" class="text-gray-700 dark:text-gray-300 whitespace-pre-line text-xs">
+                  {{ selectedMethod.manufacturer_info }}
+                </p>
+                <div v-if="selectedMethod.attachments && selectedMethod.attachments.length > 0" class="flex flex-wrap gap-1.5 pt-1">
+                  <a 
+                    v-for="att in selectedMethod.attachments" 
+                    :key="att.id"
+                    :href="`/uploads/${att.file_path}`"
+                    target="_blank"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white dark:bg-dark-card border border-amber-300 dark:border-amber-700/50 hover:border-primary text-gray-800 dark:text-gray-200 rounded-xl text-xs font-semibold shadow-xs hover-scale transition-all"
+                    :title="$t('admin.view_attachment')"
+                  >
+                    <span>{{ getFileEmoji(att.file_name) }}</span>
+                    <span class="truncate max-w-[160px]">{{ att.file_name }}</span>
+                    <svg class="w-3 h-3 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                  </a>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Quantity Amount -->
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('treatments.form_amount') }}</label>
+                  <div class="relative flex items-center">
+                    <input 
+                      v-model.number="form.amount" 
+                      type="number" 
+                      step="any"
+                      min="0.01"
+                      required 
+                      class="w-full pl-3 pr-16 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
+                    />
+                    <div class="absolute right-3 text-xs font-extrabold text-gray-400 dark:text-gray-500 select-none">
+                      {{ selectedMethodUnit }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Treated By (Operator dropdown) -->
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('treatments.form_treated_by') }}</label>
+                  <select 
+                    v-model="form.treatedBy" 
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm cursor-pointer"
+                  >
+                    <option value="">{{ $t('treatments.select_treated_by') }}</option>
+                    <option v-for="u in treatmentUsers" :key="u.id" :value="u.full_name">
+                      {{ u.full_name }}
+                    </option>
+                  </select>
+                </div>
               </div>
 
               <!-- Notes -->
@@ -349,7 +439,7 @@
                 <textarea 
                   v-model="form.notes" 
                   :placeholder="$t('treatments.form_notes_placeholder')"
-                  rows="3"
+                  rows="2"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm resize-y"
                 />
               </div>
@@ -472,11 +562,13 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
+import { useAuthStore } from '../stores/auth'
 import { useApiaryStore } from '../stores/apiary'
 import { useConfirmStore } from '../stores/confirm'
 import { useErrorStore } from '../stores/error'
 
 const { t } = useI18n()
+const authStore = useAuthStore()
 const apiaryStore = useApiaryStore()
 const confirmStore = useConfirmStore()
 const errorStore = useErrorStore()
@@ -487,6 +579,7 @@ const hives = ref([])
 const locations = ref([])
 const treatmentMethods = ref([])
 const treatmentApplicationTypes = ref([])
+const treatmentUsers = ref([])
 
 const loadingTreatments = ref(false)
 const submitting = ref(false)
@@ -494,6 +587,7 @@ const dragOver = ref(false)
 const showModal = ref(false)
 const isEditMode = ref(false)
 const editingId = ref(null)
+const isPeriodMode = ref(false)
 
 const fileInputRef = ref(null)
 const cameraInputRef = ref(null)
@@ -515,7 +609,9 @@ const form = reactive({
   treatmentMethodId: '',
   applicationTypeId: '',
   date: '',
+  endDate: '',
   amount: '',
+  treatedBy: '',
   notes: ''
 })
 
@@ -525,12 +621,25 @@ const filteredHivesForFilter = computed(() => {
   return hives.value.filter(h => h.location_id === filters.locationId)
 })
 
+const selectedMethod = computed(() => {
+  if (!form.treatmentMethodId) return null
+  return treatmentMethods.value.find(x => x.id === form.treatmentMethodId) || null
+})
+
 // Dynamic Unit tag in the form
 const selectedMethodUnit = computed(() => {
-  if (!form.treatmentMethodId) return ''
-  const m = treatmentMethods.value.find(x => x.id === form.treatmentMethodId)
-  return m ? m.unit : ''
+  return selectedMethod.value ? selectedMethod.value.unit : ''
 })
+
+function getFileEmoji(fileName) {
+  if (!fileName) return '📄'
+  const ext = fileName.split('.').pop().toLowerCase()
+  if (['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp'].includes(ext)) return '🖼️'
+  if (ext === 'pdf') return '📕'
+  if (['doc', 'docx', 'odt', 'rtf'].includes(ext)) return '📝'
+  if (['txt', 'md', 'csv', 'json'].includes(ext)) return '📃'
+  return '📎'
+}
 
 // Methods
 async function fetchTreatments() {
@@ -595,6 +704,15 @@ async function fetchTreatmentApplicationTypes() {
   }
 }
 
+async function fetchTreatmentUsers() {
+  try {
+    const res = await axios.get('/api/treatments/users')
+    treatmentUsers.value = res.data
+  } catch (err) {
+    console.error('Fetch treatment users failed:', err)
+  }
+}
+
 async function exportCSV() {
   if (!apiaryStore.activeApiaryId) return
   try {
@@ -622,6 +740,37 @@ async function exportCSV() {
     document.body.removeChild(link)
   } catch (err) {
     console.error('CSV export failed:', err)
+    showAlert(t('treatments.error_fetch'), 'error')
+  }
+}
+
+async function exportPDF() {
+  if (!apiaryStore.activeApiaryId) return
+  try {
+    const params = { apiary_id: apiaryStore.activeApiaryId }
+    if (filters.hiveId) params.hive_id = filters.hiveId
+    if (filters.locationId) params.location_id = filters.locationId
+    if (filters.startDate) params.start_date = filters.startDate
+    if (filters.endDate) params.end_date = filters.endDate
+
+    const response = await axios.get('/api/treatments/export/pdf', {
+      params,
+      responseType: 'blob'
+    })
+
+    const blob = new Blob([response.data], { type: 'application/pdf' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.setAttribute('href', url)
+    
+    let filename = `bestandsbuch_${new Date().toISOString().slice(0, 10)}.pdf`
+    link.setAttribute('download', filename)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  } catch (err) {
+    console.error('PDF export failed:', err)
     showAlert(t('treatments.error_fetch'), 'error')
   }
 }
@@ -656,6 +805,13 @@ function formatDate(dStr) {
   return dStr
 }
 
+function formatDatePeriod(dStr, endDStr) {
+  if (!dStr) return '-'
+  const fStart = formatDate(dStr)
+  if (!endDStr || endDStr === dStr) return fStart
+  return `${fStart} – ${formatDate(endDStr)}`
+}
+
 function getTodayString() {
   const d = new Date()
   const year = d.getFullYear()
@@ -668,12 +824,18 @@ function getTodayString() {
 function openCreateModal() {
   isEditMode.value = false
   editingId.value = null
+  isPeriodMode.value = false
   
   form.hiveId = filters.hiveId || ''
   form.treatmentMethodId = ''
   form.applicationTypeId = ''
   form.date = getTodayString()
+  form.endDate = ''
   form.amount = ''
+  
+  const u = authStore.user
+  const userFullName = u ? `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.username : ''
+  form.treatedBy = userFullName
   form.notes = ''
   
   clearFiles()
@@ -683,12 +845,15 @@ function openCreateModal() {
 function openEditModal(tRecord) {
   isEditMode.value = true
   editingId.value = tRecord.id
+  isPeriodMode.value = !!(tRecord.end_date && tRecord.end_date !== tRecord.date)
   
   form.hiveId = tRecord.hive_id
   form.treatmentMethodId = tRecord.treatment_method_id
   form.applicationTypeId = tRecord.application_type_id || ''
   form.date = tRecord.date
+  form.endDate = tRecord.end_date || ''
   form.amount = tRecord.amount
+  form.treatedBy = tRecord.treated_by || (tRecord.created_by ? `${tRecord.created_by.first_name || ''} ${tRecord.created_by.last_name || ''}`.trim() : '') || ''
   form.notes = tRecord.notes || ''
   
   clearFiles()
@@ -726,7 +891,9 @@ async function submitForm() {
       treatment_method_id: form.treatmentMethodId,
       application_type_id: form.applicationTypeId || null,
       date: form.date,
+      end_date: isPeriodMode.value && form.endDate ? form.endDate : null,
       amount: parseFloat(form.amount),
+      treated_by: form.treatedBy ? form.treatedBy.trim() : null,
       notes: form.notes.trim() || null
     }
 
@@ -872,6 +1039,7 @@ function showAlert(message, type = 'success') {
 
 // Lifecycle Hooks & Watchers
 onMounted(() => {
+  fetchTreatmentUsers()
   if (apiaryStore.activeApiaryId) {
     fetchTreatments()
     fetchLocations()
@@ -882,6 +1050,7 @@ onMounted(() => {
 })
 
 watch(() => apiaryStore.activeApiaryId, () => {
+  fetchTreatmentUsers()
   if (apiaryStore.activeApiaryId) {
     fetchTreatments()
     fetchLocations()

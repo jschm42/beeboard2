@@ -28,6 +28,16 @@ class UserOut(UserBase):
     class Config:
         from_attributes = True
 
+class UserSimpleOut(BaseModel):
+    id: str
+    username: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    full_name: str
+
+    class Config:
+        from_attributes = True
+
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"

@@ -1,7 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+import os
+import uuid
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from sqlalchemy.orm import Session, selectinload
 from typing import List
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import get_current_user, get_password_hash
 from app.models.user import User
@@ -496,9 +499,9 @@ def admin_update_number_range(
 # -----------------------------
 # TREATMENT METHOD ENDPOINTS
 # -----------------------------
-from app.models.treatment import TreatmentMethod, Treatment, TreatmentApplicationType
+from app.models.treatment import TreatmentMethod, TreatmentMethodAttachment, Treatment, TreatmentApplicationType
 from app.schemas.treatment import (
-    TreatmentMethodCreate, TreatmentMethodOut,
+    TreatmentMethodCreate, TreatmentMethodOut, TreatmentMethodAttachmentOut,
     TreatmentApplicationTypeCreate, TreatmentApplicationTypeOut
 )
 
@@ -507,8 +510,8 @@ def admin_list_treatment_methods(
     db: Session = Depends(get_db),
     _current_admin: User = Depends(get_current_admin)
 ):
-    """Lists all treatment methods for admin view."""
-    return db.query(TreatmentMethod).order_by(TreatmentMethod.name).all()
+    """Lists all treatment methods with attachments for admin view."""
+    return db.query(TreatmentMethod).options(selectinload(TreatmentMethod.attachments)).order_by(TreatmentMethod.name).all()
 
 @router.post("/treatment-methods", response_model=TreatmentMethodOut, status_code=status.HTTP_201_CREATED)
 def admin_create_treatment_method(
@@ -527,7 +530,8 @@ def admin_create_treatment_method(
     new_method = TreatmentMethod(
         name=payload.name,
         unit=payload.unit,
-        is_active=payload.is_active
+        is_active=payload.is_active,
+        manufacturer_info=payload.manufacturer_info
     )
     db.add(new_method)
     db.commit()
@@ -541,8 +545,8 @@ def admin_update_treatment_method(
     db: Session = Depends(get_db),
     _current_admin: User = Depends(get_current_admin)
 ):
-    """Updates a treatment method's name, unit and active status."""
-    method = db.query(TreatmentMethod).filter(TreatmentMethod.id == method_id).first()
+    """Updates a treatment method's name, unit, manufacturer info and active status."""
+    method = db.query(TreatmentMethod).options(selectinload(TreatmentMethod.attachments)).filter(TreatmentMethod.id == method_id).first()
     if not method:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -560,6 +564,7 @@ def admin_update_treatment_method(
     method.name = payload.name
     method.unit = payload.unit
     method.is_active = payload.is_active
+    method.manufacturer_info = payload.manufacturer_info
     
     db.commit()
     db.refresh(method)
@@ -571,8 +576,8 @@ def admin_delete_treatment_method(
     db: Session = Depends(get_db),
     _current_admin: User = Depends(get_current_admin)
 ):
-    """Deletes a treatment method if not referenced by any treatment record."""
-    method = db.query(TreatmentMethod).filter(TreatmentMethod.id == method_id).first()
+    """Deletes a treatment method and its physical attachments if not referenced by any treatment record."""
+    method = db.query(TreatmentMethod).options(selectinload(TreatmentMethod.attachments)).filter(TreatmentMethod.id == method_id).first()
     if not method:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -586,8 +591,101 @@ def admin_delete_treatment_method(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Diese Behandlungsmethode wird noch von aufgezeichneten Behandlungen verwendet und kann nicht gelöscht werden."
         )
-        
+    
+    # Delete physical attachment files
+    for att in method.attachments:
+        if att.file_path:
+            full_path = os.path.join(settings.UPLOAD_DIR, att.file_path)
+            if os.path.exists(full_path):
+                try:
+                    os.remove(full_path)
+                except Exception:
+                    pass
+
     db.delete(method)
+    db.commit()
+    return
+
+@router.post("/treatment-methods/{method_id}/attachments", response_model=TreatmentMethodAttachmentOut, status_code=status.HTTP_201_CREATED)
+def upload_treatment_method_attachment(
+    method_id: str,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_admin)
+):
+    """Uploads an attachment (PDF, text, image/screenshot) for a treatment method."""
+    method = db.query(TreatmentMethod).filter(TreatmentMethod.id == method_id).first()
+    if not method:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Behandlungsmethode nicht gefunden."
+        )
+
+    orig_filename = os.path.basename(file.filename or "attachment")
+    ext = os.path.splitext(orig_filename)[1].lower()
+    allowed_extensions = [
+        ".pdf", ".txt", ".md", ".doc", ".docx", ".odt", ".rtf", ".csv", ".json",
+        ".png", ".jpg", ".jpeg", ".webp", ".gif"
+    ]
+    if ext not in allowed_extensions:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Dateiformat '{ext}' wird nicht unterstützt. Erlaubt sind PDF, Textdokumente und Bilder."
+        )
+
+    file_uuid = uuid.uuid4().hex
+    safe_name = "".join(c for c in orig_filename if c.isalnum() or c in "._- ")
+    relative_path = f"treatment_methods/attachments/{file_uuid}_{safe_name}"
+    full_path = os.path.join(settings.UPLOAD_DIR, relative_path)
+
+    os.makedirs(os.path.dirname(full_path), exist_ok=True)
+    file_bytes = file.file.read()
+    file_size = len(file_bytes)
+
+    if file_size > 25 * 1024 * 1024:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Die Datei ist zu groß (maximal 25 MB erlaubt)."
+        )
+
+    with open(full_path, "wb") as buffer:
+        buffer.write(file_bytes)
+
+    new_attachment = TreatmentMethodAttachment(
+        treatment_method_id=method_id,
+        file_name=orig_filename,
+        file_path=relative_path,
+        file_type=file.content_type or ext.lstrip("."),
+        file_size=file_size
+    )
+    db.add(new_attachment)
+    db.commit()
+    db.refresh(new_attachment)
+    return new_attachment
+
+@router.delete("/treatment-methods/attachments/{attachment_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_treatment_method_attachment(
+    attachment_id: str,
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_admin)
+):
+    """Deletes a treatment method attachment from DB and disk."""
+    att = db.query(TreatmentMethodAttachment).filter(TreatmentMethodAttachment.id == attachment_id).first()
+    if not att:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Anhang nicht gefunden."
+        )
+
+    if att.file_path:
+        full_path = os.path.join(settings.UPLOAD_DIR, att.file_path)
+        if os.path.exists(full_path):
+            try:
+                os.remove(full_path)
+            except Exception:
+                pass
+
+    db.delete(att)
     db.commit()
     return
 

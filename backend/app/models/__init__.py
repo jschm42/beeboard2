@@ -18,7 +18,7 @@ from app.models.honey_batch import HoneyBatch, HoneyBatchDIBRange, HoneyBottling
 from app.models.sales import ProductConfig, HoneySale
 from app.models.task import Task
 from app.models.bee_agent import BeeAgentJob, BeeAgentProposal
-from app.models.treatment import TreatmentMethod, Treatment, TreatmentImage, TreatmentApplicationType
+from app.models.treatment import TreatmentMethod, TreatmentMethodAttachment, Treatment, TreatmentImage, TreatmentApplicationType
 from app.models.api_key import ApiKey
 
 # Export all models for easier importing
@@ -53,6 +53,7 @@ __all__ = [
     "BeeAgentJob",
     "BeeAgentProposal",
     "TreatmentMethod",
+    "TreatmentMethodAttachment",
     "Treatment",
     "TreatmentImage",
     "TreatmentApplicationType",
