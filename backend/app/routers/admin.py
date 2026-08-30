@@ -1,6 +1,7 @@
 import os
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from sqlalchemy import func
 from sqlalchemy.orm import Session, selectinload
 from typing import List
 
@@ -358,7 +359,7 @@ def admin_create_frame_type(
 ):
     """Creates a new frame type."""
     # Check duplicate
-    existing = db.query(FrameType).filter(FrameType.name.ilike(payload.name)).first()
+    existing = db.query(FrameType).filter(func.lower(FrameType.name) == func.lower(payload.name.strip())).first()
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -369,7 +370,7 @@ def admin_create_frame_type(
         db.query(FrameType).update({FrameType.is_default: False})
         
     new_ft = FrameType(
-        name=payload.name,
+        name=payload.name.strip(),
         is_default=payload.is_default,
         brood_multiplier=payload.brood_multiplier,
         food_multiplier=payload.food_multiplier,
@@ -399,8 +400,8 @@ def admin_update_frame_type(
         )
         
     # Check duplicate name if changed
-    if payload.name.lower() != ft.name.lower():
-        existing = db.query(FrameType).filter(FrameType.name.ilike(payload.name)).first()
+    if payload.name.strip().lower() != ft.name.lower():
+        existing = db.query(FrameType).filter(func.lower(FrameType.name) == func.lower(payload.name.strip())).first()
         if existing:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -410,7 +411,7 @@ def admin_update_frame_type(
     if payload.is_default and not ft.is_default:
         db.query(FrameType).update({FrameType.is_default: False})
         
-    ft.name = payload.name
+    ft.name = payload.name.strip()
     ft.is_default = payload.is_default
     ft.brood_multiplier = payload.brood_multiplier
     ft.food_multiplier = payload.food_multiplier
@@ -429,12 +430,18 @@ def admin_delete_frame_type(
     db: Session = Depends(get_db),
     _current_admin: User = Depends(get_current_admin)
 ):
-    """Deletes a frame type if not referenced by any hive or box."""
+    """Deletes a frame type if it is not the default and not used by hives."""
     ft = db.query(FrameType).filter(FrameType.id == frame_type_id).first()
     if not ft:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Wabenmaß nicht gefunden."
+        )
+        
+    if ft.is_default:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Das Standard-Wabenmaß kann nicht gelöscht werden."
         )
         
     # Check if used by hives or boxes
@@ -462,7 +469,7 @@ def admin_list_number_ranges(
     db: Session = Depends(get_db),
     _current_admin: User = Depends(get_current_admin)
 ):
-    """Lists all number ranges."""
+    """Lists all number ranges for admin view."""
     return db.query(NumberRange).order_by(NumberRange.name).all()
 
 @router.put("/number-ranges/{range_id}", response_model=NumberRangeOut)
@@ -472,7 +479,7 @@ def admin_update_number_range(
     db: Session = Depends(get_db),
     _current_admin: User = Depends(get_current_admin)
 ):
-    """Updates a number range configuration."""
+    """Updates number range current value, digits, prefix and active status."""
     nr = db.query(NumberRange).filter(NumberRange.id == range_id).first()
     if not nr:
         raise HTTPException(
@@ -520,7 +527,7 @@ def admin_create_treatment_method(
     _current_admin: User = Depends(get_current_admin)
 ):
     """Creates a new treatment method."""
-    existing = db.query(TreatmentMethod).filter(TreatmentMethod.name.ilike(payload.name)).first()
+    existing = db.query(TreatmentMethod).filter(func.lower(TreatmentMethod.name) == func.lower(payload.name.strip())).first()
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -528,8 +535,8 @@ def admin_create_treatment_method(
         )
     
     new_method = TreatmentMethod(
-        name=payload.name,
-        unit=payload.unit,
+        name=payload.name.strip(),
+        unit=payload.unit.strip(),
         is_active=payload.is_active,
         manufacturer_info=payload.manufacturer_info
     )
@@ -553,16 +560,16 @@ def admin_update_treatment_method(
             detail="Behandlungsmethode nicht gefunden."
         )
     
-    if payload.name.lower() != method.name.lower():
-        existing = db.query(TreatmentMethod).filter(TreatmentMethod.name.ilike(payload.name)).first()
+    if payload.name.strip().lower() != method.name.lower():
+        existing = db.query(TreatmentMethod).filter(func.lower(TreatmentMethod.name) == func.lower(payload.name.strip())).first()
         if existing:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Eine Behandlungsmethode mit diesem Namen existiert bereits."
             )
             
-    method.name = payload.name
-    method.unit = payload.unit
+    method.name = payload.name.strip()
+    method.unit = payload.unit.strip()
     method.is_active = payload.is_active
     method.manufacturer_info = payload.manufacturer_info
     
@@ -704,7 +711,7 @@ def admin_create_treatment_application_type(
     _current_admin: User = Depends(get_current_admin)
 ):
     """Creates a new treatment application type."""
-    existing = db.query(TreatmentApplicationType).filter(TreatmentApplicationType.name.ilike(payload.name)).first()
+    existing = db.query(TreatmentApplicationType).filter(func.lower(TreatmentApplicationType.name) == func.lower(payload.name.strip())).first()
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -712,7 +719,7 @@ def admin_create_treatment_application_type(
         )
     
     new_app = TreatmentApplicationType(
-        name=payload.name,
+        name=payload.name.strip(),
         is_active=payload.is_active
     )
     db.add(new_app)
@@ -735,15 +742,15 @@ def admin_update_treatment_application_type(
             detail="Applikationsmethode nicht gefunden."
         )
     
-    if payload.name.lower() != app_type.name.lower():
-        existing = db.query(TreatmentApplicationType).filter(TreatmentApplicationType.name.ilike(payload.name)).first()
+    if payload.name.strip().lower() != app_type.name.lower():
+        existing = db.query(TreatmentApplicationType).filter(func.lower(TreatmentApplicationType.name) == func.lower(payload.name.strip())).first()
         if existing:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Eine Applikationsmethode mit diesem Namen existiert bereits."
             )
             
-    app_type.name = payload.name
+    app_type.name = payload.name.strip()
     app_type.is_active = payload.is_active
     
     db.commit()

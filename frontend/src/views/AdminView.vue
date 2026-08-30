@@ -2119,6 +2119,22 @@ async function deleteTreatmentApp(app) {
   }
 }
 
+watch(activeTab, (newTab) => {
+  if (newTab === 'treatment-methods') {
+    fetchTreatmentMethods()
+  } else if (newTab === 'treatment-application-types') {
+    fetchTreatmentApps()
+  } else if (newTab === 'frame-types') {
+    fetchFrameTypes()
+  } else if (newTab === 'number-ranges') {
+    fetchNumberRanges()
+  } else if (newTab === 'users') {
+    fetchUsers()
+  } else if (newTab === 'llm') {
+    fetchLLMConfig()
+  }
+})
+
 onMounted(() => {
   fetchUsers()
   fetchLLMConfig()

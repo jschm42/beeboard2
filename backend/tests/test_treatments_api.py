@@ -106,6 +106,30 @@ def test_treatments_and_methods_workflow(client: TestClient, db: Session):
     assert up_method_resp.json()["manufacturer_info"] == "Hersteller: Updated AG"
     assert len(up_method_resp.json()["attachments"]) == 1
 
+    # Create method with percentage in name (e.g. Ameisensäure 60%)
+    percent_method_resp1 = client.post("/api/admin/treatment-methods", json={
+        "name": "Ameisensäure 60%",
+        "unit": "ml",
+        "is_active": True
+    }, headers=admin_headers)
+    assert percent_method_resp1.status_code == 201
+
+    # Creating another method with different percentage should NOT trigger duplicate error
+    percent_method_resp2 = client.post("/api/admin/treatment-methods", json={
+        "name": "Ameisensäure 85%",
+        "unit": "ml",
+        "is_active": True
+    }, headers=admin_headers)
+    assert percent_method_resp2.status_code == 201
+
+    # Exact duplicate (case-insensitive) should fail
+    dup_percent_resp = client.post("/api/admin/treatment-methods", json={
+        "name": "ameisensäure 60%",
+        "unit": "ml",
+        "is_active": True
+    }, headers=admin_headers)
+    assert dup_percent_resp.status_code == 400
+
     # Test Admin treatment application types CRUD
     # List application types (seeded ones)
     apps_resp = client.get("/api/admin/treatment-application-types", headers=admin_headers)
