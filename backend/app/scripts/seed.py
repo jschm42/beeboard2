@@ -152,6 +152,28 @@ def seed_database(db: Session):
             existing_app.is_active = app_data["is_active"]
             print(f"TreatmentApplicationType {app_data['name']} bereits vorhanden.")
 
+    # 5. Seed Feed Types
+    from app.models.feeding import FeedType
+    feed_types = [
+        {"name": "Zuckerwasser 1:1", "unit": "l", "is_active": True, "description": "Zucker-Wasser-Lösung 1:1"},
+        {"name": "Zuckerwasser 3:2", "unit": "l", "is_active": True, "description": "Zucker-Wasser-Lösung 3:2"},
+        {"name": "Invertzuckersirup", "unit": "l", "is_active": True, "description": "Gebrauchsfertiger flüssiger Sirup (z.B. Apiinvert)"},
+        {"name": "Futterteig", "unit": "kg", "is_active": True, "description": "Fester Futterteig (z.B. Apifonda)"},
+        {"name": "Bio-Futterteig", "unit": "kg", "is_active": True, "description": "Zertifizierter Bio-Futterteig"},
+    ]
+
+    for ft_data in feed_types:
+        existing_ft = db.query(FeedType).filter(FeedType.name == ft_data["name"]).first()
+        if not existing_ft:
+            new_ft = FeedType(**ft_data)
+            db.add(new_ft)
+            print(f"Erstellt FeedType: {ft_data['name']} ({ft_data['unit']})")
+        else:
+            existing_ft.unit = ft_data["unit"]
+            existing_ft.is_active = ft_data["is_active"]
+            existing_ft.description = ft_data["description"]
+            print(f"FeedType {ft_data['name']} bereits vorhanden.")
+
     db.commit()
     print("Datenbank-Seeding erfolgreich abgeschlossen!")
 

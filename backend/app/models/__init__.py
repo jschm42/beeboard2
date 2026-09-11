@@ -20,6 +20,7 @@ from app.models.task import Task
 from app.models.bee_agent import BeeAgentJob, BeeAgentProposal
 from app.models.treatment import TreatmentMethod, TreatmentMethodAttachment, Treatment, TreatmentImage, TreatmentApplicationType
 from app.models.api_key import ApiKey
+from app.models.feeding import FeedType, Feeding
 
 # Export all models for easier importing
 __all__ = [
@@ -58,4 +59,6 @@ __all__ = [
     "TreatmentImage",
     "TreatmentApplicationType",
     "ApiKey",
+    "FeedType",
+    "Feeding",
 ]

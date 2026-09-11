@@ -784,3 +784,123 @@ def admin_delete_treatment_application_type(
     return
 
 
+# ----------------------
+# FEED TYPE ENDPOINTS
+# ----------------------
+from app.models.feeding import FeedType, Feeding
+from app.schemas.feeding import FeedTypeCreate, FeedTypeUpdate, FeedTypeOut
+
+@router.get("/feed-types", response_model=List[FeedTypeOut])
+def admin_list_feed_types(
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_admin)
+):
+    """Lists all configured feed types for admin view."""
+    return db.query(FeedType).order_by(FeedType.name).all()
+
+
+@router.post("/feed-types", response_model=FeedTypeOut, status_code=status.HTTP_201_CREATED)
+def admin_create_feed_type(
+    payload: FeedTypeCreate,
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_admin)
+):
+    """Creates a new feed type."""
+    existing = db.query(FeedType).filter(func.lower(FeedType.name) == func.lower(payload.name.strip())).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Ein Futtertyp mit diesem Namen existiert bereits."
+        )
+
+    stripped_unit = payload.unit.strip() if payload.unit else "kg"
+    if not stripped_unit:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Einheit darf nicht leer sein."
+        )
+
+    new_feed_type = FeedType(
+        name=payload.name.strip(),
+        unit=stripped_unit,
+        is_active=payload.is_active,
+        description=payload.description.strip() if payload.description else None
+    )
+    db.add(new_feed_type)
+    db.commit()
+    db.refresh(new_feed_type)
+    return new_feed_type
+
+
+@router.put("/feed-types/{feed_type_id}", response_model=FeedTypeOut)
+def admin_update_feed_type(
+    feed_type_id: str,
+    payload: FeedTypeUpdate,
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_admin)
+):
+    """Updates a feed type's name, unit, active status, or description."""
+    feed_type = db.query(FeedType).filter(FeedType.id == feed_type_id).first()
+    if not feed_type:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Futtertyp nicht gefunden."
+        )
+
+    if payload.name is not None:
+        stripped_name = payload.name.strip()
+        if not stripped_name:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Name darf nicht leer sein.")
+        if stripped_name.lower() != feed_type.name.lower():
+            existing = db.query(FeedType).filter(func.lower(FeedType.name) == func.lower(stripped_name)).first()
+            if existing:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Ein Futtertyp mit diesem Namen existiert bereits."
+                )
+        feed_type.name = stripped_name
+
+    if payload.unit is not None:
+        stripped_unit = payload.unit.strip()
+        if not stripped_unit:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Einheit darf nicht leer sein.")
+        feed_type.unit = stripped_unit
+
+    if payload.is_active is not None:
+        feed_type.is_active = payload.is_active
+
+    if payload.description is not None:
+        feed_type.description = payload.description.strip() if payload.description else None
+
+    db.commit()
+    db.refresh(feed_type)
+    return feed_type
+
+
+@router.delete("/feed-types/{feed_type_id}", status_code=status.HTTP_204_NO_CONTENT)
+def admin_delete_feed_type(
+    feed_type_id: str,
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_admin)
+):
+    """Deletes a feed type if not referenced by any feeding record."""
+    feed_type = db.query(FeedType).filter(FeedType.id == feed_type_id).first()
+    if not feed_type:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Futtertyp nicht gefunden."
+        )
+
+    used_count = db.query(Feeding).filter(Feeding.feed_type_id == feed_type_id).count()
+    if used_count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Dieser Futtertyp wird noch von erfassten Fütterungen verwendet und kann nicht gelöscht werden."
+        )
+
+    db.delete(feed_type)
+    db.commit()
+    return
+
+
+

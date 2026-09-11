@@ -35,6 +35,11 @@ class Hive(UUIDTimeStampedModel, CreatedByModel, ApiaryScopedModel):
         back_populates="hive",
         cascade="all, delete-orphan"
     )
+    feedings: Mapped[List["Feeding"]] = relationship(
+        "Feeding",
+        back_populates="hive",
+        cascade="all, delete-orphan"
+    )
 
 class HiveBox(UUIDTimeStampedModel):
     __tablename__ = "hive_boxes"

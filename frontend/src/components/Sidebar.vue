@@ -419,6 +419,7 @@ import {
   ChevronsRight,
   HeartPulse,
   Key,
+  Wheat,
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -439,6 +440,7 @@ const navItems = computed(() => [
   { name: t('sidebar.hives'), path: '/hives', icon: Hexagon },
   { name: t('sidebar.logbook'), path: '/logbook', icon: BookOpen },
   { name: t('sidebar.treatments'), path: '/treatments', icon: HeartPulse },
+  { name: t('sidebar.feedings'), path: '/feedings', icon: Wheat },
   { name: t('sidebar.tasks'), path: '/tasks', icon: ClipboardList },
   { name: t('sidebar.calendar'), path: '/calendar', icon: Calendar },
   { name: t('sidebar.honey_batches'), path: '/honey-batches', icon: Droplets },

@@ -113,6 +113,17 @@
       >
         {{ $t('admin.tab_treatment_application_types') }}
       </button>
+      <button 
+        @click="activeTab = 'feed-types'"
+        class="pb-4 text-sm font-bold tracking-wide border-b-2 transition-all duration-200"
+        :class="[
+          activeTab === 'feed-types' 
+            ? 'border-primary text-primary' 
+            : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+        ]"
+      >
+        {{ $t('admin.tab_feed_types') }}
+      </button>
     </div>
 
     <!-- Tab Content: User Management -->
@@ -1287,11 +1298,185 @@
       </div>
     </div>
 
+    <!-- Tab Content: Feed Types Management -->
+    <div v-if="activeTab === 'feed-types'" class="space-y-6">
+      <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm animate-scale flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+        <div>
+          <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ $t('admin.feed_types_title') }}</h2>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            {{ $t('admin.feed_types_subtitle') }}
+          </p>
+        </div>
+        <button 
+          @click="openCreateFeedType" 
+          class="px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl shadow-md hover-scale flex items-center gap-1.5"
+        >
+          <span>{{ $t('admin.new_feed_type') }}</span>
+        </button>
+      </div>
+
+      <!-- Create/Edit Form (inline/embedded) -->
+      <div v-if="showFeedTypeForm" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm animate-scale">
+        <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">
+          {{ isEditFeedType ? $t('admin.edit_feed_type', { name: formFeedType.name }) : $t('admin.new_feed_type') }}
+        </h3>
+        <form @submit.prevent="submitFeedTypeForm" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.form_feed_type_name') }}</label>
+              <input 
+                v-model="formFeedType.name" 
+                type="text" 
+                required 
+                placeholder="z.B. Zuckerwasser 3:2, Apiinvert, Futterteig..."
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('admin.form_feed_type_unit') }}</label>
+              <div class="flex items-center gap-2">
+                <div class="flex gap-1">
+                  <button 
+                    type="button" 
+                    v-for="u in ['kg', 'gr', 'l']" 
+                    :key="u"
+                    @click="formFeedType.unit = u"
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-colors duration-150"
+                    :class="formFeedType.unit === u ? 'bg-primary text-white border-primary' : 'bg-gray-100 dark:bg-dark-border text-gray-700 dark:text-gray-300 border-gray-200 dark:border-dark-border hover:border-primary'"
+                  >
+                    {{ u }}
+                  </button>
+                </div>
+                <input 
+                  v-model="formFeedType.unit" 
+                  type="text" 
+                  required 
+                  maxlength="20"
+                  placeholder="Einheit..."
+                  class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <p class="text-[11px] text-gray-400 mt-1">{{ $t('admin.form_feed_type_unit_hint') }}</p>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
+              {{ $t('admin.form_feed_type_desc') }}
+            </label>
+            <textarea 
+              v-model="formFeedType.description" 
+              rows="2"
+              placeholder="Optionale Details oder Verwendungszwecke für diesen Futtertyp..."
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y"
+            ></textarea>
+          </div>
+
+          <div class="flex items-center pt-1">
+            <label class="flex items-center space-x-2 cursor-pointer">
+              <input 
+                v-model="formFeedType.is_active" 
+                type="checkbox" 
+                class="rounded text-primary focus:ring-primary h-4 w-4"
+              />
+              <span class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $t('admin.form_feed_type_active') }}</span>
+            </label>
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-2">
+            <button 
+              type="button" 
+              @click="showFeedTypeForm = false" 
+              class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-100 dark:hover:bg-dark-border text-gray-700 dark:text-gray-300"
+            >
+              {{ $t('common.cancel') }}
+            </button>
+            <button 
+              type="submit" 
+              class="px-5 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl shadow-md hover-scale"
+              :disabled="savingFeedType"
+            >
+              {{ $t('common.save') }}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Feed Types Table -->
+      <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl overflow-hidden shadow-sm">
+        <div v-if="loadingFeedTypes" class="flex flex-col items-center justify-center py-20">
+          <svg class="animate-spin h-8 w-8 text-primary mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span class="text-xs text-gray-400 font-bold">{{ $t('admin.loading_feed_types') }}</span>
+        </div>
+
+        <div v-else-if="feedTypes.length === 0" class="text-center py-16 text-gray-400 text-xs">
+          Keine Futtertypen vorhanden.
+        </div>
+
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
+                <th class="px-6 py-4">{{ $t('admin.table_feed_type_name') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('admin.table_feed_type_unit') }}</th>
+                <th class="px-6 py-4">{{ $t('admin.table_feed_type_desc') }}</th>
+                <th class="px-6 py-4 text-center">{{ $t('admin.table_feed_type_status') }}</th>
+                <th class="px-6 py-4 text-right">{{ $t('common.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-dark-border text-sm">
+              <tr 
+                v-for="ft in feedTypes" 
+                :key="ft.id" 
+                class="hover:bg-gray-50/50 dark:hover:bg-dark-bg/30 transition-colors duration-150"
+              >
+                <td class="px-6 py-4 font-bold text-gray-800 dark:text-gray-200">
+                  {{ ft.name }}
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <span class="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono font-bold text-xs">
+                    {{ ft.unit }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-xs">
+                  {{ ft.description || '-' }}
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <span 
+                    class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                    :class="ft.is_active ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'"
+                  >
+                    {{ ft.is_active ? $t('common.active') : $t('common.inactive') }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-right space-x-2 whitespace-nowrap">
+                  <button 
+                    @click="openEditFeedType(ft)" 
+                    class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-dark-border rounded-lg transition-all duration-150 inline-flex hover-scale"
+                    :title="$t('admin.edit_tooltip')"
+                  >
+                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                  </button>
+                  <button 
+                    @click="deleteFeedType(ft)" 
+                    class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all duration-150 inline-flex hover-scale"
+                    :title="$t('admin.delete_tooltip')"
+                  >
+                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, computed, onMounted, reactive, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/auth'
 import { useConfirmStore } from '../stores/confirm'
@@ -2119,11 +2304,107 @@ async function deleteTreatmentApp(app) {
   }
 }
 
+// Feed Types States & Handlers
+const feedTypes = ref([])
+const loadingFeedTypes = ref(false)
+const showFeedTypeForm = ref(false)
+const isEditFeedType = ref(false)
+const editingFeedTypeId = ref(null)
+const savingFeedType = ref(false)
+const formFeedType = reactive({
+  name: '',
+  unit: 'kg',
+  description: '',
+  is_active: true
+})
+
+async function fetchFeedTypes() {
+  loadingFeedTypes.value = true
+  try {
+    const res = await axios.get('/api/admin/feed-types')
+    feedTypes.value = res.data
+  } catch (err) {
+    console.error('Fetch feed types error:', err)
+    showToast(t('admin.toast_feed_types_load_error'), 'error')
+  } finally {
+    loadingFeedTypes.value = false
+  }
+}
+
+function openCreateFeedType() {
+  isEditFeedType.value = false
+  editingFeedTypeId.value = null
+  formFeedType.name = ''
+  formFeedType.unit = 'kg'
+  formFeedType.description = ''
+  formFeedType.is_active = true
+  showFeedTypeForm.value = true
+}
+
+function openEditFeedType(ft) {
+  isEditFeedType.value = true
+  editingFeedTypeId.value = ft.id
+  formFeedType.name = ft.name
+  formFeedType.unit = ft.unit
+  formFeedType.description = ft.description || ''
+  formFeedType.is_active = ft.is_active
+  showFeedTypeForm.value = true
+}
+
+async function submitFeedTypeForm() {
+  if (!formFeedType.name.trim() || !formFeedType.unit.trim()) return
+  savingFeedType.value = true
+  try {
+    const payload = {
+      name: formFeedType.name.trim(),
+      unit: formFeedType.unit.trim(),
+      description: formFeedType.description.trim() || null,
+      is_active: formFeedType.is_active
+    }
+    if (isEditFeedType.value) {
+      await axios.put(`/api/admin/feed-types/${editingFeedTypeId.value}`, payload)
+      showToast(t('admin.toast_feed_type_updated', { name: payload.name }))
+    } else {
+      await axios.post('/api/admin/feed-types', payload)
+      showToast(t('admin.toast_feed_type_created', { name: payload.name }))
+    }
+    showFeedTypeForm.value = false
+    await fetchFeedTypes()
+  } catch (err) {
+    console.error('Save feed type error:', err)
+    const errDetail = err.response?.data?.detail || t('admin.toast_feed_type_save_error')
+    showToast(errDetail, 'error')
+  } finally {
+    savingFeedType.value = false
+  }
+}
+
+async function deleteFeedType(ft) {
+  const confirmed = await confirmStore.ask({
+    title: t('admin.toast_feed_type_delete_title'),
+    message: t('admin.toast_feed_type_delete_msg', { name: ft.name }),
+    type: 'danger',
+    confirmText: t('common.delete')
+  })
+  if (!confirmed) return
+  try {
+    await axios.delete(`/api/admin/feed-types/${ft.id}`)
+    showToast(t('admin.toast_feed_type_deleted', { name: ft.name }))
+    await fetchFeedTypes()
+  } catch (err) {
+    console.error('Delete feed type error:', err)
+    const errDetail = err.response?.data?.detail || t('admin.toast_feed_type_delete_error')
+    showToast(errDetail, 'error')
+  }
+}
+
 watch(activeTab, (newTab) => {
   if (newTab === 'treatment-methods') {
     fetchTreatmentMethods()
   } else if (newTab === 'treatment-application-types') {
     fetchTreatmentApps()
+  } else if (newTab === 'feed-types') {
+    fetchFeedTypes()
   } else if (newTab === 'frame-types') {
     fetchFrameTypes()
   } else if (newTab === 'number-ranges') {
@@ -2143,6 +2424,7 @@ onMounted(() => {
   fetchNumberRanges()
   fetchTreatmentMethods()
   fetchTreatmentApps()
+  fetchFeedTypes()
 })
 </script>
 
