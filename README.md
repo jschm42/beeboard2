@@ -81,7 +81,7 @@ Follow the quick automated setup below to get everything up and running in secon
 We provide interactive setup scripts for both **PowerShell (Windows)** and **Bash (macOS / Linux / Git Bash)**. These scripts will:
 1. Verify your Python installation (**Python 3.13**).
 2. Create a Python Virtual Environment (`.venv`) inside the `backend/` directory.
-3. Upgrade `pip` and install all required dependencies from `backend/requirements.txt`.
+3. Install all required dependencies into the virtual environment using **Poetry**.
 4. Copy the environment configuration template `backend/.env.example` to `backend/.env`.
 5. Automatically generate a secure, random `SECRET_KEY` for JWT authentication.
 6. Interactively prompt you for your `GEMINI_API_KEY` (optional) and save it directly to `.env`.
@@ -166,15 +166,10 @@ This is due to Windows execution policies. You can resolve it in one of three wa
     .\venv\Scripts\activate.bat
     ```
 
-##### 🔄 Upgrading Pip (Optional but Recommended)
-After activating, ensure your package manager is up to date:
+#### 📦 Install Python Dependencies with Poetry
+Ensure Poetry is installed (e.g. via `pipx install poetry`). Then install all dependencies:
 ```bash
-python -m pip install --upgrade pip
-```
-
-#### 📦 Install Python Dependencies
-```bash
-pip install -r requirements.txt
+poetry install
 ```
 
 #### 🔑 Configure Environment Variables
@@ -205,21 +200,21 @@ GEMINI_API_KEY=your_gemini_api_key_here
 Before seeding data, apply the database schema migrations using Alembic:
 
 ```bash
-alembic upgrade head
+poetry run alembic upgrade head
 ```
 
 #### 🌱 Seed the Database
 After the schema is in place, execute the seed script to set up default configurations (e.g., default Hive Frame Types like *Zander* or *Dadant*, and Seasonal Varroa Multipliers):
 
 ```bash
-python -m app.scripts.seed
+poetry run python -m app.scripts.seed
 ```
 
 #### ⚡ Start the Backend Server (Uvicorn)
 Start the FastAPI application with automatic reloading on change:
 
 ```bash
-uvicorn app.main:app --reload --port 8000
+poetry run uvicorn app.main:app --reload --port 8000
 ```
 Your backend API will now be running at **`http://localhost:8000`**.
 *   **Swagger API Docs**: You can explore and test the endpoints directly at **`http://localhost:8000/docs`**.

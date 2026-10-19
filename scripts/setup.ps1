@@ -39,48 +39,29 @@ $pyVersion = & $pythonCmd --version
 Write-Host "[+] Python gefunden: $pyVersion (Kommando: $pythonCmd)" -ForegroundColor Green
 Write-Host ""
 
-# 2. Virtuelle Umgebung (.venv) anlegen
-Write-Host "[2] Schritt 2: Virtuelle Umgebung (.venv) erstellen..." -ForegroundColor Blue
-$venvPath = Join-Path -Path $BackendDir -ChildPath ".venv"
+# 2. Abhaengigkeiten mit Poetry einrichten
+Write-Host "[2] Schritt 2: Abhaengigkeiten mit Poetry einrichten..." -ForegroundColor Blue
+Push-Location $BackendDir
 
-if (Test-Path -Path $venvPath) {
-    Write-Host "[!] Eine virtuelle Umgebung existiert bereits unter backend/.venv." -ForegroundColor Yellow
-    $recreate = Read-Host "Moechten Sie diese loeschen und neu erstellen? (y/N)"
-    if ($recreate -match "^[Yy]$") {
-        Write-Host "Loesche alte Umgebung..."
-        Remove-Item -Path $venvPath -Recurse -Force -ErrorAction SilentlyContinue
-        & $pythonCmd -m venv $venvPath
-        Write-Host "[+] Neue virtuelle Umgebung erstellt." -ForegroundColor Green
-    } else {
-        Write-Host "Bestehende Umgebung wird beibehalten."
-    }
-} else {
-    & $pythonCmd -m venv $venvPath
-    Write-Host "[+] Virtuelle Umgebung erstellt unter backend/.venv." -ForegroundColor Green
+$poetryCmd = $null
+if (Get-Command "poetry" -ErrorAction SilentlyContinue) {
+    $poetryCmd = "poetry"
 }
-Write-Host ""
 
-# 3. Virtuelle Umgebung aktivieren & Abhaengigkeiten installieren
-Write-Host "[3] Schritt 3: Abhaengigkeiten installieren..." -ForegroundColor Blue
-$venvPython = Join-Path -Path $venvPath -ChildPath "Scripts\python.exe"
-$venvPip = Join-Path -Path $venvPath -ChildPath "Scripts\pip.exe"
-
-if (Test-Path -Path $venvPython) {
-    Write-Host "Aktualisiere pip..."
-    & $venvPython -m pip install --upgrade pip | Out-Null
-    
-    $reqPath = Join-Path -Path $BackendDir -ChildPath "requirements.txt"
-    if (Test-Path -Path $reqPath) {
-        Write-Host "Installiere Pakete aus requirements.txt (dies kann einen Moment dauern)..."
-        & $venvPip install -r $reqPath
-        Write-Host "[+] Abhaengigkeiten erfolgreich installiert." -ForegroundColor Green
+if ($null -eq $poetryCmd) {
+    Write-Host "[*] Poetry nicht im PATH gefunden. Versuche Poetry zu installieren..." -ForegroundColor Yellow
+    & $pythonCmd -m pip install --user "poetry>=2.0.0"
+    if (Get-Command "poetry" -ErrorAction SilentlyContinue) {
+        $poetryCmd = "poetry"
     } else {
-        Write-Host "[!] requirements.txt nicht in backend/ gefunden!" -ForegroundColor Yellow
+        $poetryCmd = "$env:APPDATA\Python\Scripts\poetry.exe"
     }
-} else {
-    Write-Host "[-] Fehler: Virtuelle Umgebung konnte nicht korrekt initialisiert werden (python.exe fehlt)." -ForegroundColor Red
-    Exit 1
 }
+
+Write-Host "Installiere Backend-Abhaengigkeiten via Poetry..."
+& $poetryCmd install
+Write-Host "[+] Abhaengigkeiten via Poetry erfolgreich installiert." -ForegroundColor Green
+Pop-Location
 Write-Host ""
 
 # 4. .env Datei anlegen und konfigurieren
@@ -169,12 +150,10 @@ Write-Host "Gehen Sie wie folgt vor, um BeeBoard 2 zu starten:"
 Write-Host ""
 Write-Host "1. Backend-Datenbank initialisieren & starten:" -ForegroundColor Blue
 Write-Host "   cd backend"
-Write-Host "   # Virtuelle Umgebung aktivieren:"
-Write-Host "   .\.venv\Scripts\Activate.ps1"
 Write-Host "   # Datenbank mit Standard-Daten befuellen:"
-Write-Host "   python -m app.scripts.seed"
+Write-Host "   poetry run python -m app.scripts.seed"
 Write-Host "   # Server starten:"
-Write-Host "   uvicorn app.main:app --reload --port $finalBackendPort"
+Write-Host "   poetry run uvicorn app.main:app --reload --port $finalBackendPort"
 Write-Host ""
 Write-Host "2. Frontend installieren & starten:" -ForegroundColor Blue
 Write-Host "   cd frontend"
