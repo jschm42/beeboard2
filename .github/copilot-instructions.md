@@ -43,7 +43,7 @@
 
 - Python muss `ruff check` bestehen.
 - Frontend muss `npm run lint` und `npm run build` bestehen.
-- Fuer Backend-Aenderungen: `pytest` in `backend/tests`.
+- Fuer Backend-Aenderungen: `poetry run pytest` in `backend/`.
 
 ## Aenderungsprinzipien
 

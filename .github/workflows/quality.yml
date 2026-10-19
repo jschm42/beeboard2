@@ -26,17 +26,19 @@ jobs:
       - name: Install frontend dependencies
         run: npm --prefix frontend ci
 
+      - name: Install Poetry
+        run: pipx install poetry
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-          cache: "pip"
-          cache-dependency-path: backend/requirements.txt
+          cache: "poetry"
+          cache-dependency-path: backend/poetry.lock
 
       - name: Install backend dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt
+        working-directory: backend
+        run: poetry install --without dev
 
       - name: Generate frontend license report
         run: |
@@ -79,25 +81,19 @@ jobs:
           import datetime as dt
           import importlib.metadata as md
           import pathlib
-          import re
+          import tomllib
 
-          req_path = pathlib.Path('backend/requirements.txt')
+          lock_path = pathlib.Path('backend/poetry.lock')
           out_path = pathlib.Path('reports/licenses/backend-licenses.md')
           out_path.parent.mkdir(parents=True, exist_ok=True)
 
-          packages = []
-          for line in req_path.read_text(encoding='utf-8').splitlines():
-            line = line.strip()
-            if not line or line.startswith('#'):
-              continue
-            name = re.split(r'[<>=!~\[]', line, maxsplit=1)[0].strip()
-            if name:
-              packages.append(name)
+          lock_data = tomllib.loads(lock_path.read_text(encoding='utf-8'))
+          packages = [pkg['name'] for pkg in lock_data.get('package', [])]
 
           lines = [
             '# Backend License Report',
             '',
-            f'Generated: {dt.datetime.utcnow().isoformat()}Z',
+            f'Generated: {dt.datetime.now(dt.timezone.utc).isoformat()}',
             '',
             '| Package | Version | License |',
             '| --- | --- | --- |',
@@ -134,23 +130,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install Poetry
+        run: pipx install poetry
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-          cache: "pip"
-          cache-dependency-path: backend/requirements.txt
+          cache: "poetry"
+          cache-dependency-path: backend/poetry.lock
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt ruff
+        run: poetry install
 
       - name: Lint (Ruff)
-        run: ruff check app tests
+        run: poetry run ruff check app tests
 
       - name: Run tests
-        run: pytest tests
+        run: poetry run pytest tests
 
   frontend:
     name: Frontend Lint and Build

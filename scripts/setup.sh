@@ -43,54 +43,31 @@ fi
 PY_VERSION=$("$PYTHON_CMD" -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
 echo -e "✅ Python gefunden: ${GREEN}$($PYTHON_CMD --version | head -n 1)${NC} (Kommando: ${GREEN}${PYTHON_CMD}${NC})\n"
 
-# 2. Virtuelle Umgebung (.venv) anlegen
-echo -e "🐍 ${BLUE}Schritt 2: Virtuelle Umgebung (.venv) erstellen...${NC}"
-if [ -d "$BACKEND_DIR/.venv" ]; then
-    echo -e "ℹ️ Eine virtuelle Umgebung existiert bereits unter ${YELLOW}backend/.venv${NC}."
-    read -p "Möchten Sie diese löschen und neu erstellen? (y/N): " RECREATE_VENV
-    if [[ "$RECREATE_VENV" =~ ^[Yy]$ ]]; then
-        echo "Lösche alte Umgebung..."
-        rm -rf "$BACKEND_DIR/.venv"
-        "$PYTHON_CMD" -m venv "$BACKEND_DIR/.venv"
-        echo -e "✅ Neue virtuelle Umgebung erstellt."
-    else
-        echo "Bestehende Umgebung wird beibehalten."
-    fi
-else
-    "$PYTHON_CMD" -m venv "$BACKEND_DIR/.venv"
-    echo -e "✅ Virtuelle Umgebung erstellt unter ${GREEN}backend/.venv${NC}."
-fi
-echo ""
+# 2. Abhängigkeiten mit Poetry einrichten
+echo -e "📦 ${BLUE}Schritt 2: Abhängigkeiten mit Poetry einrichten...${NC}"
+cd "$BACKEND_DIR"
 
-# 3. Virtuelle Umgebung aktivieren & Abhängigkeiten installieren
-echo -e "📦 ${BLUE}Schritt 3: Abhängigkeiten installieren...${NC}"
-# Prüfen, wo das Aktivierungsskript liegt (Windows Git Bash vs macOS/Linux)
-ACTIVATE_SCRIPT=""
-if [ -f "$BACKEND_DIR/.venv/Scripts/activate" ]; then
-    ACTIVATE_SCRIPT="$BACKEND_DIR/.venv/Scripts/activate"
-elif [ -f "$BACKEND_DIR/.venv/bin/activate" ]; then
-    ACTIVATE_SCRIPT="$BACKEND_DIR/.venv/bin/activate"
+POETRY_CMD=""
+if command -v poetry &>/dev/null; then
+    POETRY_CMD="poetry"
+elif [ -f "$HOME/.local/bin/poetry" ]; then
+    POETRY_CMD="$HOME/.local/bin/poetry"
 fi
 
-if [ -n "$ACTIVATE_SCRIPT" ]; then
-    echo -e "Aktivierung der virtuellen Umgebung..."
-    source "$ACTIVATE_SCRIPT"
-    
-    echo "Aktualisiere pip..."
-    python -m pip install --upgrade pip
-    
-    if [ -f "$BACKEND_DIR/requirements.txt" ]; then
-        echo "Installiere Pakete aus requirements.txt..."
-        pip install -r "$BACKEND_DIR/requirements.txt"
-        echo -e "✅ Abhängigkeiten erfolgreich installiert."
+if [ -z "$POETRY_CMD" ]; then
+    echo -e "ℹ️ Poetry nicht gefunden. Installiere Poetry..."
+    "$PYTHON_CMD" -m pip install --user "poetry>=2.0.0"
+    if [ -f "$HOME/.local/bin/poetry" ]; then
+        POETRY_CMD="$HOME/.local/bin/poetry"
     else
-        echo -e "${RED}⚠️ requirements.txt nicht in backend/ gefunden!${NC}"
+        POETRY_CMD="poetry"
     fi
-else
-    echo -e "${RED}❌ Aktivierungsskript für .venv nicht gefunden!${NC}"
-    exit 1
 fi
-echo ""
+
+echo -e "Installiere Backend-Abhängigkeiten via Poetry..."
+"$POETRY_CMD" install
+echo -e "✅ Backend-Abhängigkeiten erfolgreich via Poetry installiert.\n"
+cd "$ROOT_DIR"
 
 # 4. .env Datei anlegen und konfigurieren
 echo -e "🔑 ${BLUE}Schritt 4: Umgebungsvariablen konfigurieren...${NC}"
@@ -179,16 +156,10 @@ echo "Gehen Sie wie folgt vor, um BeeBoard 2 zu starten:"
 echo ""
 echo -e "1. ${BLUE}Backend-Datenbank initialisieren & starten:${NC}"
 echo "   cd backend"
-echo -e "   # Virtuelle Umgebung aktivieren:"
-if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
-    echo "   source .venv/Scripts/activate"
-else
-    echo "   source .venv/bin/activate"
-fi
 echo "   # Datenbank mit Standard-Daten befüllen:"
-echo "   python -m app.scripts.seed"
+echo "   poetry run python -m app.scripts.seed"
 echo "   # Server starten:"
-echo "   uvicorn app.main:app --reload --port $BACKEND_PORT"
+echo "   poetry run uvicorn app.main:app --reload --port $BACKEND_PORT"
 echo ""
 echo -e "2. ${BLUE}Frontend installieren & starten:${NC}"
 echo "   cd frontend"
