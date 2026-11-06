@@ -21,10 +21,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     openssl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install backend dependencies
-COPY backend/requirements.txt /app/
-RUN pip install --no-cache-dir --upgrade pip uv \
-    && uv pip install --no-cache-dir --system -r requirements.txt
+# Install backend dependencies with Poetry (system interpreter, main group only)
+COPY backend/pyproject.toml backend/poetry.lock /app/
+RUN pip install --no-cache-dir --upgrade pip "poetry>=2.0.0,<3.0.0" \
+    && poetry config virtualenvs.create false \
+    && poetry install --only main --no-interaction --no-ansi \
+    && rm -rf /root/.cache/pypoetry
 
 # Copy backend source code
 COPY backend/ /app/

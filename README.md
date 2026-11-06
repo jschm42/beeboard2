@@ -80,8 +80,8 @@ Follow the quick automated setup below to get everything up and running in secon
 
 We provide interactive setup scripts for both **PowerShell (Windows)** and **Bash (macOS / Linux / Git Bash)**. These scripts will:
 1. Verify your Python installation (**Python 3.13**).
-2. Create a Python Virtual Environment (`.venv`) inside the `backend/` directory.
-3. Upgrade `pip` and install all required dependencies from `backend/requirements.txt`.
+2. Verify your [Poetry](https://python-poetry.org/) installation (and offer to install it via `pip --user` if missing).
+3. Install all dependencies from `backend/pyproject.toml` / `backend/poetry.lock` with `poetry install` (virtual environment in `backend/.venv`).
 4. Copy the environment configuration template `backend/.env.example` to `backend/.env`.
 5. Automatically generate a secure, random `SECRET_KEY` for JWT authentication.
 6. Interactively prompt you for your `GEMINI_API_KEY` (optional) and save it directly to `.env`.
@@ -107,75 +107,27 @@ Once the setup script finishes, you are ready to seed the database and start the
 
 ### 1. Manual Backend Setup (Alternative)
 
-The backend is built with **Python 3.13** and FastAPI.
+The backend is built with **Python 3.13** and FastAPI. Dependencies are managed with **[Poetry](https://python-poetry.org/) 2.x** (`backend/pyproject.toml` + `backend/poetry.lock`).
+
+#### 📦 Install Poetry
+If Poetry is not installed yet (check with `poetry --version`):
+```bash
+pipx install poetry
+# or: python -m pip install --user "poetry>=2.0.0,<3.0.0"
+```
 
 #### 📁 Navigate to the backend directory
 ```bash
 cd backend
 ```
 
-#### 🐍 Create & Activate a Python Virtual Environment
-
-A Virtual Environment (`venv`) isolates your python interpreter and packages for this project. This prevents version conflicts with other projects on your machine.
-
-##### Step 1: Create the Virtual Environment
-Ensure you are in the `backend/` directory, then run:
-```bash
-# Windows / macOS / Linux
-python -m venv venv
-```
-*Note: If `python` is not recognized, try `python3` or `py`.*
-
-##### Step 2: Activate the Virtual Environment
-Activate the environment based on your operating system and terminal:
-
-*   **On Windows (PowerShell):**
-    ```powershell
-    .\venv\Scripts\Activate.ps1
-    ```
-*   **On Windows (Command Prompt):**
-    ```cmd
-    .\venv\Scripts\activate.bat
-    ```
-*   **On macOS / Linux (Bash/Zsh):**
-    ```bash
-    source venv/bin/activate
-    ```
-
-Once activated, your terminal prompt will be prefixed with `(venv)`.
-
----
-
-##### ⚠️ Troubleshooting Windows PowerShell Activation
-If you receive the error:
-> *"Script.ps1 cannot be loaded because running scripts is disabled on this system..."*
-
-This is due to Windows execution policies. You can resolve it in one of three ways:
-
-1.  **Temporary Bypass (Recommended)**: Allow script execution only for your current terminal window:
-    ```powershell
-    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
-    .\venv\Scripts\Activate.ps1
-    ```
-2.  **Permanent User Bypass**: Allow it for all your PowerShell sessions on this user account:
-    ```powershell
-    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-    ```
-3.  **Use Command Prompt**: If PowerShell continues to block scripts, simply open a classic Command Prompt (`cmd`) and run:
-    ```cmd
-    .\venv\Scripts\activate.bat
-    ```
-
-##### 🔄 Upgrading Pip (Optional but Recommended)
-After activating, ensure your package manager is up to date:
-```bash
-python -m pip install --upgrade pip
-```
-
 #### 📦 Install Python Dependencies
 ```bash
-pip install -r requirements.txt
+poetry install
 ```
+Poetry creates the virtual environment in `backend/.venv` (configured in `backend/poetry.toml`) and installs runtime and dev dependencies (pytest, ruff). Run every backend command through `poetry run ...`, so no manual activation is needed.
+
+To add or update a dependency, use `poetry add <package>` (or `poetry add --group dev <package>`) and commit the updated `poetry.lock`.
 
 #### 🔑 Configure Environment Variables
 Create a file named `.env` in the `backend/` directory to configure your secret keys and LLM providers.
@@ -205,21 +157,21 @@ GEMINI_API_KEY=your_gemini_api_key_here
 Before seeding data, apply the database schema migrations using Alembic:
 
 ```bash
-alembic upgrade head
+poetry run alembic upgrade head
 ```
 
 #### 🌱 Seed the Database
 After the schema is in place, execute the seed script to set up default configurations (e.g., default Hive Frame Types like *Zander* or *Dadant*, and Seasonal Varroa Multipliers):
 
 ```bash
-python -m app.scripts.seed
+poetry run python -m app.scripts.seed
 ```
 
 #### ⚡ Start the Backend Server (Uvicorn)
 Start the FastAPI application with automatic reloading on change:
 
 ```bash
-uvicorn app.main:app --reload --port 8000
+poetry run uvicorn app.main:app --reload --port 8000
 ```
 Your backend API will now be running at **`http://localhost:8000`**.
 *   **Swagger API Docs**: You can explore and test the endpoints directly at **`http://localhost:8000/docs`**.
@@ -345,10 +297,10 @@ cd docker
 BeeBoard includes a comprehensive test suite for the backend. To run the automated tests:
 
 1.  Make sure you are in the `backend/` directory.
-2.  Activate your virtual environment.
-3.  Run the tests using `pytest`:
+2.  Run the tests and the linter through Poetry:
     ```bash
-    pytest
+    poetry run pytest
+    poetry run ruff check app tests
     ```
 
 ---

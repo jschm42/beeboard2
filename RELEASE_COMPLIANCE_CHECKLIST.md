@@ -10,8 +10,8 @@ This checklist is used to prepare and publish BeeBoard releases.
 
 ## 2. Quality Gates
 
-- [ ] Backend lint passes: `ruff check backend/app backend/tests`.
-- [ ] Backend tests pass: `pytest backend/tests`.
+- [ ] Backend lint passes: `poetry run ruff check app tests` in `backend`.
+- [ ] Backend tests pass: `poetry run pytest tests` in `backend`.
 - [ ] Frontend lint passes: `npm run lint` in `frontend`.
 - [ ] Frontend build passes: `npm run build` in `frontend`.
 

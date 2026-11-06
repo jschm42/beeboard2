@@ -10,12 +10,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
+# Install dependencies with Poetry (system interpreter, main group only)
+COPY backend/pyproject.toml backend/poetry.lock /app/
+RUN pip install --no-cache-dir --upgrade pip "poetry>=2.0.0,<3.0.0" \
+    && poetry config virtualenvs.create false \
+    && poetry install --only main --no-interaction --no-ansi \
+    && rm -rf /root/.cache/pypoetry
+
 # Copy backend code
 COPY backend/ /app/
-
-# Install dependencies
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
 
 # Make entrypoint executable
 RUN chmod +x /app/entrypoint.sh
