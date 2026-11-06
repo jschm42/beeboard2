@@ -58,8 +58,7 @@ if ! command -v poetry &>/dev/null; then
         exit 1
     fi
 fi
-echo -e "✅ Poetry gefunden: ${GREEN}$(poetry --version)${NC}
-"
+echo -e "✅ Poetry gefunden: ${GREEN}$(poetry --version)${NC}\n"
 
 # 3. Abhängigkeiten mit Poetry installieren (virtuelle Umgebung: backend/.venv, siehe backend/poetry.toml)
 echo -e "📦 ${BLUE}Schritt 3: Abhängigkeiten mit Poetry installieren...${NC}"

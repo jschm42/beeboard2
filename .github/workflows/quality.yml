@@ -26,21 +26,19 @@ jobs:
       - name: Install frontend dependencies
         run: npm --prefix frontend ci
 
+      - name: Install Poetry
+        run: pipx install poetry
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-
-      - name: Install Poetry
-        run: |
-          python -m pip install --upgrade pip
-          pip install "poetry>=2.0.0,<3.0.0"
+          cache: "poetry"
+          cache-dependency-path: backend/poetry.lock
 
       - name: Install backend dependencies
         working-directory: backend
-        run: |
-          poetry config virtualenvs.create false
-          poetry install --only main --no-interaction
+        run: poetry install --only main --no-interaction
 
       - name: Generate frontend license report
         run: |
@@ -79,28 +77,27 @@ jobs:
 
       - name: Generate backend license report
         run: |
-          python <<'PY'
+          poetry -C backend run python <<'PY'
           import datetime as dt
           import importlib.metadata as md
           import pathlib
-          import re
           import tomllib
 
-          pyproject_path = pathlib.Path('backend/pyproject.toml')
+          lock_path = pathlib.Path('backend/poetry.lock')
           out_path = pathlib.Path('reports/licenses/backend-licenses.md')
           out_path.parent.mkdir(parents=True, exist_ok=True)
 
-          pyproject = tomllib.loads(pyproject_path.read_text(encoding='utf-8'))
-          packages = []
-          for spec in pyproject['project']['dependencies']:
-            name = re.split(r'[<>=!~\[\s(;]', spec, maxsplit=1)[0].strip()
-            if name:
-              packages.append(name)
+          lock_data = tomllib.loads(lock_path.read_text(encoding='utf-8'))
+          # Runtime packages only (dev tools such as pytest/ruff are not shipped)
+          packages = [
+            pkg['name'] for pkg in lock_data.get('package', [])
+            if 'main' in pkg.get('groups', ['main'])
+          ]
 
           lines = [
             '# Backend License Report',
             '',
-            f'Generated: {dt.datetime.utcnow().isoformat()}Z',
+            f'Generated: {dt.datetime.now(dt.timezone.utc).isoformat()}',
             '',
             '| Package | Version | License |',
             '| --- | --- | --- |',
@@ -137,15 +134,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install Poetry
+        run: pipx install poetry
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-
-      - name: Install Poetry
-        run: |
-          python -m pip install --upgrade pip
-          pip install "poetry>=2.0.0,<3.0.0"
+          cache: "poetry"
+          cache-dependency-path: backend/poetry.lock
 
       - name: Install dependencies
         run: poetry install --no-interaction
