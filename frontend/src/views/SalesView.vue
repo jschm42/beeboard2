@@ -1,31 +1,23 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans">
     
-    <!-- Back to Dashboard Link -->
-    <router-link to="/dashboard" class="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-hover mb-4 transition-colors duration-200">
-      <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-      {{ $t('common.back_to_dashboard') }}
-    </router-link>
 
-    <!-- Header Area -->
-    <div class="mb-8 flex flex-col md:flex-row md:justify-between md:items-center space-y-4 md:space-y-0">
-      <div>
-        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">💰 {{ $t('sales.title') }}</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">{{ $t('sales.subtitle') }}</p>
-      </div>
-      
-      <div class="flex items-center space-x-3" v-if="activeTab === 'sales'">
+    <PageHeader>
+      <template #title>💰 {{ $t('sales.title') }}</template>
+      <template #subtitle>{{ $t('sales.subtitle') }}</template>
+      <template #actions>
+        <div class="flex items-center space-x-3" v-if="activeTab === 'sales'">
         <button 
           @click="exportCSV" 
           :disabled="sales.length === 0"
-          class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-dark-card dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-extrabold text-sm rounded-xl transition-all duration-200 hover-scale flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-dark-card dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-bold text-sm rounded-xl transition-all duration-200 hover-scale flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
           <span>{{ $t('sales.export_tax_csv_btn') }}</span>
         </button>
         <button 
           @click="openCreateSaleModal" 
-          class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-2"
+          class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-2"
         >
           <span>{{ $t('sales.new_sale_btn') }}</span>
         </button>
@@ -34,12 +26,13 @@
       <div v-else-if="activeTab === 'products'">
         <button 
           @click="openCreateProductModal" 
-          class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-2"
+          class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-2"
         >
           <span>{{ $t('sales.new_product_btn') }}</span>
         </button>
       </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <!-- Alert Message -->
     <div v-if="alertMessage" class="mb-6 p-4 rounded-xl text-sm flex items-start space-x-2" :class="alertClass">
@@ -137,7 +130,7 @@
         <div v-else class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
+              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
                 <th class="px-6 py-4">{{ $t('sales.table_date') }}</th>
                 <th class="px-6 py-4">{{ $t('sales.table_product') }}</th>
                 <th class="px-6 py-4 text-center">{{ $t('sales.table_quantity') }}</th>
@@ -182,13 +175,13 @@
                     0%
                   </span>
                   <span v-else class="text-xs text-gray-600 dark:text-gray-400">
-                    {{ s.product?.tax_rate || 0 }}% <span class="text-[10px] text-gray-400">({{ formatCurrency(calculateVAT(s.total_price, s.product?.tax_rate)) }})</span>
+                    {{ s.product?.tax_rate || 0 }}% <span class="text-xs text-gray-400">({{ formatCurrency(calculateVAT(s.total_price, s.product?.tax_rate)) }})</span>
                   </span>
                 </td>
 
                 <!-- Sales Channel -->
                 <td class="px-6 py-4">
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary uppercase">
+                  <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary uppercase">
                     {{ formatChannel(s.sales_channel) }}
                   </span>
                 </td>
@@ -250,7 +243,7 @@
         <div v-else class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
+              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
                 <th class="px-6 py-4">{{ $t('sales.table_name') }}</th>
                 <th class="px-6 py-4">{{ $t('sales.table_honey_type') }}</th>
                 <th class="px-6 py-4 text-right">{{ $t('sales.table_default_price') }}</th>
@@ -295,7 +288,7 @@
                 <!-- Requires Batch -->
                 <td class="px-6 py-4 text-center">
                   <span
-                    class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                    class="px-2 py-0.5 rounded-full text-xs font-bold"
                     :class="p.requires_batch_selection ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-gray-100 text-gray-400 dark:bg-gray-800'"
                   >
                     {{ p.requires_batch_selection ? '🔗 ' + $t('sales.requires_batch_badge') : $t('sales.optional_badge') }}
@@ -307,13 +300,13 @@
                   <span v-if="!p.manage_stock" class="text-xs text-gray-400 dark:text-gray-600">
                     -
                   </span>
-                  <span v-else-if="p.stock <= 0" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                  <span v-else-if="p.stock <= 0" class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
                     🔴 0 ({{ $t('sales.stock_none_badge') }})
                   </span>
-                  <span v-else-if="p.stock <= p.min_stock" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" :title="`${$t('sales.table_min_stock')}: ${p.min_stock}`">
+                  <span v-else-if="p.stock <= p.min_stock" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" :title="`${$t('sales.table_min_stock')}: ${p.min_stock}`">
                     ⚠️ {{ p.stock }} ({{ $t('sales.stock_alert_badge') }})
                   </span>
-                  <span v-else class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  <span v-else class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                     📦 {{ p.stock }}
                   </span>
                 </td>
@@ -321,7 +314,7 @@
                 <!-- Status -->
                 <td class="px-6 py-4 text-center">
                   <span 
-                    class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                    class="px-2 py-0.5 rounded-full text-xs font-bold"
                     :class="p.is_active ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'"
                   >
                     {{ p.is_active ? $t('common.active') : $t('common.inactive') }}
@@ -405,7 +398,7 @@
         <div v-else class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
+              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
                 <th class="px-6 py-4">{{ $t('sales.table_name') }}</th>
                 <th class="px-6 py-4">{{ $t('sales.table_honey_type') }}</th>
                 <th class="px-6 py-4 text-right">{{ $t('sales.table_default_price') }}</th>
@@ -456,13 +449,13 @@
                   <span v-if="!p.manage_stock" class="text-xs text-gray-400 dark:text-gray-600">
                     -
                   </span>
-                  <span v-else-if="p.stock <= 0" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                  <span v-else-if="p.stock <= 0" class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
                     🔴 0 ({{ $t('sales.stock_none_badge') }})
                   </span>
-                  <span v-else-if="p.stock <= p.min_stock" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" :title="`${$t('sales.table_min_stock')}: ${p.min_stock}`">
+                  <span v-else-if="p.stock <= p.min_stock" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" :title="`${$t('sales.table_min_stock')}: ${p.min_stock}`">
                     ⚠️ {{ p.stock }} ({{ $t('sales.stock_alert_badge') }})
                   </span>
-                  <span v-else class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  <span v-else class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                     📦 {{ p.stock }}
                   </span>
                 </td>
@@ -868,7 +861,7 @@
                 >
                   <input type="radio" v-model="adjustStockForm.type" value="add" class="sr-only" />
                   <span class="text-lg mb-1">📈</span>
-                  <span class="text-[10px] font-bold uppercase tracking-wider">{{ $t('sales.adjust_type_add') }}</span>
+                  <span class="text-xs font-bold uppercase tracking-wider">{{ $t('sales.adjust_type_add') }}</span>
                 </label>
                 <label 
                   class="flex flex-col items-center justify-center p-3 border rounded-xl cursor-pointer text-center select-none transition-all duration-150 hover:bg-gray-50 dark:hover:bg-dark-bg"
@@ -876,7 +869,7 @@
                 >
                   <input type="radio" v-model="adjustStockForm.type" value="sub" class="sr-only" />
                   <span class="text-lg mb-1">📉</span>
-                  <span class="text-[10px] font-bold uppercase tracking-wider">{{ $t('sales.adjust_type_sub') }}</span>
+                  <span class="text-xs font-bold uppercase tracking-wider">{{ $t('sales.adjust_type_sub') }}</span>
                 </label>
                 <label 
                   class="flex flex-col items-center justify-center p-3 border rounded-xl cursor-pointer text-center select-none transition-all duration-150 hover:bg-gray-50 dark:hover:bg-dark-bg"
@@ -884,7 +877,7 @@
                 >
                   <input type="radio" v-model="adjustStockForm.type" value="set" class="sr-only" />
                   <span class="text-lg mb-1">🎯</span>
-                  <span class="text-[10px] font-bold uppercase tracking-wider">{{ $t('sales.adjust_type_set') }}</span>
+                  <span class="text-xs font-bold uppercase tracking-wider">{{ $t('sales.adjust_type_set') }}</span>
                 </label>
               </div>
             </div>
@@ -905,7 +898,7 @@
             <!-- Resulting Stock Preview -->
             <div v-if="adjustingProduct" class="p-3 bg-primary/5 border border-primary/10 rounded-2xl text-xs flex justify-between items-center">
               <span class="font-bold text-gray-600 dark:text-gray-400">Neuer berechneter Bestand:</span>
-              <span class="text-base font-extrabold" :class="resultingStockClass">
+              <span class="text-base font-bold" :class="resultingStockClass">
                 {{ resultingStock }} Stk.
               </span>
             </div>
@@ -1018,6 +1011,7 @@
 
 <script setup>
 import { ref, computed, onMounted, reactive, watch } from 'vue'
+import PageHeader from '../components/PageHeader.vue'
 import axios from 'axios'
 import { useI18n } from 'vue-i18n'
 import { useApiaryStore } from '../stores/apiary'

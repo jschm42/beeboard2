@@ -1,22 +1,13 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans">
     
-    <!-- Back to Dashboard Link -->
-    <router-link to="/dashboard" class="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-hover mb-4 transition-colors duration-200">
-      <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-      {{ $t('common.back_to_dashboard') }}
-    </router-link>
 
-    <!-- Header Area -->
-    <div class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
-      <div>
-        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
-          <span>🍯</span>
-          <span>{{ $t('feedings.title') }}</span>
-        </h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">{{ $t('feedings.subtitle') }}</p>
-      </div>
-      <div class="flex items-center gap-2.5 self-end sm:self-auto shrink-0">
+    <PageHeader>
+      <template #title><span>🍯</span>
+          <span>{{ $t('feedings.title') }}</span></template>
+      <template #subtitle>{{ $t('feedings.subtitle') }}</template>
+      <template #actions>
+        <div class="flex items-center gap-2.5 self-end sm:self-auto shrink-0">
         <button 
           v-if="apiaryStore.activeApiaryId"
           @click="exportCSV" 
@@ -28,12 +19,13 @@
         <button 
           v-if="apiaryStore.activeApiaryId"
           @click="openCreateModal" 
-          class="px-4 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-1.5"
+          class="px-4 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-1.5"
         >
           <span>{{ $t('feedings.new_feeding') }}</span>
         </button>
       </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <!-- Alert / Toast Messages -->
     <div v-if="alertMessage" class="mb-6 p-4 rounded-xl text-sm flex items-start space-x-2" :class="alertClass">
@@ -59,7 +51,7 @@
             <span class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider block">
               {{ $t('feedings.stat_total_feedings') }}
             </span>
-            <span class="text-2xl font-extrabold text-gray-900 dark:text-white font-mono">
+            <span class="text-2xl font-bold text-gray-900 dark:text-white font-mono">
               {{ feedingStats.total_count }}
             </span>
           </div>
@@ -202,7 +194,7 @@
           <!-- Desktop Table view -->
           <table class="w-full text-left border-collapse hidden md:table">
             <thead>
-              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
+              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
                 <th class="px-5 py-4">{{ $t('feedings.table_date') }}</th>
                 <th class="px-4 py-4">{{ $t('feedings.table_hive') }}</th>
                 <th class="px-4 py-4">{{ $t('feedings.table_location') }}</th>
@@ -272,7 +264,7 @@
                   <span class="font-mono text-xs font-bold text-gray-500 dark:text-gray-400 block">
                     {{ formatDate(f.date) }}
                   </span>
-                  <h4 class="font-extrabold text-base text-gray-900 dark:text-white">
+                  <h4 class="font-bold text-base text-gray-900 dark:text-white">
                     {{ f.hive?.name }}
                   </h4>
                   <span class="text-xs text-gray-500 dark:text-gray-400">
@@ -324,7 +316,7 @@
     >
       <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-5 animate-scale">
         <div class="flex justify-between items-center border-b border-gray-100 dark:border-dark-border/60 pb-4">
-          <h3 class="text-lg font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <span>🍯</span>
             <span>{{ isEditing ? $t('feedings.edit_feeding') : $t('feedings.new_feeding') }}</span>
           </h3>
@@ -523,6 +515,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
+import PageHeader from '../components/PageHeader.vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import { useApiaryStore } from '../stores/apiary'

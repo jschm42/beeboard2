@@ -26,7 +26,7 @@
               </svg>
             </div>
             <div class="flex-grow pt-1">
-              <h3 class="text-xl font-black text-gray-900 dark:text-white leading-tight">
+              <h3 class="text-xl font-bold text-gray-900 dark:text-white leading-tight">
                 {{ errorStore.title }}
               </h3>
               <p class="text-sm font-semibold text-red-500 dark:text-red-400 mt-0.5">
@@ -64,7 +64,7 @@
               <div v-if="showDetails" class="bg-gray-950 p-5 font-mono text-[11px] text-gray-300 border-t border-gray-200 dark:border-dark-border space-y-2 max-h-60 overflow-y-auto select-text">
                 <div v-if="errorStore.details.status" class="flex justify-between border-b border-gray-800 pb-1.5">
                   <span class="text-red-400 font-bold">Status:</span>
-                  <span class="text-white font-extrabold">{{ errorStore.details.status }} {{ errorStore.details.statusText }}</span>
+                  <span class="text-white font-bold">{{ errorStore.details.status }} {{ errorStore.details.statusText }}</span>
                 </div>
                 <div v-if="errorStore.details.method" class="flex justify-between border-b border-gray-800 pb-1.5">
                   <span class="text-gray-400">Methode:</span>
@@ -89,7 +89,7 @@
         <div class="p-6 bg-gray-50 dark:bg-dark-bg/40 border-t border-gray-100 dark:border-dark-border flex justify-end">
           <button 
             @click="close"
-            class="px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-extrabold text-sm rounded-2xl shadow-lg shadow-red-500/10 hover:shadow-red-500/20 transition-all hover-scale duration-150"
+            class="px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded-2xl shadow-lg shadow-red-500/10 hover:shadow-red-500/20 transition-all hover-scale duration-150"
           >
             Schließen
           </button>

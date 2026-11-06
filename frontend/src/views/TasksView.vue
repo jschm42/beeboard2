@@ -1,31 +1,21 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans">
     
-    <!-- Back to Dashboard Link -->
-    <router-link to="/dashboard" class="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-hover mb-4 transition-colors duration-200">
-      <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-      {{ $t('common.back_to_dashboard') }}
-    </router-link>
 
-    <!-- Header -->
-    <div class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
-      <div>
-        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-          {{ viewMode === 'calendar' ? $t('tasks.title_calendar') : $t('tasks.title_tasks') }}
-        </h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">
-          {{ viewMode === 'calendar' 
+    <PageHeader>
+      <template #title>{{ viewMode === 'calendar' ? $t('tasks.title_calendar') : $t('tasks.title_tasks') }}</template>
+      <template #subtitle>{{ viewMode === 'calendar' 
             ? $t('tasks.subtitle_calendar') 
-            : $t('tasks.subtitle_tasks') }}
-        </p>
-      </div>
-      <button 
+            : $t('tasks.subtitle_tasks') }}</template>
+      <template #actions>
+        <button 
         @click="openCreateTaskModal" 
-        class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-2 animate-fade-in"
+        class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-2 animate-fade-in"
       >
         <span>{{ $t('tasks.new_task') }}</span>
       </button>
-    </div>
+      </template>
+    </PageHeader>
 
     <!-- Active Apiary check -->
     <div v-if="!apiaryStore.activeApiaryId" class="glass rounded-3xl p-12 text-center max-w-lg mx-auto border border-dashed border-gray-300 dark:border-gray-700">
@@ -43,7 +33,7 @@
           v-for="qf in quickFilters"
           :key="qf.key"
           @click="setQuickFilter(qf.key)"
-          class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-extrabold tracking-wide border transition-all duration-200"
+          class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold tracking-wide border transition-all duration-200"
           :class="quickFilter === qf.key
             ? qf.activeClass
             : 'bg-white dark:bg-dark-card border-gray-200 dark:border-dark-border text-gray-500 dark:text-gray-400 hover:border-primary/40 hover:text-primary'"
@@ -51,7 +41,7 @@
           <span>{{ qf.icon }}</span>
           <span>{{ qf.label }}</span>
           <span
-            class="ml-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-black"
+            class="ml-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-bold"
             :class="quickFilter === qf.key ? 'bg-white/20' : 'bg-gray-100 dark:bg-dark-border text-gray-500'"
           >{{ qf.count }}</span>
         </button>
@@ -74,7 +64,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <!-- Status -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('common.status') }}</label>
+            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('common.status') }}</label>
             <select 
               v-model="filters.status" 
               class="w-full px-3 py-2 border border-gray-200 dark:border-gray-800 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer font-semibold"
@@ -88,7 +78,7 @@
           
           <!-- Standort -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('hives.location_label') }}</label>
+            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('hives.location_label') }}</label>
             <select 
               v-model="filters.locationId" 
               class="w-full px-3 py-2 border border-gray-200 dark:border-gray-800 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer font-semibold"
@@ -102,7 +92,7 @@
           
           <!-- Volk -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('hives.table_hive') }}</label>
+            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('hives.table_hive') }}</label>
             <select 
               v-model="filters.hiveId" 
               class="w-full px-3 py-2 border border-gray-200 dark:border-gray-800 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer font-semibold"
@@ -116,7 +106,7 @@
           
           <!-- Priorität -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('hives.filter_tasks') }}</label>
+            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('hives.filter_tasks') }}</label>
             <select 
               v-model="filters.priority" 
               class="w-full px-3 py-2 border border-gray-200 dark:border-gray-800 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer font-semibold"
@@ -130,7 +120,7 @@
 
           <!-- Von Datum -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('tasks.filter_due_from') }}</label>
+            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('tasks.filter_due_from') }}</label>
             <input 
               v-model="filters.startDate" 
               type="date" 
@@ -140,7 +130,7 @@
           
           <!-- Bis Datum -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('tasks.filter_due_to') }}</label>
+            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('tasks.filter_due_to') }}</label>
             <input 
               v-model="filters.endDate" 
               type="date" 
@@ -157,21 +147,21 @@
           <div class="inline-flex rounded-xl p-0.5 bg-gray-100 dark:bg-dark-bg border border-gray-200 dark:border-dark-border">
             <button 
               @click="viewMode = 'tiles'" 
-              class="px-4 py-1.5 rounded-lg text-xs font-extrabold tracking-wide transition-all"
+              class="px-4 py-1.5 rounded-lg text-xs font-bold tracking-wide transition-all"
               :class="viewMode === 'tiles' ? 'bg-white dark:bg-dark-card text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
             >
               {{ $t('tasks.view_tiles') }}
             </button>
             <button 
               @click="viewMode = 'list'" 
-              class="px-4 py-1.5 rounded-lg text-xs font-extrabold tracking-wide transition-all"
+              class="px-4 py-1.5 rounded-lg text-xs font-bold tracking-wide transition-all"
               :class="viewMode === 'list' ? 'bg-white dark:bg-dark-card text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
             >
               {{ $t('tasks.view_list') }}
             </button>
             <button 
               @click="viewMode = 'calendar'" 
-              class="px-4 py-1.5 rounded-lg text-xs font-extrabold tracking-wide transition-all"
+              class="px-4 py-1.5 rounded-lg text-xs font-bold tracking-wide transition-all"
               :class="viewMode === 'calendar' ? 'bg-white dark:bg-dark-card text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
             >
               {{ $t('tasks.view_calendar') }}
@@ -203,7 +193,7 @@
           :class="{'opacity-75 border-green-500/30 dark:border-green-500/20 bg-green-500/[0.01]': task.is_completed}"
         >
           <!-- Corner Ribbon for completed tasks -->
-          <div v-if="task.is_completed" class="absolute top-0 right-0 bg-green-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-bl-xl">
+          <div v-if="task.is_completed" class="absolute top-0 right-0 bg-green-500 text-white text-[11px] font-bold uppercase px-2 py-0.5 rounded-bl-xl">
             {{ $t('tasks.completed_badge') }}
           </div>
 
@@ -213,7 +203,7 @@
               <div class="flex flex-wrap gap-1">
                 <!-- Priority Badge -->
                 <span 
-                  class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full"
+                  class="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
                   :class="getPriorityBadgeClass(task.priority)"
                 >
                   {{ getPriorityText(task.priority) }}
@@ -222,7 +212,7 @@
                 <!-- Recurrence Badge -->
                 <span 
                   v-if="task.is_recurring"
-                  class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400 flex items-center gap-1"
+                  class="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400 flex items-center gap-1"
                   :title="$t('tasks.recurring_tooltip')"
                 >
                   🔄 {{ getRecurrenceIntervalText(task.recurrence_interval) }}
@@ -249,7 +239,7 @@
             </div>
 
             <!-- Title -->
-            <h4 class="font-extrabold text-lg text-gray-900 dark:text-white mt-3 leading-tight" :class="{'line-through text-gray-400 dark:text-gray-500': task.is_completed}">
+            <h4 class="font-bold text-lg text-gray-900 dark:text-white mt-3 leading-tight" :class="{'line-through text-gray-400 dark:text-gray-500': task.is_completed}">
               {{ task.title }}
             </h4>
 
@@ -283,7 +273,7 @@
             <button 
               v-if="!task.is_completed"
               @click="completeTask(task.id)"
-              class="px-3.5 py-1.5 bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow transition-colors flex items-center gap-1 cursor-pointer"
+              class="px-3.5 py-1.5 bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow transition-colors flex items-center gap-1 cursor-pointer"
             >
               <span>{{ $t('tasks.complete_btn') }}</span> ✓
             </button>
@@ -296,7 +286,7 @@
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-gray-50 dark:bg-dark-bg/60 border-b border-gray-200 dark:border-dark-border text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-gray-400">
+              <tr class="bg-gray-50 dark:bg-dark-bg/60 border-b border-gray-200 dark:border-dark-border text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                 <th class="py-4 px-6 w-12 text-center">{{ $t('common.status') }}</th>
                 <th class="py-4 px-4">{{ $t('tasks.table_title') }}</th>
                 <th class="py-4 px-4 w-40">{{ $t('tasks.table_assigned') }}</th>
@@ -340,15 +330,15 @@
                 <!-- Scope Links -->
                 <td class="py-4 px-4">
                   <div class="flex flex-col gap-0.5">
-                    <span v-if="task.location" class="text-[10px] text-blue-600 dark:text-blue-400 font-bold truncate">📍 {{ task.location.name }}</span>
-                    <span v-if="task.hive" class="text-[10px] text-amber-700 dark:text-primary font-bold truncate">🐝 {{ task.hive.name }}</span>
+                    <span v-if="task.location" class="text-xs text-blue-600 dark:text-blue-400 font-bold truncate">📍 {{ task.location.name }}</span>
+                    <span v-if="task.hive" class="text-xs text-amber-700 dark:text-primary font-bold truncate">🐝 {{ task.hive.name }}</span>
                   </div>
                 </td>
                 
                 <!-- Due Date -->
                 <td class="py-4 px-4 text-xs font-mono">
                   <span v-if="task.is_completed" class="text-green-500 font-bold">{{ $t('tasks.completed_badge') }}</span>
-                  <span v-else :class="isOverdue(task.due_date) ? 'text-red-500 font-black animate-pulse' : 'text-gray-600 dark:text-gray-300'">
+                  <span v-else :class="isOverdue(task.due_date) ? 'text-red-500 font-bold animate-pulse' : 'text-gray-600 dark:text-gray-300'">
                     {{ formatDate(task.due_date) || '—' }}
                   </span>
                 </td>
@@ -356,7 +346,7 @@
                 <!-- Priority -->
                 <td class="py-4 px-4">
                   <span 
-                    class="text-[9px] font-black uppercase px-2 py-0.5 rounded-full inline-block"
+                    class="text-[11px] font-bold uppercase px-2 py-0.5 rounded-full inline-block"
                     :class="getPriorityBadgeClass(task.priority)"
                   >
                     {{ getPriorityText(task.priority) }}
@@ -417,7 +407,7 @@
               >
                 <div class="flex justify-between items-center mb-1">
                   <span 
-                    class="text-xs font-black w-6 h-6 flex items-center justify-center rounded-full"
+                    class="text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full"
                     :class="[
                       day.isToday 
                         ? 'bg-amber-500 text-white shadow-sm shadow-amber-500/30' 
@@ -435,14 +425,14 @@
                     v-for="attr in attributes.slice(0, 3)" 
                     :key="attr.key"
                     @click.stop="onCalendarItemClick(attr.customData)"
-                    class="text-[9px] px-1.5 py-0.5 rounded-lg truncate font-extrabold tracking-wide border transition-all duration-150 shadow-sm cursor-pointer hover:brightness-95 hover:scale-[1.02] active:scale-[0.98]"
+                    class="text-[11px] px-1.5 py-0.5 rounded-lg truncate font-bold tracking-wide border transition-all duration-150 shadow-sm cursor-pointer hover:brightness-95 hover:scale-[1.02] active:scale-[0.98]"
                     :class="getCalendarItemClasses(attr)"
                     :style="getCalendarItemStyle(attr)"
                     :title="attr.customData?.title"
                   >
                     {{ attr.customData?.title }}
                   </div>
-                  <div v-if="attributes.length > 3" class="text-[8px] text-gray-400 dark:text-gray-500 font-bold text-center">
+                  <div v-if="attributes.length > 3" class="text-[11px] text-gray-400 dark:text-gray-500 font-bold text-center">
                     +{{ attributes.length - 3 }} {{ $t('common.more') }}
                   </div>
                 </div>
@@ -453,7 +443,7 @@
 
         <div class="space-y-4">
           <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-5 shadow-sm">
-            <h4 class="text-sm font-extrabold text-gray-900 dark:text-white mb-3">{{ $t('tasks.due_on_date', { date: formatDate(selectedDateString) }) }}</h4>
+            <h4 class="text-sm font-bold text-gray-900 dark:text-white mb-3">{{ $t('tasks.due_on_date', { date: formatDate(selectedDateString) }) }}</h4>
 
             <div v-if="!selectedDateTaskItems.length && !selectedDateCustomItems.length" class="text-xs text-gray-500 dark:text-gray-400 italic">
               {{ $t('tasks.no_events_on_day') }}
@@ -486,14 +476,14 @@
 
           <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-5 shadow-sm">
             <div class="flex items-center justify-between gap-2 mb-3">
-              <h4 class="text-sm font-extrabold text-gray-900 dark:text-white flex items-center gap-1.5">
+              <h4 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                 <span>🗂️</span>
                 <span>{{ $t('tasks.custom_event_header') }}</span>
                 <span v-if="customEvents.length" class="text-xs font-bold text-gray-400 dark:text-gray-500">({{ customEvents.length }})</span>
               </h4>
               <button
                 @click="openCustomEventModal()"
-                class="px-3 py-1.5 bg-primary hover:bg-primary-hover text-white text-[11px] font-extrabold uppercase tracking-wider rounded-lg shadow-sm hover-scale cursor-pointer flex items-center gap-1"
+                class="px-3 py-1.5 bg-primary hover:bg-primary-hover text-white text-[11px] font-bold uppercase tracking-wider rounded-lg shadow-sm hover-scale cursor-pointer flex items-center gap-1"
               >
                 <span>+</span>
                 <span>{{ $t('tasks.new_custom_event_btn') }}</span>
@@ -555,7 +545,7 @@
         <div class="relative z-10 inline-block align-bottom bg-white dark:bg-dark-card rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-100 dark:border-dark-border animate-scale">
           <!-- Header -->
           <div class="px-6 py-4 border-b border-gray-100 dark:border-dark-border flex justify-between items-center bg-gray-50/50 dark:bg-dark-bg/25">
-            <h3 class="text-lg font-extrabold text-gray-900 dark:text-white" id="modal-title">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white" id="modal-title">
               {{ isEditMode ? $t('tasks.edit_modal_title') : $t('tasks.create_modal_title') }}
             </h3>
             <button @click="showTaskModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
@@ -658,7 +648,7 @@
                 <button 
                   type="button"
                   @click="taskForm.isRecurring = !taskForm.isRecurring"
-                  class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border text-xs font-extrabold tracking-wide transition-all cursor-pointer"
+                  class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold tracking-wide transition-all cursor-pointer"
                   :class="taskForm.isRecurring
                     ? 'bg-primary/10 border-primary text-primary shadow-sm'
                     : 'bg-white dark:bg-dark-card border-gray-200 dark:border-dark-border text-gray-500 hover:border-gray-300 dark:hover:border-gray-700'"
@@ -727,7 +717,7 @@
                     :key="index"
                     type="button"
                     @click="toggleFormWeekday(index)"
-                    class="w-8 h-8 rounded-lg border text-xs font-black transition-all flex items-center justify-center cursor-pointer"
+                    class="w-8 h-8 rounded-lg border text-xs font-bold transition-all flex items-center justify-center cursor-pointer"
                     :class="taskForm.recurrenceWeekdays.includes(index)
                       ? 'bg-primary border-primary text-white shadow-sm'
                       : 'bg-white dark:bg-dark-bg border-gray-200 dark:border-gray-700 text-gray-500 hover:border-gray-300 dark:hover:border-gray-650'"
@@ -749,7 +739,7 @@
               </button>
               <button 
                 type="submit" 
-                class="px-5 py-2 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md cursor-pointer"
+                class="px-5 py-2 bg-primary hover:bg-primary-hover text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md cursor-pointer"
               >
                 {{ isEditMode ? $t('common.save') : $t('hives.create') }}
               </button>
@@ -764,6 +754,7 @@
 
 <script setup>
 import { ref, onMounted, computed, watch, nextTick } from 'vue'
+import PageHeader from '../components/PageHeader.vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useApiaryStore } from '../stores/apiary'
@@ -799,7 +790,7 @@ function getCalendarItemClasses(attr) {
     if (attr.customData.isDone) {
       return 'bg-green-100/50 text-green-700 border-green-200 dark:bg-green-950/20 dark:text-green-400 dark:border-green-900/20 border-l-4 border-l-green-500'
     } else if (attr.customData.overdue) {
-      return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900/30 font-black animate-pulse border-l-4 border-l-red-500'
+      return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900/30 font-bold animate-pulse border-l-4 border-l-red-500'
     } else {
       // Differentiate by priority for better visual recognition
       if (attr.customData.priority === 'HIGH') {

@@ -1,19 +1,12 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans">
     
-    <!-- Back to Dashboard Link -->
-    <router-link to="/dashboard" class="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-hover mb-4 transition-colors duration-200">
-      <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-      {{ $t('common.back_to_dashboard') }}
-    </router-link>
 
-    <!-- Header Area -->
-    <div class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
-      <div>
-        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">❤️ {{ $t('treatments.title') }}</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">{{ $t('treatments.subtitle') }}</p>
-      </div>
-      <div class="flex items-center gap-2.5 self-end sm:self-auto shrink-0">
+    <PageHeader>
+      <template #title>❤️ {{ $t('treatments.title') }}</template>
+      <template #subtitle>{{ $t('treatments.subtitle') }}</template>
+      <template #actions>
+        <div class="flex items-center gap-2.5 self-end sm:self-auto shrink-0">
         <button 
           v-if="apiaryStore.activeApiaryId"
           @click="exportCSV" 
@@ -33,12 +26,13 @@
         <button 
           v-if="apiaryStore.activeApiaryId"
           @click="openCreateModal" 
-          class="px-4 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-1.5"
+          class="px-4 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-1.5"
         >
           <span>+ {{ $t('treatments.new_treatment') }}</span>
         </button>
       </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <!-- Alert / Toast Messages -->
     <div v-if="alertMessage" class="mb-6 p-4 rounded-xl text-sm flex items-start space-x-2" :class="alertClass">
@@ -124,7 +118,7 @@
           <!-- Desktop Table view -->
           <table class="w-full text-left border-collapse hidden md:table">
             <thead>
-              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
+              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
                 <th class="px-5 py-4">{{ $t('treatments.table_period') }}</th>
                 <th class="px-4 py-4">{{ $t('treatments.table_hive') }}</th>
                 <th class="px-4 py-4">{{ $t('treatments.table_location') }}</th>
@@ -225,7 +219,7 @@
                   <div class="px-2.5 py-1 bg-gray-100 dark:bg-dark-bg text-gray-800 dark:text-gray-200 text-xs rounded-lg font-semibold">
                     {{ t.treatment_method?.name || '-' }}
                   </div>
-                  <div v-if="t.application_type" class="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
+                  <div v-if="t.application_type" class="text-xs text-gray-500 dark:text-gray-400 font-medium">
                     {{ t.application_type.name }}
                   </div>
                 </div>
@@ -412,7 +406,7 @@
                       required 
                       class="w-full pl-3 pr-16 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
                     />
-                    <div class="absolute right-3 text-xs font-extrabold text-gray-400 dark:text-gray-500 select-none">
+                    <div class="absolute right-3 text-xs font-bold text-gray-400 dark:text-gray-500 select-none">
                       {{ selectedMethodUnit }}
                     </div>
                   </div>
@@ -465,7 +459,7 @@
                   />
                   <div class="text-2xl mb-1">📸</div>
                   <p class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $t('treatments.drag_drop_area') }}</p>
-                  <p class="text-[10px] text-gray-400 mt-0.5">{{ $t('treatments.drag_drop_hint') }}</p>
+                  <p class="text-xs text-gray-400 mt-0.5">{{ $t('treatments.drag_drop_hint') }}</p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2">
@@ -560,6 +554,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
+import PageHeader from '../components/PageHeader.vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import { useAuthStore } from '../stores/auth'

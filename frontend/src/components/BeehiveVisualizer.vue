@@ -43,10 +43,10 @@
           ]"
         >
           <!-- Text content overlay (Larger text!) -->
-          <span class="text-base font-black tracking-wide z-10 uppercase">
+          <span class="text-base font-bold tracking-wide z-10 uppercase">
             {{ box.box_type === 'BROOD' ? 'Brutraum' : 'Honigraum' }}
           </span>
-          <span class="text-sm font-extrabold opacity-95 z-10">
+          <span class="text-sm font-bold opacity-95 z-10">
             {{ box.frame_count }} Waben ({{ box.frame_type_name || 'Standard' }})
           </span>
 
@@ -89,7 +89,7 @@
     </div>
 
     <!-- Legend Indicator -->
-    <p v-if="boxes.length > 1" class="mt-5 text-[10px] font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">
+    <p v-if="boxes.length > 1" class="mt-5 text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">
       Zargen per Drag and Drop umsortieren
     </p>
 

@@ -15,7 +15,7 @@
         <div class="px-6 py-4 bg-red-500/10 dark:bg-red-950/20 border-b border-red-100 dark:border-red-950/30 flex justify-between items-center shrink-0">
           <div class="flex items-center space-x-2">
             <span class="text-xl">🔔</span>
-            <h3 class="text-base font-extrabold text-red-700 dark:text-red-400 uppercase tracking-wider" id="modal-title">
+            <h3 class="text-base font-bold text-red-700 dark:text-red-400 uppercase tracking-wider" id="modal-title">
               Erinnerung: Fällige Aufgaben
             </h3>
           </div>
@@ -42,7 +42,7 @@
               <div class="min-w-0 flex-grow">
                 <div class="flex items-center gap-1.5 flex-wrap">
                   <span 
-                    class="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                    class="text-[11px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
                     :class="isOverdue(task.due_date) 
                       ? 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400' 
                       : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-400'"
@@ -50,20 +50,20 @@
                     {{ isOverdue(task.due_date) ? 'Überfällig' : 'Bald fällig' }}
                   </span>
                   
-                  <span class="text-[9px] font-bold text-gray-400 dark:text-gray-500 font-mono">
+                  <span class="text-[11px] font-bold text-gray-400 dark:text-gray-500 font-mono">
                     {{ formatDate(task.due_date) }}
                   </span>
                 </div>
 
-                <h4 class="font-extrabold text-sm text-gray-900 dark:text-white mt-1.5 leading-snug truncate">
+                <h4 class="font-bold text-sm text-gray-900 dark:text-white mt-1.5 leading-snug truncate">
                   {{ task.title }}
                 </h4>
 
                 <div class="mt-1 flex flex-wrap gap-1">
-                  <span v-if="task.location" class="text-[9px] font-bold text-blue-600 dark:text-blue-400">
+                  <span v-if="task.location" class="text-[11px] font-bold text-blue-600 dark:text-blue-400">
                     📍 {{ task.location.name }}
                   </span>
-                  <span v-if="task.hive" class="text-[9px] font-bold text-amber-700 dark:text-primary">
+                  <span v-if="task.hive" class="text-[11px] font-bold text-amber-700 dark:text-primary">
                     🐝 {{ task.hive.name }}
                   </span>
                 </div>
@@ -71,7 +71,7 @@
 
               <button 
                 @click="completeTask(task.id)"
-                class="px-3 py-1.5 bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white font-extrabold text-[9px] uppercase tracking-wider rounded-lg shadow-sm transition-colors shrink-0 flex items-center gap-0.5 cursor-pointer"
+                class="px-3 py-1.5 bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white font-bold text-[11px] uppercase tracking-wider rounded-lg shadow-sm transition-colors shrink-0 flex items-center gap-0.5 cursor-pointer"
               >
                 <span>Erledigt</span> ✓
               </button>
@@ -84,14 +84,14 @@
           <button 
             type="button" 
             @click="snoozeReminders" 
-            class="px-4 py-2 text-xs font-extrabold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-border rounded-xl transition-all"
+            class="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-border rounded-xl transition-all"
           >
             Später erinnern (Snooze)
           </button>
           <button 
             type="button" 
             @click="closeModal" 
-            class="px-5 py-2 bg-gray-800 hover:bg-gray-900 dark:bg-dark-border dark:hover:bg-dark-border/80 text-white dark:text-gray-200 font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer"
+            class="px-5 py-2 bg-gray-800 hover:bg-gray-900 dark:bg-dark-border dark:hover:bg-dark-border/80 text-white dark:text-gray-200 font-bold text-xs uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer"
           >
             Schließen
           </button>

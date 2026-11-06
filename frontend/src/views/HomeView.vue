@@ -2,23 +2,17 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     
     <!-- Welcome Header -->
-    <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
-      <div>
-        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-          {{ $t('dashboard.hello') }}, {{ authStore.user?.first_name || authStore.user?.username }}!
-        </h1>
-        <p v-if="apiaryStore.activeApiary" class="text-gray-500 dark:text-gray-400 mt-1">
-          {{ $t('dashboard.welcome_back', { apiary: apiaryStore.activeApiary?.name }) }}
-        </p>
-        <p v-else class="text-gray-500 dark:text-gray-400 mt-1">
-          {{ $t('dashboard.welcome_new') }}
-        </p>
-      </div>
-      <div v-if="apiaryStore.activeApiary" class="flex items-center space-x-2 bg-primary/10 border border-primary/20 text-primary px-4 py-2 rounded-2xl">
+    <PageHeader
+      :title="`${$t('dashboard.hello')}, ${authStore.user?.first_name || authStore.user?.username}!`"
+      :subtitle="apiaryStore.activeApiary ? $t('dashboard.welcome_back', { apiary: apiaryStore.activeApiary?.name }) : $t('dashboard.welcome_new')"
+    >
+      <template v-if="apiaryStore.activeApiary" #actions>
+      <div class="flex items-center space-x-2 bg-primary/10 border border-primary/20 text-primary px-4 py-2 rounded-2xl">
         <svg class="w-5 h-5 fill-primary" viewBox="0 0 24 24"><path d="M12 2C11.5 2 11 2.2 10.6 2.6L7.4 5.8C6.9 6.3 6.9 7.1 7.4 7.6L8.4 8.6C7.6 9.8 7 11 7 12H5C3.3 12 2 13.3 2 15C2 16.7 3.3 18 5 18H7C7 19.1 7.9 20 9 20H15C16.1 20 17 19.1 17 18H19C20.7 18 22 16.7 22 15C22 13.3 20.7 12 19 12H17C17 11 16.4 9.8 15.6 8.6L16.6 7.6C17.1 7.1 17.1 6.3 16.6 5.8L13.4 2.6C13 2.2 12.5 2 12 2M12 4L14.4 6.4L13 7.8L12.5 7.3C12.1 6.9 11.3 6.9 10.9 7.3L10.4 7.8L9.6 7L12 4M9 10H15V12H9V10M5 14H19C19.6 14 20 14.4 20 15C20 15.6 19.6 16 19 16H5C4.4 16 4 15.6 4 15C4 14.4 4.4 14 5 14M9 18H15V19H9V18Z"/></svg>
         <span class="text-sm font-bold uppercase tracking-wider">{{ $t('dashboard.active') }}</span>
       </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <!-- Beautiful Inline creation form instead of modal or blank page -->
     <div v-if="!apiaryStore.activeApiaryId" class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl shadow-xl w-full max-w-md p-8 mx-auto space-y-6">
@@ -29,7 +23,7 @@
             <path d="M12 2C11.5 2 11 2.2 10.6 2.6L7.4 5.8C6.9 6.3 6.9 7.1 7.4 7.6L8.4 8.6C7.6 9.8 7 11 7 12H5C3.3 12 2 13.3 2 15C2 16.7 3.3 18 5 18H7C7 19.1 7.9 20 9 20H15C16.1 20 17 19.1 17 18H19C20.7 18 22 16.7 22 15C22 13.3 20.7 12 19 12H17C17 11 16.4 9.8 15.6 8.6L16.6 7.6C17.1 7.1 17.1 6.3 16.6 5.8L13.4 2.6C13 2.2 12.5 2 12 2M12 4L14.4 6.4L13 7.8L12.5 7.3C12.1 6.9 11.3 6.9 10.9 7.3L10.4 7.8L9.6 7L12 4M9 10H15V12H9V10M5 14H19C19.6 14 20 14.4 20 15C20 15.6 19.6 16 19 16H5C4.4 16 4 15.6 4 15C4 14.4 4.4 14 5 14M9 18H15V19H9V18Z"/>
           </svg>
         </div>
-        <h3 class="text-xl font-extrabold text-gray-900 dark:text-white">{{ $t('dashboard.create_apiary_title') }}</h3>
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ $t('dashboard.create_apiary_title') }}</h3>
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
           {{ $t('dashboard.create_apiary_desc') }}
         </p>
@@ -98,7 +92,7 @@
       <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-bold text-gray-900 dark:text-white">🗓️ {{ $t('dashboard.due_dates_title') }}</h3>
-          <router-link to="/tasks?view=calendar" class="text-xs font-extrabold text-primary hover:underline uppercase tracking-wider">
+          <router-link to="/tasks?view=calendar" class="text-xs font-bold text-primary hover:underline uppercase tracking-wider">
             {{ $t('dashboard.open_calendar') }}
           </router-link>
         </div>
@@ -124,12 +118,12 @@
             </div>
 
             <div class="shrink-0 flex flex-col items-end gap-1">
-              <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-full"
+              <span class="text-xs font-bold uppercase px-2 py-0.5 rounded-full"
                 :class="item.kind === 'task' ? 'bg-primary/15 text-primary' : 'bg-blue-500/15 text-blue-600 dark:text-blue-400'"
               >
                 {{ item.kind === 'task' ? $t('dashboard.task_kind') : $t('dashboard.event_kind') }}
               </span>
-              <span class="text-[10px] font-bold uppercase"
+              <span class="text-xs font-bold uppercase"
                 :class="item.status === 'overdue' ? 'text-red-500' : item.status === 'today' ? 'text-amber-600 dark:text-amber-400' : 'text-gray-500 dark:text-gray-400'"
               >
                 {{ item.statusLabel }}
@@ -151,7 +145,7 @@
               <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center space-x-2">
                 <span>📋 {{ $t('dashboard.upcoming_tasks_title') }}</span>
               </h3>
-              <span class="px-2.5 py-1 bg-primary/10 text-primary text-xs font-extrabold rounded-full">
+              <span class="px-2.5 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full">
                 {{ $t('dashboard.tasks_count', { count: tasks.length }) }}
               </span>
             </div>
@@ -201,7 +195,7 @@
                 </div>
                 <span 
                   v-if="task.urgent" 
-                  class="px-2 py-0.5 bg-red-500/10 text-red-500 text-[10px] font-bold uppercase rounded-full shrink-0"
+                  class="px-2 py-0.5 bg-red-500/10 text-red-500 text-xs font-bold uppercase rounded-full shrink-0"
                 >
                   {{ $t('dashboard.urgent') }}
                 </span>
@@ -213,12 +207,12 @@
           <!-- Quick AI Assistant / Insight Banner -->
           <div v-if="latestInsight" class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 dark:from-dark-card dark:to-dark-bg dark:border-amber-900/50 rounded-3xl p-6 shadow-sm relative overflow-hidden">
             <div class="flex items-center gap-2 mb-4">
-              <span class="bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 text-xs font-black uppercase px-3 py-1 rounded-full">{{ $t('dashboard.ai_analysis') }}</span>
+              <span class="bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 text-xs font-bold uppercase px-3 py-1 rounded-full">{{ $t('dashboard.ai_analysis') }}</span>
               <span class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">{{ formatDateTime(latestInsight.created_at) }}</span>
             </div>
-            <h3 class="text-xl font-black mb-3 text-gray-900 dark:text-white">{{ latestInsight.title }}</h3>
+            <h3 class="text-xl font-bold mb-3 text-gray-900 dark:text-white">{{ latestInsight.title }}</h3>
             <div class="prose dark:prose-invert max-w-none text-sm text-gray-700 dark:text-gray-300 line-clamp-4 markdown-content mb-4" v-html="renderMarkdown(latestInsight.content)"></div>
-            <router-link to="/ai-insights" class="inline-block px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-sm rounded-xl shadow-sm hover-scale transition-colors">
+            <router-link to="/ai-insights" class="inline-block px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm rounded-xl shadow-sm hover-scale transition-colors">
               {{ $t('dashboard.full_post_btn') }}
             </router-link>
           </div>
@@ -229,11 +223,11 @@
               <svg class="w-72 h-72 fill-white" viewBox="0 0 24 24"><path d="M12 2C11.5 2 11 2.2 10.6 2.6L7.4 5.8C6.9 6.3 6.9 7.1 7.4 7.6L8.4 8.6C7.6 9.8 7 11 7 12H5C3.3 12 2 13.3 2 15C2 16.7 3.3 18 5 18H7C7 19.1 7.9 20 9 20H15C16.1 20 17 19.1 17 18H19C20.7 18 22 16.7 22 15C22 13.3 20.7 12 19 12H17C17 11 16.4 9.8 15.6 8.6L16.6 7.6C17.1 7.1 17.1 6.3 16.6 5.8L13.4 2.6C13 2.2 12.5 2 12 2Z"/></svg>
             </div>
 
-            <h3 class="text-xl font-black mb-2">{{ $t('dashboard.ai_questions_title') }}</h3>
+            <h3 class="text-xl font-bold mb-2">{{ $t('dashboard.ai_questions_title') }}</h3>
             <p class="text-sm opacity-90 max-w-lg mb-4">
               {{ $t('dashboard.ai_questions_desc') }}
             </p>
-            <router-link to="/ai-insights" class="inline-block px-5 py-2.5 bg-white text-amber-700 font-extrabold text-sm rounded-xl shadow-md hover:bg-gray-100 hover-scale">
+            <router-link to="/ai-insights" class="inline-block px-5 py-2.5 bg-white text-amber-700 font-bold text-sm rounded-xl shadow-md hover:bg-gray-100 hover-scale">
               {{ $t('dashboard.ai_open_btn') }}
             </router-link>
           </div>
@@ -271,7 +265,7 @@
                     <h4 class="text-sm font-bold text-gray-800 dark:text-gray-200">
                       {{ entry.hive?.name }}
                     </h4>
-                    <span class="text-[10px] text-gray-400 uppercase font-bold">{{ formatDate(entry.date) }}</span>
+                    <span class="text-xs text-gray-400 uppercase font-bold">{{ formatDate(entry.date) }}</span>
                   </div>
                   <p class="text-xs text-gray-500 font-semibold uppercase mt-0.5 tracking-wider">
                     {{ getEntryTypeName(entry.entry_type) }}
@@ -299,6 +293,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import PageHeader from '../components/PageHeader.vue'
 import { useAuthStore } from '../stores/auth'
 import { useApiaryStore } from '../stores/apiary'
 import { useErrorStore } from '../stores/error'
@@ -645,7 +640,7 @@ function getEntryColorClass(type) {
   @apply list-disc list-inside mb-2 space-y-1;
 }
 .markdown-content :deep(strong) {
-  @apply font-extrabold text-gray-900 dark:text-white;
+  @apply font-bold text-gray-900 dark:text-white;
 }
 
 .animate-shake {

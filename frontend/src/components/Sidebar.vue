@@ -14,8 +14,8 @@
         <router-link to="/" class="flex items-center gap-3 hover-scale min-w-0 px-5 py-4" :class="settingsStore.sidebarCollapsed ? 'justify-center px-2' : ''" :title="APP_NAME">
           <img :src="beeboardLogo" alt="BeeBoard" class="h-12 w-auto flex-shrink-0" />
           <div v-if="!settingsStore.sidebarCollapsed" class="flex flex-col leading-tight min-w-0">
-            <span class="text-base font-extrabold tracking-tight text-gray-800 dark:text-white truncate">{{ APP_NAME }}</span>
-            <span class="text-[10px] font-semibold text-gray-400 dark:text-gray-500 tracking-wider">v{{ APP_VERSION }}</span>
+            <span class="text-base font-bold tracking-tight text-gray-800 dark:text-white truncate">{{ APP_NAME }}</span>
+            <span class="text-xs font-semibold text-gray-400 dark:text-gray-500 tracking-wider">v{{ APP_VERSION }}</span>
           </div>
         </router-link>
 
@@ -57,7 +57,7 @@
           <span v-if="!settingsStore.sidebarCollapsed" class="flex-1">{{ item.name }}</span>
           <span
             v-if="item.path === '/ai-insights' && unreadInsightsCount > 0"
-            class="min-w-5 h-5 px-1.5 rounded-full text-[10px] font-black flex items-center justify-center"
+            class="min-w-5 h-5 px-1.5 rounded-full text-xs font-bold flex items-center justify-center"
             :class="[
               settingsStore.sidebarCollapsed ? 'absolute top-1 right-1' : '',
               $route.path.startsWith(item.path)
@@ -75,7 +75,7 @@
         
         <!-- Apiary Switcher -->
         <div v-if="!settingsStore.sidebarCollapsed" class="space-y-1.5">
-          <label class="text-[10px] uppercase tracking-wider font-extrabold text-gray-400 dark:text-gray-500 block px-1">
+          <label class="text-xs uppercase tracking-wider font-bold text-gray-400 dark:text-gray-500 block px-1">
             {{ $t('sidebar.active_apiary') }}
           </label>
           <div class="flex items-center gap-1.5 w-full">
@@ -128,7 +128,7 @@
             <p class="text-sm font-bold text-gray-700 dark:text-gray-200 truncate leading-tight">
               {{ authStore.user?.first_name || authStore.user?.username }}
             </p>
-            <span class="text-[10px] text-gray-400 dark:text-gray-500 font-semibold truncate block">
+            <span class="text-xs text-gray-400 dark:text-gray-500 font-semibold truncate block">
               {{ authStore.user?.email || 'Imker' }}
             </span>
           </div>
@@ -204,7 +204,7 @@
 
         <router-link to="/" class="flex items-center gap-2 hover-scale">
           <img :src="beeboardLogo" alt="BeeBoard" class="h-10 w-auto" />
-          <span class="font-extrabold text-sm text-gray-800 dark:text-white tracking-tight">{{ APP_NAME }}</span>
+          <span class="font-bold text-sm text-gray-800 dark:text-white tracking-tight">{{ APP_NAME }}</span>
         </router-link>
       </div>
 
@@ -241,8 +241,8 @@
         <router-link to="/" @click="mobileMenuOpen = false" class="flex items-center gap-2.5 hover-scale">
           <img :src="beeboardLogo" alt="BeeBoard" class="h-9 w-auto" />
           <div class="flex flex-col leading-tight">
-            <span class="text-sm font-extrabold text-gray-800 dark:text-white tracking-tight">{{ APP_NAME }}</span>
-            <span class="text-[9px] font-semibold text-gray-400 dark:text-gray-500">v{{ APP_VERSION }}</span>
+            <span class="text-sm font-bold text-gray-800 dark:text-white tracking-tight">{{ APP_NAME }}</span>
+            <span class="text-[11px] font-semibold text-gray-400 dark:text-gray-500">v{{ APP_VERSION }}</span>
           </div>
         </router-link>
 
@@ -275,7 +275,7 @@
           <span class="flex-1">{{ item.name }}</span>
           <span
             v-if="item.path === '/ai-insights' && unreadInsightsCount > 0"
-            class="min-w-5 h-5 px-1.5 rounded-full text-[10px] font-black flex items-center justify-center"
+            class="min-w-5 h-5 px-1.5 rounded-full text-xs font-bold flex items-center justify-center"
             :class="$route.path.startsWith(item.path)
               ? 'bg-white/20 text-white'
               : 'bg-primary/15 text-primary'"
@@ -290,7 +290,7 @@
         
         <!-- Apiary Switcher -->
         <div class="space-y-1.5">
-          <label class="text-[10px] uppercase tracking-wider font-extrabold text-gray-400 dark:text-gray-500 block px-1">
+          <label class="text-xs uppercase tracking-wider font-bold text-gray-400 dark:text-gray-500 block px-1">
             Aktive Imkerei
           </label>
           <div class="flex items-center gap-1.5 w-full">
@@ -332,7 +332,7 @@
             <p class="text-sm font-bold text-gray-700 dark:text-gray-200 truncate leading-tight">
               {{ authStore.user?.first_name || authStore.user?.username }}
             </p>
-            <span class="text-[10px] text-gray-400 dark:text-gray-500 font-semibold truncate block">
+            <span class="text-xs text-gray-400 dark:text-gray-500 font-semibold truncate block">
               {{ authStore.user?.email || 'Imker' }}
             </span>
           </div>

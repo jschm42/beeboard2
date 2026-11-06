@@ -8,7 +8,7 @@
       <div class="w-full max-w-3xl max-h-[90vh] overflow-hidden rounded-2xl bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border shadow-2xl">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border flex items-start justify-between gap-4">
           <div>
-            <h2 class="text-lg font-extrabold text-gray-900 dark:text-white">About BeeBoard 2</h2>
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white">About BeeBoard 2</h2>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Third-party attributions and dependency acknowledgements.
             </p>

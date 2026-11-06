@@ -1,32 +1,20 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans">
     
-    <!-- Back to Dashboard Link -->
-    <router-link to="/dashboard" class="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-hover mb-4 transition-colors duration-200">
-      <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-      </svg>
-      {{ $t('common.back_to_dashboard') }}
-    </router-link>
 
-    <!-- Header Area -->
-    <div class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
-      <div>
-        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2.5">
-          <span class="p-2 bg-primary/10 rounded-2xl text-primary leading-none text-2xl">🔑</span>
-          {{ $t('sidebar.api_keys') }}
-        </h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">
-          Verwalte Zugriffsschlüssel für externe KI-Agenten (wie Hermes) und Drittanwendungen.
-        </p>
-      </div>
-      <button 
+    <PageHeader>
+      <template #title><span class="p-2 bg-primary/10 rounded-2xl text-primary leading-none text-2xl">🔑</span>
+          {{ $t('sidebar.api_keys') }}</template>
+      <template #subtitle>Verwalte Zugriffsschlüssel für externe KI-Agenten (wie Hermes) und Drittanwendungen.</template>
+      <template #actions>
+        <button 
         @click="openCreateModal" 
-        class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-2 cursor-pointer"
+        class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-2 cursor-pointer"
       >
         <span>+ Neuen Schlüssel generieren</span>
       </button>
-    </div>
+      </template>
+    </PageHeader>
 
     <!-- Alert / Info Message -->
     <div class="mb-6 p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-2xl text-sm flex items-start space-x-3 text-blue-700 dark:text-blue-300">
@@ -90,7 +78,7 @@
             <button 
               type="submit" 
               :disabled="saving"
-              class="px-5 py-2 bg-primary hover:bg-primary-hover text-white text-sm font-extrabold rounded-xl shadow-md shadow-primary/10 hover-scale transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              class="px-5 py-2 bg-primary hover:bg-primary-hover text-white text-sm font-bold rounded-xl shadow-md shadow-primary/10 hover-scale transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               <span v-if="saving">Generiere...</span>
               <span v-else>Generieren</span>
@@ -133,7 +121,7 @@
         <div class="flex justify-end">
           <button 
             @click="closeGeneratedModal" 
-            class="px-5 py-2.5 bg-gray-900 hover:bg-black dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white font-extrabold text-sm rounded-xl hover-scale cursor-pointer"
+            class="px-5 py-2.5 bg-gray-900 hover:bg-black dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white font-bold text-sm rounded-xl hover-scale cursor-pointer"
           >
             Fertig, ich habe den Schlüssel kopiert
           </button>
@@ -154,7 +142,7 @@
       <p class="text-gray-500 dark:text-gray-400 text-sm mb-6">Erstelle deinen ersten API-Schlüssel, um externen KI-Agenten oder Programmen Zugriff auf deine Imkerei-Daten zu geben.</p>
       <button 
         @click="openCreateModal" 
-        class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl hover-scale cursor-pointer"
+        class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-sm rounded-xl hover-scale cursor-pointer"
       >
         + Neuen Schlüssel generieren
       </button>
@@ -301,6 +289,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import PageHeader from '../components/PageHeader.vue'
 import axios from 'axios'
 
 const apiKeys = ref([])

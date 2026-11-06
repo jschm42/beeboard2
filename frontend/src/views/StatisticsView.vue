@@ -1,17 +1,11 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans">
     
-    <!-- Back to Dashboard Link -->
-    <router-link to="/dashboard" class="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-hover mb-4 transition-colors duration-200">
-      <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-      {{ $t('common.back_to_dashboard') }}
-    </router-link>
 
-    <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">📈 {{ $t('stats.title') }}</h1>
-      <p class="text-gray-500 dark:text-gray-400 mt-1">{{ $t('stats.subtitle') }}</p>
-    </div>
+    <PageHeader>
+      <template #title>📈 {{ $t('stats.title') }}</template>
+      <template #subtitle>{{ $t('stats.subtitle') }}</template>
+    </PageHeader>
 
     <!-- Active Apiary Guard -->
     <div v-if="!apiaryStore.activeApiaryId" class="glass rounded-3xl p-12 text-center max-w-lg mx-auto border border-dashed border-gray-300 dark:border-gray-700">
@@ -30,7 +24,7 @@
           
           <!-- Location Filter -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{{ $t('stats.filter_location') }}</label>
+            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{{ $t('stats.filter_location') }}</label>
             <select 
               v-model="filters.locationId"
               @change="onFilterChange"
@@ -45,7 +39,7 @@
 
           <!-- Hive Filter -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{{ $t('stats.filter_hive') }}</label>
+            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{{ $t('stats.filter_hive') }}</label>
             <select 
               v-model="filters.hiveId"
               @change="onFilterChange"
@@ -60,7 +54,7 @@
 
           <!-- Season Filter -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{{ $t('stats.filter_season') }}</label>
+            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{{ $t('stats.filter_season') }}</label>
             <select 
               v-model="filters.season"
               @change="onFilterChange"
@@ -85,8 +79,8 @@
             👑
           </div>
           <div>
-            <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">{{ $t('stats.peak_brood') }}</p>
-            <p class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{{ formatNumber(peaks.brood) }} {{ $t('stats.combs') }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">{{ $t('stats.peak_brood') }}</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ formatNumber(peaks.brood) }} {{ $t('stats.combs') }}</p>
           </div>
         </div>
 
@@ -95,8 +89,8 @@
             🐝
           </div>
           <div>
-            <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">{{ $t('stats.peak_bees') }}</p>
-            <p class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{{ formatNumber(peaks.bees) }} {{ $t('stats.combs') }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">{{ $t('stats.peak_bees') }}</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ formatNumber(peaks.bees) }} {{ $t('stats.combs') }}</p>
           </div>
         </div>
 
@@ -105,8 +99,8 @@
             🍯
           </div>
           <div>
-            <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">{{ $t('stats.peak_food') }}</p>
-            <p class="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{{ formatNumber(peaks.food) }} {{ $t('stats.combs') }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">{{ $t('stats.peak_food') }}</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ formatNumber(peaks.food) }} {{ $t('stats.combs') }}</p>
           </div>
         </div>
 
@@ -116,8 +110,8 @@
       <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm">
         
         <div class="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-dark-border pb-4">
-          <h2 class="text-base font-extrabold text-gray-900 dark:text-white">⏰ {{ $t('stats.chart_title') }}</h2>
-          <span class="text-[10px] text-gray-400 uppercase font-black tracking-wider bg-gray-50 dark:bg-dark-bg px-2 py-1 rounded">
+          <h2 class="text-base font-bold text-gray-900 dark:text-white">⏰ {{ $t('stats.chart_title') }}</h2>
+          <span class="text-xs text-gray-400 uppercase font-bold tracking-wider bg-gray-50 dark:bg-dark-bg px-2 py-1 rounded">
             {{ $t('stats.data_points_prefix', { count: statsData.labels?.length || 0 }) }}
           </span>
         </div>
@@ -151,6 +145,7 @@
 
 <script setup>
 import { ref, onMounted, reactive, computed, watch, onBeforeUnmount } from 'vue'
+import PageHeader from '../components/PageHeader.vue'
 import { useI18n } from 'vue-i18n'
 import { useApiaryStore } from '../stores/apiary'
 import { Chart, registerables } from 'chart.js'

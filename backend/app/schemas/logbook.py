@@ -57,7 +57,7 @@ class InspectionDetailOut(BaseModel):
         from_attributes = True
 
 class VarroaCountDetailCreate(BaseModel):
-    raw_count: int
+    raw_count: int = Field(..., ge=0)
 
 class VarroaCountDetailOut(BaseModel):
     id: str

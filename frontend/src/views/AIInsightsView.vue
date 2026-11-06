@@ -1,14 +1,6 @@
 <template>
   <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ai-insights-container">
-    <div class="mb-6">
-      <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
-        <span>🤖</span>
-        <span>{{ $t('aiInsights.title') }}</span>
-      </h1>
-      <p class="text-gray-500 dark:text-gray-400 mt-2">
-        {{ $t('aiInsights.subtitle') }}
-      </p>
-    </div>
+    <PageHeader icon="🤖" :title="$t('aiInsights.title')" :subtitle="$t('aiInsights.subtitle')" />
 
     <!-- Main Tab Navigation -->
     <div class="flex border-b border-gray-200 dark:border-dark-border mb-6 space-x-6">
@@ -34,7 +26,7 @@
       <div class="flex flex-col xl:flex-row xl:items-end gap-4">
         <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('aiInsights.filter_view') }}</label>
+            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('aiInsights.filter_view') }}</label>
             <div class="inline-flex w-full rounded-xl p-1 bg-gray-100 dark:bg-dark-bg border border-gray-200 dark:border-gray-700">
               <button
                 type="button"
@@ -56,7 +48,7 @@
           </div>
 
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('aiInsights.filter_read') }}</label>
+            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('aiInsights.filter_read') }}</label>
             <select
               v-model="filters.readStatus"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary"
@@ -69,7 +61,7 @@
           </div>
 
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('aiInsights.filter_from') }}</label>
+            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('aiInsights.filter_from') }}</label>
             <input
               v-model="filters.startDate"
               type="date"
@@ -79,7 +71,7 @@
           </div>
 
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('aiInsights.filter_to') }}</label>
+            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('aiInsights.filter_to') }}</label>
             <input
               v-model="filters.endDate"
               type="date"
@@ -148,7 +140,7 @@
           :key="insight.id"
           class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-4 md:p-6 shadow-sm transition-all relative overflow-hidden"
         >
-          <div v-if="index === 0" class="absolute top-0 right-0 bg-amber-500 text-white text-[10px] font-black uppercase px-4 py-1.5 rounded-bl-xl shadow-sm z-10">
+          <div v-if="index === 0" class="absolute top-0 right-0 bg-amber-500 text-white text-xs font-bold uppercase px-4 py-1.5 rounded-bl-xl shadow-sm z-10">
             {{ $t('aiInsights.latest_badge') }}
           </div>
 
@@ -157,7 +149,7 @@
               <div class="flex items-center gap-2 mb-1">
                 <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">{{ formatDate(insight.created_at) }}</p>
                 <span
-                  class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase"
+                  class="px-2 py-0.5 rounded-full text-xs font-bold uppercase"
                   :class="insight.is_read
                     ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
                     : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'"
@@ -165,12 +157,12 @@
                   {{ insight.is_read ? $t('aiInsights.badge_read') : $t('aiInsights.badge_new') }}
                 </span>
               </div>
-              <h2 class="text-lg md:text-2xl font-extrabold text-gray-900 dark:text-white line-clamp-2">{{ insight.title }}</h2>
+              <h2 class="text-lg md:text-2xl font-bold text-gray-900 dark:text-white line-clamp-2">{{ insight.title }}</h2>
             </div>
             <div class="flex gap-1">
               <button
                 @click.stop="toggleReadStatus(insight, !insight.is_read)"
-                class="px-2.5 py-1.5 text-[10px] font-bold rounded-lg border transition-colors"
+                class="px-2.5 py-1.5 text-xs font-bold rounded-lg border transition-colors"
                 :class="insight.is_read
                   ? 'border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-primary'
                   : 'border-emerald-400/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10'"
@@ -209,7 +201,7 @@
                 <div class="flex items-center gap-2 mb-1">
                   <span class="text-[11px] font-bold text-gray-400">{{ formatDate(insight.created_at) }}</span>
                   <span
-                    class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase"
+                    class="px-2 py-0.5 rounded-full text-xs font-bold uppercase"
                     :class="insight.is_read
                       ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
                       : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'"
@@ -217,21 +209,21 @@
                     {{ insight.is_read ? $t('aiInsights.badge_read') : $t('aiInsights.badge_new') }}
                   </span>
                 </div>
-                <h3 class="text-sm md:text-base font-extrabold text-gray-900 dark:text-white truncate">{{ insight.title }}</h3>
+                <h3 class="text-sm md:text-base font-bold text-gray-900 dark:text-white truncate">{{ insight.title }}</h3>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{{ stripMarkdown(insight.content) }}</p>
               </div>
 
               <div class="flex items-center gap-2 shrink-0">
                 <button
                   type="button"
-                  class="px-2.5 py-1.5 text-[10px] font-bold rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:border-primary"
+                  class="px-2.5 py-1.5 text-xs font-bold rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:border-primary"
                   @click="openInsightModal(insight)"
                 >
                   {{ $t('aiInsights.action_open') }}
                 </button>
                 <button
                   type="button"
-                  class="px-2.5 py-1.5 text-[10px] font-bold rounded-lg border transition-colors"
+                  class="px-2.5 py-1.5 text-xs font-bold rounded-lg border transition-colors"
                   :class="insight.is_read
                     ? 'border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-primary'
                     : 'border-emerald-400/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10'"
@@ -241,7 +233,7 @@
                 </button>
                 <button
                   type="button"
-                  class="px-2.5 py-1.5 text-[10px] font-bold rounded-lg border border-red-300 dark:border-red-900/60 text-red-600 dark:text-red-300 hover:bg-red-500/10"
+                  class="px-2.5 py-1.5 text-xs font-bold rounded-lg border border-red-300 dark:border-red-900/60 text-red-600 dark:text-red-300 hover:bg-red-500/10"
                   @click="deleteInsight(insight)"
                 >
                   {{ $t('aiInsights.action_delete') }}
@@ -294,7 +286,7 @@
         <!-- Jobs Header -->
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-xl font-extrabold text-gray-900 dark:text-white">🐝 {{ $t('beeAgent.jobs_title') }}</h2>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">🐝 {{ $t('beeAgent.jobs_title') }}</h2>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ $t('beeAgent.jobs_subtitle') }}</p>
           </div>
           <button
@@ -326,23 +318,23 @@
           >
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 flex-wrap mb-1">
-                <h3 class="font-extrabold text-gray-900 dark:text-white text-sm">{{ job.name }}</h3>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase"
+                <h3 class="font-bold text-gray-900 dark:text-white text-sm">{{ job.name }}</h3>
+                <span class="px-2 py-0.5 rounded-full text-xs font-bold uppercase"
                   :class="job.is_active ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300' : 'bg-gray-200 dark:bg-gray-700 text-gray-500'">
                   {{ job.is_active ? $t('common.active') : $t('common.inactive') }}
                 </span>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-blue-500/10 text-blue-700 dark:text-blue-300">
+                <span class="px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-blue-500/10 text-blue-700 dark:text-blue-300">
                   {{ job.execution_mode === 'AUTO_CREATE' ? '🤖 ' + $t('beeAgent.mode_auto') : '💡 ' + $t('beeAgent.mode_copilot') }}
                 </span>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                   {{ scopeLabel(job.scope) }}
                 </span>
-                <span v-if="job.include_locations" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">{{ $t('beeAgent.badge_locations') }}</span>
-                <span v-if="job.include_hives" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">{{ $t('beeAgent.badge_hives') }}</span>
-                <span v-if="job.include_journal_entries" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">{{ $t('beeAgent.badge_journal') }}</span>
-                <span v-if="job.include_tasks" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">{{ $t('beeAgent.badge_tasks') }}</span>
-                <span v-if="job.include_calendar" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">{{ $t('beeAgent.badge_calendar') }}</span>
-                <span v-if="job.include_weather_data" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">{{ $t('beeAgent.badge_weather') }}</span>
+                <span v-if="job.include_locations" class="px-2 py-0.5 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">{{ $t('beeAgent.badge_locations') }}</span>
+                <span v-if="job.include_hives" class="px-2 py-0.5 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">{{ $t('beeAgent.badge_hives') }}</span>
+                <span v-if="job.include_journal_entries" class="px-2 py-0.5 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">{{ $t('beeAgent.badge_journal') }}</span>
+                <span v-if="job.include_tasks" class="px-2 py-0.5 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">{{ $t('beeAgent.badge_tasks') }}</span>
+                <span v-if="job.include_calendar" class="px-2 py-0.5 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">{{ $t('beeAgent.badge_calendar') }}</span>
+                <span v-if="job.include_weather_data" class="px-2 py-0.5 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">{{ $t('beeAgent.badge_weather') }}</span>
               </div>
               <p class="text-[11px] text-gray-500 dark:text-gray-400 font-mono">{{ job.cron_expression }}</p>
               <p v-if="job.custom_prompt" class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-1 italic">
@@ -379,7 +371,7 @@
         <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-5 shadow-sm">
           <div class="flex items-center justify-between mb-4">
             <div>
-              <h2 class="text-base font-extrabold text-gray-900 dark:text-white">💡 {{ $t('beeAgent.proposals_title') }}</h2>
+              <h2 class="text-base font-bold text-gray-900 dark:text-white">💡 {{ $t('beeAgent.proposals_title') }}</h2>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ $t('beeAgent.proposals_subtitle') }}</p>
             </div>
             <button @click="fetchProposals" class="text-xs text-primary hover:underline font-bold">{{ $t('beeAgent.refresh_btn') }}</button>
@@ -402,7 +394,7 @@
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1 flex-wrap">
                   <span
-                    class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase"
+                    class="px-2 py-0.5 rounded-full text-xs font-bold uppercase"
                     :class="{
                       'bg-red-500/15 text-red-700 dark:text-red-300': proposal.priority === 'HIGH',
                       'bg-amber-500/15 text-amber-700 dark:text-amber-300': proposal.priority === 'MEDIUM',
@@ -411,7 +403,7 @@
                   >
                     {{ priorityLabel(proposal.priority) }}
                   </span>
-                  <span v-if="proposal.due_date" class="text-[10px] text-gray-500 dark:text-gray-400">
+                  <span v-if="proposal.due_date" class="text-xs text-gray-500 dark:text-gray-400">
                     📅 {{ proposal.due_date }}
                   </span>
                 </div>
@@ -445,7 +437,7 @@
     <div v-if="showJobModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div class="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-dark-card shadow-2xl">
         <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <h3 class="text-lg font-extrabold text-gray-900 dark:text-white">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white">
             {{ editingJob ? $t('beeAgent.edit_job_title') : $t('beeAgent.create_job_title') }}
           </h3>
           <button type="button" class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-dark-bg" @click="closeJobModal">
@@ -456,18 +448,18 @@
         <div class="p-5 space-y-4">
           <!-- Name -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('beeAgent.job_name_label') }}</label>
+            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('beeAgent.job_name_label') }}</label>
             <input v-model="jobForm.name" type="text" :placeholder="$t('beeAgent.job_name_placeholder')" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
           </div>
 
           <!-- Execution Mode -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('beeAgent.exec_mode_label') }}</label>
+            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('beeAgent.exec_mode_label') }}</label>
             <div class="inline-flex w-full rounded-xl p-1 bg-gray-100 dark:bg-dark-bg border border-gray-200 dark:border-gray-700">
               <button type="button" class="flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors" :class="jobForm.execution_mode === 'SUGGESTION' ? 'bg-primary text-white' : 'text-gray-600 dark:text-gray-300'" @click="jobForm.execution_mode = 'SUGGESTION'">{{ $t('beeAgent.mode_copilot_option') }}</button>
               <button type="button" class="flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors" :class="jobForm.execution_mode === 'AUTO_CREATE' ? 'bg-primary text-white' : 'text-gray-600 dark:text-gray-300'" @click="jobForm.execution_mode = 'AUTO_CREATE'">{{ $t('beeAgent.mode_auto_option') }}</button>
             </div>
-            <p class="text-[10px] text-gray-400 mt-1">
+            <p class="text-xs text-gray-400 mt-1">
               <span v-if="jobForm.execution_mode === 'SUGGESTION'">{{ $t('beeAgent.mode_copilot_desc') }}</span>
               <span v-else>{{ $t('beeAgent.mode_auto_desc') }}</span>
             </p>
@@ -475,7 +467,7 @@
 
           <!-- Scope -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('beeAgent.scope_label') }}</label>
+            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('beeAgent.scope_label') }}</label>
             <select v-model="jobForm.scope" @change="onScopeChange" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary">
               <option value="IMKEREI">🏠 {{ $t('beeAgent.scope_apiary_option') }}</option>
               <option value="STANDORT">📍 {{ $t('beeAgent.scope_location_option') }}</option>
@@ -485,7 +477,7 @@
 
           <!-- Entity selection for STANDORT -->
           <div v-if="jobForm.scope === 'STANDORT'">
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('beeAgent.select_locations_label') }}</label>
+            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('beeAgent.select_locations_label') }}</label>
             <div class="space-y-1 max-h-32 overflow-y-auto">
               <label v-for="loc in availableLocations" :key="loc.id" class="flex items-center gap-2 text-sm">
                 <input type="checkbox" :value="loc.id" v-model="jobForm.entity_ids" class="rounded" />
@@ -496,7 +488,7 @@
 
           <!-- Entity selection for VOLK -->
           <div v-if="jobForm.scope === 'VOLK'">
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('beeAgent.select_hives_label') }}</label>
+            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('beeAgent.select_hives_label') }}</label>
             <div class="space-y-1 max-h-32 overflow-y-auto">
               <label v-for="hive in availableHives" :key="hive.id" class="flex items-center gap-2 text-sm">
                 <input type="checkbox" :value="hive.id" v-model="jobForm.entity_ids" class="rounded" />
@@ -511,62 +503,62 @@
               <input type="checkbox" v-model="jobForm.include_locations" class="rounded" />
               <div>
                 <div class="text-sm font-bold text-gray-800 dark:text-white">📍 {{ $t('beeAgent.include_locations_title') }}</div>
-                <div class="text-[10px] text-gray-500">{{ $t('beeAgent.include_locations_desc') }}</div>
+                <div class="text-xs text-gray-500">{{ $t('beeAgent.include_locations_desc') }}</div>
               </div>
             </label>
             <label class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-primary">
               <input type="checkbox" v-model="jobForm.include_hives" class="rounded" />
               <div>
                 <div class="text-sm font-bold text-gray-800 dark:text-white">🐝 {{ $t('beeAgent.include_hives_title') }}</div>
-                <div class="text-[10px] text-gray-500">{{ $t('beeAgent.include_hives_desc') }}</div>
+                <div class="text-xs text-gray-500">{{ $t('beeAgent.include_hives_desc') }}</div>
               </div>
             </label>
             <label class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-primary">
               <input type="checkbox" v-model="jobForm.include_weather_data" class="rounded" />
               <div>
                 <div class="text-sm font-bold text-gray-800 dark:text-white">🌦️ {{ $t('beeAgent.include_weather_title') }}</div>
-                <div class="text-[10px] text-gray-500">{{ $t('beeAgent.include_weather_desc') }}</div>
+                <div class="text-xs text-gray-500">{{ $t('beeAgent.include_weather_desc') }}</div>
               </div>
             </label>
             <label class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-primary">
               <input type="checkbox" v-model="jobForm.include_journal_entries" class="rounded" />
               <div>
                 <div class="text-sm font-bold text-gray-800 dark:text-white">📋 {{ $t('beeAgent.include_journal_title') }}</div>
-                <div class="text-[10px] text-gray-500">{{ $t('beeAgent.include_journal_desc') }}</div>
+                <div class="text-xs text-gray-500">{{ $t('beeAgent.include_journal_desc') }}</div>
               </div>
             </label>
             <label class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-primary">
               <input type="checkbox" v-model="jobForm.include_tasks" class="rounded" />
               <div>
                 <div class="text-sm font-bold text-gray-800 dark:text-white">📋 {{ $t('beeAgent.include_tasks_title') }}</div>
-                <div class="text-[10px] text-gray-500">{{ $t('beeAgent.include_tasks_desc') }}</div>
+                <div class="text-xs text-gray-500">{{ $t('beeAgent.include_tasks_desc') }}</div>
               </div>
             </label>
             <label class="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-primary">
               <input type="checkbox" v-model="jobForm.include_calendar" class="rounded" />
               <div>
                 <div class="text-sm font-bold text-gray-800 dark:text-white">📅 {{ $t('beeAgent.include_calendar_title') }}</div>
-                <div class="text-[10px] text-gray-500">{{ $t('beeAgent.include_calendar_desc') }}</div>
+                <div class="text-xs text-gray-500">{{ $t('beeAgent.include_calendar_desc') }}</div>
               </div>
             </label>
           </div>
 
           <!-- Max journal entries -->
           <div v-if="jobForm.include_journal_entries">
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('beeAgent.max_journal_entries_label') }}</label>
+            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('beeAgent.max_journal_entries_label') }}</label>
             <input v-model.number="jobForm.max_journal_entries" type="number" min="1" max="100" placeholder="20" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
           </div>
 
           <!-- Cron Expression -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('beeAgent.cron_label') }}</label>
+            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('beeAgent.cron_label') }}</label>
             <input v-model="jobForm.cron_expression" type="text" :placeholder="$t('beeAgent.cron_placeholder')" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary" />
-            <p class="text-[10px] text-gray-400 mt-1" v-html="$t('beeAgent.cron_hint')"></p>
+            <p class="text-xs text-gray-400 mt-1" v-html="$t('beeAgent.cron_hint')"></p>
           </div>
 
           <!-- Custom Prompt -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('beeAgent.custom_prompt_label') }}</label>
+            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('beeAgent.custom_prompt_label') }}</label>
             <textarea v-model="jobForm.custom_prompt" rows="3" :placeholder="$t('beeAgent.custom_prompt_placeholder')" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y"></textarea>
           </div>
 
@@ -574,7 +566,7 @@
           <div class="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-xl">
             <div>
               <div class="text-sm font-bold text-gray-800 dark:text-white">{{ $t('beeAgent.job_active_label') }}</div>
-              <div class="text-[10px] text-gray-500">{{ $t('beeAgent.job_active_desc') }}</div>
+              <div class="text-xs text-gray-500">{{ $t('beeAgent.job_active_desc') }}</div>
             </div>
             <button
               type="button"
@@ -600,7 +592,7 @@
       <div class="w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-dark-card shadow-2xl">
         <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between gap-3">
           <div>
-            <h3 class="text-lg font-extrabold text-gray-900 dark:text-white">{{ modalTitle }}</h3>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ modalTitle }}</h3>
             <p v-if="modalDate" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ modalDate }}</p>
           </div>
           <button type="button" class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-dark-bg" @click="closeInsightModal">
@@ -614,7 +606,7 @@
 
         <div v-if="modalSource === 'chat'" class="px-5 pb-5 space-y-3 border-t border-gray-200 dark:border-gray-700 pt-4">
           <div>
-            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('aiInsights.chat_save_label') }}</label>
+            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{{ $t('aiInsights.chat_save_label') }}</label>
             <input
               v-model="chatSaveTitle"
               type="text"
@@ -646,6 +638,7 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
+import PageHeader from '../components/PageHeader.vue'
 import axios from 'axios'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
@@ -1139,10 +1132,10 @@ async function deleteProposal(proposal) {
 <style>
 @reference "../style.css";
 .markdown-content h1 {
-  @apply text-xl md:text-2xl font-black mt-6 mb-4 text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-800 pb-2;
+  @apply text-xl md:text-2xl font-bold mt-6 mb-4 text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-800 pb-2;
 }
 .markdown-content h2 {
-  @apply text-lg md:text-xl font-extrabold mt-6 mb-3 text-gray-900 dark:text-white;
+  @apply text-lg md:text-xl font-bold mt-6 mb-3 text-gray-900 dark:text-white;
 }
 .markdown-content h3 {
   @apply text-base md:text-lg font-bold mt-5 mb-2 text-gray-900 dark:text-white;
@@ -1160,6 +1153,6 @@ async function deleteProposal(proposal) {
   @apply pl-1;
 }
 .markdown-content strong {
-  @apply font-black text-gray-900 dark:text-white;
+  @apply font-bold text-gray-900 dark:text-white;
 }
 </style>

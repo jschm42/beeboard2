@@ -1,25 +1,19 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans">
     
-    <!-- Back to Dashboard Link -->
-    <router-link to="/dashboard" class="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-hover mb-4 transition-colors duration-200">
-      <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-      {{ $t('common.back_to_dashboard') }}
-    </router-link>
 
-    <!-- Header Area -->
-    <div class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
-      <div>
-        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">📍 {{ $t('locations.title') }}</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">{{ $t('locations.description') }}</p>
-      </div>
-      <button 
+    <PageHeader>
+      <template #title>📍 {{ $t('locations.title') }}</template>
+      <template #subtitle>{{ $t('locations.description') }}</template>
+      <template #actions>
+        <button 
         @click="openCreateModal" 
-        class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-2"
+        class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-2"
       >
         <span>+ {{ $t('locations.new_location') }}</span>
       </button>
-    </div>
+      </template>
+    </PageHeader>
 
     <!-- Alert Message -->
     <div v-if="alertMessage" class="mb-6 p-4 rounded-xl text-sm flex items-start space-x-2" :class="alertClass">
@@ -120,7 +114,7 @@
           </button>
           <button 
             type="submit" 
-            class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md hover-scale"
+            class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-sm rounded-xl shadow-md hover-scale"
           >
             {{ $t('common.save') }}
           </button>
@@ -139,7 +133,7 @@
       <div class="text-4xl mb-4">📍</div>
       <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-1">{{ $t('locations.empty_title') }}</h3>
       <p class="text-gray-500 dark:text-gray-400 mb-6">{{ $t('locations.empty_desc') }}</p>
-      <button @click="openCreateModal" class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md hover-scale">
+      <button @click="openCreateModal" class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-sm rounded-xl shadow-md hover-scale">
         + {{ $t('locations.new_location') }}
       </button>
     </div>
@@ -152,7 +146,7 @@
         class="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-3xl p-6 shadow-sm flex flex-col justify-between hover-scale relative overflow-hidden"
       >
         <!-- Decorative subtle background badge -->
-        <div class="absolute right-0 top-0 text-[100px] opacity-5 select-none pointer-events-none translate-x-10 -translate-y-8 font-black">
+        <div class="absolute right-0 top-0 text-[100px] opacity-5 select-none pointer-events-none translate-x-10 -translate-y-8 font-bold">
           MAP
         </div>
 
@@ -161,7 +155,7 @@
             <h3 class="text-lg font-bold text-gray-900 dark:text-white truncate max-w-[200px]" :title="loc.name">
               {{ loc.name }}
             </h3>
-            <span class="px-2.5 py-1 bg-primary/10 text-primary text-xs font-extrabold rounded-full shrink-0">
+            <span class="px-2.5 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full shrink-0">
               {{ $t('locations.hives_count', { count: loc.hives?.length || 0 }) }}
             </span>
           </div>
@@ -210,6 +204,7 @@
 
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
+import PageHeader from '../components/PageHeader.vue'
 import { useApiaryStore } from '../stores/apiary'
 import { useConfirmStore } from '../stores/confirm'
 import { useI18n } from 'vue-i18n'

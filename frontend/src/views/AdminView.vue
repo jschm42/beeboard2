@@ -1,17 +1,11 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans">
     
-    <!-- Back to Dashboard Link -->
-    <router-link to="/dashboard" class="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-hover mb-4 transition-colors duration-200">
-      <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-      {{ $t('admin.back_to_dashboard') }}
-    </router-link>
 
-    <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">{{ $t('admin.title') }}</h1>
-      <p class="text-gray-500 dark:text-gray-400 mt-1">{{ $t('admin.subtitle') }}</p>
-    </div>
+    <PageHeader>
+      <template #title>{{ $t('admin.title') }}</template>
+      <template #subtitle>{{ $t('admin.subtitle') }}</template>
+    </PageHeader>
 
     <!-- Toast Notifications -->
     <TransitionGroup 
@@ -182,7 +176,7 @@
         <div v-else class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
+              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
                 <th class="px-6 py-4">{{ $t('admin.table_username') }}</th>
                 <th class="px-6 py-4">{{ $t('admin.table_name') }}</th>
                 <th class="px-6 py-4">{{ $t('admin.table_email') }}</th>
@@ -202,7 +196,7 @@
                     <span>{{ u.username }}</span>
                     <span 
                       v-if="u.id === authStore.user?.id" 
-                      class="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-black tracking-wide uppercase"
+                      class="text-[11px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold tracking-wide uppercase"
                     >
                       {{ $t('admin.you_badge') }}
                     </span>
@@ -291,7 +285,7 @@
             <div class="space-y-1">
               <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center">
                 <span>{{ $t('admin.weather_title') }}</span>
-                <span class="ml-2 text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded uppercase font-black">OpenWeatherMap API</span>
+                <span class="ml-2 text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded uppercase font-bold">OpenWeatherMap API</span>
               </h3>
               <p class="text-xs text-gray-500 dark:text-gray-400 max-w-2xl">
                 {{ $t('admin.weather_desc') }}
@@ -339,16 +333,16 @@
                 <div class="text-sm font-bold text-gray-900 dark:text-white truncate">{{ job.name }}</div>
                 <div class="text-xs font-mono text-gray-500 dark:text-gray-400">{{ job.cron_expression }}</div>
                 <div class="mt-1 flex flex-wrap gap-1">
-                  <span v-if="job.inject_weather" class="px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-700 dark:text-sky-300 text-[10px] font-bold">{{ $t('admin.weather_badge') }}</span>
-                  <span v-if="job.inject_apiary" class="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-700 dark:text-amber-300 text-[10px] font-bold">{{ $t('admin.apiary_badge') }}</span>
-                  <span v-if="job.inject_locations" class="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">{{ $t('admin.locations_badge') }}</span>
-                  <span v-if="job.inject_hives" class="px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold">{{ $t('admin.hives_badge') }}</span>
-                  <span v-if="job.inject_log_entries" class="px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-700 dark:text-rose-300 text-[10px] font-bold">{{ $t('admin.logs_badge', { scope: job.log_scope, max: job.max_log_entries }) }}</span>
+                  <span v-if="job.inject_weather" class="px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-700 dark:text-sky-300 text-xs font-bold">{{ $t('admin.weather_badge') }}</span>
+                  <span v-if="job.inject_apiary" class="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs font-bold">{{ $t('admin.apiary_badge') }}</span>
+                  <span v-if="job.inject_locations" class="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-bold">{{ $t('admin.locations_badge') }}</span>
+                  <span v-if="job.inject_hives" class="px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-xs font-bold">{{ $t('admin.hives_badge') }}</span>
+                  <span v-if="job.inject_log_entries" class="px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-700 dark:text-rose-300 text-xs font-bold">{{ $t('admin.logs_badge', { scope: job.log_scope, max: job.max_log_entries }) }}</span>
                 </div>
               </div>
               <div class="flex items-center gap-2">
                 <span
-                  class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                  class="px-2 py-0.5 rounded-full text-xs font-bold"
                   :class="job.is_active ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-gray-200 dark:bg-gray-700 text-gray-500'"
                 >
                   {{ job.is_active ? $t('common.active') : $t('common.inactive') }}
@@ -699,7 +693,7 @@
         <div v-else class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
+              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
                 <th class="px-6 py-4">{{ $t('admin.table_frame_name') }}</th>
                 <th class="px-6 py-4 text-center">{{ $t('admin.table_brood_factor') }}</th>
                 <th class="px-6 py-4 text-center">{{ $t('admin.table_food_factor') }}</th>
@@ -863,7 +857,7 @@
         <div v-else class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
+              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
                 <th class="px-6 py-4">{{ $t('admin.table_nr_name') }}</th>
                 <th class="px-6 py-4">{{ $t('admin.table_nr_prefix') }}</th>
                 <th class="px-6 py-4 text-center">{{ $t('admin.table_nr_current') }}</th>
@@ -896,7 +890,7 @@
                 </td>
                 <td class="px-6 py-4 text-center">
                   <span 
-                    class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                    class="px-2 py-0.5 rounded-full text-xs font-bold"
                     :class="nr.is_active ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'"
                   >
                     {{ nr.is_active ? $t('common.active') : $t('common.inactive') }}
@@ -1017,7 +1011,7 @@
                 <span class="font-medium text-gray-700 dark:text-gray-200 truncate max-w-[180px]" :title="att.file_name">
                   {{ att.file_name }}
                 </span>
-                <span v-if="att.file_size" class="text-[10px] text-gray-400 font-mono">
+                <span v-if="att.file_size" class="text-xs text-gray-400 font-mono">
                   ({{ formatFileSize(att.file_size) }})
                 </span>
                 <a 
@@ -1050,7 +1044,7 @@
                 <span class="font-medium text-gray-800 dark:text-gray-200 truncate max-w-[180px]" :title="sf.name">
                   {{ sf.name }}
                 </span>
-                <span class="text-[10px] text-gray-400 font-mono">
+                <span class="text-xs text-gray-400 font-mono">
                   ({{ formatFileSize(sf.size) }})
                 </span>
                 <button 
@@ -1108,7 +1102,7 @@
         <div v-else class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
+              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
                 <th class="px-6 py-4">{{ $t('admin.table_method_name') }}</th>
                 <th class="px-6 py-4">{{ $t('admin.table_method_unit') }}</th>
                 <th class="px-6 py-4">{{ $t('admin.table_method_manufacturer') }}</th>
@@ -1150,7 +1144,7 @@
                 </td>
                 <td class="px-6 py-4 text-center">
                   <span 
-                    class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                    class="px-2 py-0.5 rounded-full text-xs font-bold"
                     :class="m.is_active ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'"
                   >
                     {{ m.is_active ? $t('common.active') : $t('common.inactive') }}
@@ -1252,7 +1246,7 @@
         <div v-else class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
+              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
                 <th class="px-6 py-4">{{ $t('admin.table_app_name') }}</th>
                 <th class="px-6 py-4 text-center">{{ $t('admin.table_method_status') }}</th>
                 <th class="px-6 py-4 text-right">{{ $t('common.actions') }}</th>
@@ -1269,7 +1263,7 @@
                 </td>
                 <td class="px-6 py-4 text-center">
                   <span 
-                    class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                    class="px-2 py-0.5 rounded-full text-xs font-bold"
                     :class="app.is_active ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'"
                   >
                     {{ app.is_active ? $t('common.active') : $t('common.inactive') }}
@@ -1416,7 +1410,7 @@
         <div v-else class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
+              <tr class="bg-gray-50 dark:bg-dark-bg text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider border-b border-gray-100 dark:border-dark-border">
                 <th class="px-6 py-4">{{ $t('admin.table_feed_type_name') }}</th>
                 <th class="px-6 py-4 text-center">{{ $t('admin.table_feed_type_unit') }}</th>
                 <th class="px-6 py-4">{{ $t('admin.table_feed_type_desc') }}</th>
@@ -1443,7 +1437,7 @@
                 </td>
                 <td class="px-6 py-4 text-center">
                   <span 
-                    class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                    class="px-2 py-0.5 rounded-full text-xs font-bold"
                     :class="ft.is_active ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'"
                   >
                     {{ ft.is_active ? $t('common.active') : $t('common.inactive') }}
@@ -1477,6 +1471,7 @@
 
 <script setup>
 import { ref, computed, onMounted, reactive, watch } from 'vue'
+import PageHeader from '../components/PageHeader.vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/auth'
 import { useConfirmStore } from '../stores/confirm'

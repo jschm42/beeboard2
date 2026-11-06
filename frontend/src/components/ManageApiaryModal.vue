@@ -9,7 +9,7 @@
         
         <!-- Header -->
         <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border flex items-center justify-between">
-          <h2 class="text-lg font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
+          <h2 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
             ⚙️ {{ $t('apiary.manage_title') }}
           </h2>
           <button
@@ -80,7 +80,7 @@
               <button
                 type="submit"
                 :disabled="submitting || apiaryStore.loading || !form.name.trim()"
-                class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md disabled:opacity-50 hover-scale cursor-pointer flex items-center justify-center space-x-1.5"
+                class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md disabled:opacity-50 hover-scale cursor-pointer flex items-center justify-center space-x-1.5"
               >
                 <svg v-if="submitting || apiaryStore.loading" class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

@@ -1,27 +1,21 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans">
     
-    <!-- Back to Dashboard Link -->
-    <router-link to="/dashboard" class="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-hover mb-4 transition-colors duration-200">
-      <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-      {{ $t('common.back_to_dashboard') }}
-    </router-link>
 
-    <!-- Header -->
-    <div class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
-      <div>
-        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">🐝 {{ $t('hives.title') }}</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">{{ $t('hives.description') }}</p>
-      </div>
-      <div class="flex space-x-2">
+    <PageHeader>
+      <template #title>🐝 {{ $t('hives.title') }}</template>
+      <template #subtitle>{{ $t('hives.description') }}</template>
+      <template #actions>
+        <div class="flex space-x-2">
         <button 
           @click="openCreateModal" 
-          class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-2"
+          class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-2"
         >
           <span>+ {{ $t('hives.new_hive') }}</span>
         </button>
       </div>
-    </div>
+      </template>
+    </PageHeader>
     <!-- Alert Banner -->
     <div v-if="alertMessage" class="mb-6 p-4 rounded-xl text-sm flex items-start space-x-2 animate-pulse" :class="alertClass">
       <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -33,7 +27,7 @@
       <div class="text-4xl mb-4">🐝</div>
       <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-1">{{ $t('hives.empty_title') }}</h3>
       <p class="text-gray-500 dark:text-gray-400 mb-6">{{ $t('hives.empty_desc') }}</p>
-      <button @click="openCreateModal" class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md hover-scale">
+      <button @click="openCreateModal" class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-sm rounded-xl shadow-md hover-scale">
         + {{ $t('hives.create_first') }}
       </button>
     </div>
@@ -46,7 +40,7 @@
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 flex-1">
           <!-- Standort -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-505 uppercase tracking-wider mb-1 font-sans">{{ $t('hives.filter_location') }}</label>
+            <label class="block text-xs font-bold text-gray-400 dark:text-gray-505 uppercase tracking-wider mb-1 font-sans">{{ $t('hives.filter_location') }}</label>
             <select 
               v-model="filters.locationId" 
               class="w-full px-2.5 py-1.5 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-gray-800 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
@@ -60,7 +54,7 @@
 
           <!-- Aktiv/Inaktiv -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-550 uppercase tracking-wider mb-1 font-sans">{{ $t('common.status') }}</label>
+            <label class="block text-xs font-bold text-gray-400 dark:text-gray-550 uppercase tracking-wider mb-1 font-sans">{{ $t('common.status') }}</label>
             <select 
               v-model="filters.status" 
               class="w-full px-2.5 py-1.5 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-gray-800 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
@@ -73,7 +67,7 @@
 
           <!-- Aufgaben -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-505 uppercase tracking-wider mb-1 font-sans">{{ $t('hives.filter_tasks') }}</label>
+            <label class="block text-xs font-bold text-gray-400 dark:text-gray-505 uppercase tracking-wider mb-1 font-sans">{{ $t('hives.filter_tasks') }}</label>
             <select 
               v-model="filters.tasks" 
               class="w-full px-2.5 py-1.5 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-gray-800 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
@@ -86,7 +80,7 @@
 
           <!-- Königinjahr -->
           <div>
-            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-505 uppercase tracking-wider mb-1 font-sans">{{ $t('hives.filter_queen_year') }}</label>
+            <label class="block text-xs font-bold text-gray-400 dark:text-gray-505 uppercase tracking-wider mb-1 font-sans">{{ $t('hives.filter_queen_year') }}</label>
             <select 
               v-model="filters.queenYear" 
               class="w-full px-2.5 py-1.5 bg-gray-50 dark:bg-dark-bg border border-gray-200 dark:border-gray-800 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
@@ -105,7 +99,7 @@
             <button 
               type="button"
               @click="viewMode = 'tiles'" 
-              class="px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1"
+              class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
               :class="viewMode === 'tiles' 
                 ? 'bg-white dark:bg-dark-card text-primary shadow-sm' 
                 : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'"
@@ -115,7 +109,7 @@
             <button 
               type="button"
               @click="viewMode = 'list'" 
-              class="px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1"
+              class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
               :class="viewMode === 'list' 
                 ? 'bg-white dark:bg-dark-card text-primary shadow-sm' 
                 : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'"
@@ -172,12 +166,12 @@
                     class="w-2.5 h-2.5 rounded-full border border-gray-400 shadow-sm shrink-0" 
                     :style="{ backgroundColor: getQueenColor(hive.queen_year) }"
                   ></div>
-                  <span class="text-[10px] font-black text-gray-700 dark:text-gray-300">👑 '{{ hive.queen_year.toString().slice(-2) }}</span>
+                  <span class="text-xs font-bold text-gray-700 dark:text-gray-300">👑 '{{ hive.queen_year.toString().slice(-2) }}</span>
                 </div>
 
                 <!-- Active/Inactive Status overlay (at top left) -->
                 <span 
-                  class="absolute top-2.5 left-2.5 px-2 py-0.5 text-[10px] font-black rounded-full tracking-wider uppercase shadow-sm"
+                  class="absolute top-2.5 left-2.5 px-2 py-0.5 text-xs font-bold rounded-full tracking-wider uppercase shadow-sm"
                   :class="hive.is_active ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'"
                 >
                 </span>
@@ -188,7 +182,7 @@
                 <!-- Left area: Name, Location, and Tasks Badge -->
                 <div class="flex-1 min-w-0 flex flex-col justify-between min-h-[90px]">
                   <div>
-                    <h3 class="font-extrabold text-lg text-gray-900 dark:text-white truncate" :title="hive.name">{{ hive.name }}</h3>
+                    <h3 class="font-bold text-lg text-gray-900 dark:text-white truncate" :title="hive.name">{{ hive.name }}</h3>
                     
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center space-x-1">
                       <span>📍 {{ $t('hives.location_label') }}:</span>
@@ -203,7 +197,7 @@
                   <div class="mt-2.5" @click.stop>
                     <router-link 
                       :to="{ name: 'tasks', query: { hiveId: hive.id } }"
-                      class="inline-flex items-center space-x-1.5 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/20 dark:hover:bg-amber-950/40 text-amber-700 dark:text-amber-450 border border-amber-200/55 dark:border-amber-900/35 rounded-xl transition-all duration-200 hover-scale shadow-sm text-[10px] font-extrabold"
+                      class="inline-flex items-center space-x-1.5 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/20 dark:hover:bg-amber-950/40 text-amber-700 dark:text-amber-450 border border-amber-200/55 dark:border-amber-900/35 rounded-xl transition-all duration-200 hover-scale shadow-sm text-xs font-bold"
                     >
                       <span>📋 {{ $t('hives.tasks_open_count', { count: getTasksForHive(hive.id).filter(taskItem => !taskItem.is_completed).length }) }}</span>
                     </router-link>
@@ -219,7 +213,7 @@
                     <div 
                       v-for="box in [...hive.boxes].sort((a, b) => b.order - a.order)" 
                       :key="box.id"
-                      class="h-3 w-full rounded border text-[7px] font-black flex items-center justify-center shadow-sm select-none"
+                      class="h-3 w-full rounded border text-[7px] font-bold flex items-center justify-center shadow-sm select-none"
                       :class="box.box_type === 'BROOD'
                         ? 'bg-gradient-to-r from-amber-600 to-amber-700 border-amber-800 text-white'
                         : 'bg-gradient-to-r from-yellow-400 to-yellow-500 border-yellow-600 text-gray-900'"
@@ -228,7 +222,7 @@
                       {{ box.frame_count }}
                     </div>
                   </div>
-                  <div v-else class="w-full h-[70px] border border-dashed border-gray-300 dark:border-gray-700 rounded-xl flex items-center justify-center text-[8px] text-gray-400 italic text-center p-1 leading-tight select-none">
+                  <div v-else class="w-full h-[70px] border border-dashed border-gray-300 dark:border-gray-700 rounded-xl flex items-center justify-center text-[11px] text-gray-400 italic text-center p-1 leading-tight select-none">
                     Keine Zargen
                   </div>
                 </div>
@@ -272,15 +266,15 @@
                         </div>
                         <div>
                           <div class="flex items-center gap-1.5">
-                            <span class="text-sm font-black text-gray-900 dark:text-white">{{ hive.name }}</span>
+                            <span class="text-sm font-bold text-gray-900 dark:text-white">{{ hive.name }}</span>
                             <span 
-                              class="px-1.5 py-0.2 text-[8px] font-black rounded-full uppercase"
+                              class="px-1.5 py-0.2 text-[11px] font-bold rounded-full uppercase"
                               :class="hive.is_active ? 'bg-green-500/10 text-green-500' : 'bg-gray-500/10 text-gray-500'"
                             >
                               {{ hive.is_active ? $t('hives.status_active_short') : $t('hives.status_inactive_short') }}
                             </span>
                           </div>
-                          <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{{ hive.frame_type?.name }}</div>
+                          <div class="text-xs text-gray-400 font-bold uppercase tracking-wider">{{ hive.frame_type?.name }}</div>
                         </div>
                       </div>
                     </td>
@@ -303,7 +297,7 @@
                     <td class="px-6 py-4 whitespace-nowrap">
                       <div class="flex items-center space-x-2" @click.stop>
                         <span 
-                          class="px-2 py-0.5 text-[10px] font-black rounded-full"
+                          class="px-2 py-0.5 text-xs font-bold rounded-full"
                           :class="getTasksForHive(hive.id).filter(t => !t.is_completed).length > 0 
                             ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400' 
                             : 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400'"
@@ -315,7 +309,7 @@
                         <div class="flex items-center space-x-1.5 ml-2">
                           <router-link 
                             :to="{ name: 'tasks', query: { hiveId: hive.id } }" 
-                            class="text-xs font-extrabold text-gray-500 hover:text-primary hover:underline"
+                            class="text-xs font-bold text-gray-500 hover:text-primary hover:underline"
                           >
                             {{ $t('hives.action_view') }}
                           </router-link>
@@ -323,7 +317,7 @@
                           <button 
                             type="button"
                             @click.stop="openCreateTaskModal(hive)"
-                            class="text-xs font-extrabold text-primary hover:underline flex items-center gap-0.5 cursor-pointer"
+                            class="text-xs font-bold text-primary hover:underline flex items-center gap-0.5 cursor-pointer"
                           >
                             + {{ $t('hives.action_create') }}
                           </button>
@@ -351,7 +345,7 @@
       <div class="bg-white dark:bg-dark-card rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:max-w-lg sm:w-full border border-gray-100 dark:border-dark-border animate-scale">
           <!-- Header -->
           <div class="px-6 py-4 border-b border-gray-100 dark:border-dark-border flex justify-between items-center bg-gray-50/50 dark:bg-dark-bg/25">
-            <h3 class="text-lg font-extrabold text-gray-900 dark:text-white" id="modal-title">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white" id="modal-title">
               📝 {{ $t('hives.task_modal_title') }}
             </h3>
             <button @click="showTaskModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
@@ -387,11 +381,11 @@
 
               <div class="bg-primary/5 dark:bg-primary/10 px-4 py-3 rounded-2xl border border-primary/10 flex items-center justify-between">
                 <div>
-                  <span class="text-[10px] uppercase font-black text-primary tracking-wider">{{ $t('hives.task_linked_with') }}</span>
-                  <div class="text-sm font-extrabold text-gray-800 dark:text-white">🐝 {{ taskForm.hiveName }}</div>
+                  <span class="text-xs uppercase font-bold text-primary tracking-wider">{{ $t('hives.task_linked_with') }}</span>
+                  <div class="text-sm font-bold text-gray-800 dark:text-white">🐝 {{ taskForm.hiveName }}</div>
                 </div>
                 <div class="text-right">
-                  <span class="text-[10px] uppercase font-black text-gray-400 tracking-wider">{{ $t('hives.task_location') }}</span>
+                  <span class="text-xs uppercase font-bold text-gray-400 tracking-wider">{{ $t('hives.task_location') }}</span>
                   <div class="text-xs font-bold text-gray-600 dark:text-gray-300">{{ taskForm.locationName }}</div>
                 </div>
               </div>
@@ -427,7 +421,7 @@
                 <div class="flex items-center justify-between">
                   <div>
                     <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wide">🔄 {{ $t('hives.task_recurring') }}</h5>
-                    <p class="text-[10px] text-gray-400 dark:text-gray-505">{{ $t('hives.task_recurring_desc') }}</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-505">{{ $t('hives.task_recurring_desc') }}</p>
                   </div>
                   <input 
                     v-model="taskForm.isRecurring" 
@@ -479,7 +473,7 @@
               <button 
                 type="submit" 
                 :disabled="submittingTask"
-                class="px-5 py-2 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                class="px-5 py-2 bg-primary hover:bg-primary-hover text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {{ submittingTask ? $t('hives.creating') : $t('hives.create') }}
               </button>
@@ -500,7 +494,7 @@
       <div class="bg-white dark:bg-dark-card rounded-[2rem] text-left overflow-hidden shadow-2xl transform transition-all sm:max-w-5xl sm:w-full border border-gray-150/40 dark:border-dark-border animate-scale">
           <!-- Header -->
           <div class="px-8 py-5 border-b border-gray-100 dark:border-dark-border flex justify-between items-center bg-gray-50/50 dark:bg-dark-bg/25">
-            <h3 class="text-xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2" id="modal-title">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2" id="modal-title">
               {{ isEditMode ? $t('hives.edit_title') : $t('hives.create_title') }}
             </h3>
             <button type="button" @click="closeModal" class="text-gray-400 hover:text-gray-655 dark:hover:text-gray-200 p-2 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-full transition-all cursor-pointer">
@@ -605,8 +599,8 @@
                       <span v-else class="text-3xl">📸</span>
                     </div>
                     <div>
-                      <p class="text-xs font-black text-gray-850 dark:text-gray-200">{{ $t('hives.photo_title') }}</p>
-                      <p class="text-[10px] text-gray-400 mt-0.5">{{ $t('hives.photo_desc') }}</p>
+                      <p class="text-xs font-bold text-gray-850 dark:text-gray-200">{{ $t('hives.photo_title') }}</p>
+                      <p class="text-xs text-gray-400 mt-0.5">{{ $t('hives.photo_desc') }}</p>
                       <input
                         type="file"
                         ref="photoInput"
@@ -616,7 +610,7 @@
                       >
                       <button
                         type="button"
-                        class="text-[11px] font-black text-primary hover:text-primary-hover hover:underline uppercase tracking-wider mt-1.5 cursor-pointer flex items-center gap-1"
+                        class="text-[11px] font-bold text-primary hover:text-primary-hover hover:underline uppercase tracking-wider mt-1.5 cursor-pointer flex items-center gap-1"
                         @click="$refs.photoInput.click()"
                       >
                         <span>{{ $t('hives.photo_upload_btn') }}</span> 📤
@@ -631,7 +625,7 @@
                       >
                       <button
                         type="button"
-                        class="text-[11px] font-black text-primary hover:text-primary-hover hover:underline uppercase tracking-wider mt-1.5 cursor-pointer flex items-center gap-1 ml-3"
+                        class="text-[11px] font-bold text-primary hover:text-primary-hover hover:underline uppercase tracking-wider mt-1.5 cursor-pointer flex items-center gap-1 ml-3"
                         :title="$t('hives.take_photo')"
                         @click="$refs.cameraPhotoInput.click()"
                       >
@@ -663,9 +657,9 @@
                         
                         <div v-else class="p-5 bg-white/90 dark:bg-dark-bg/70 border border-gray-300 dark:border-gray-600 rounded-2xl space-y-4 animate-scale shadow-sm">
                           <div class="flex justify-between items-center pb-2.5 border-b border-gray-200 dark:border-gray-700">
-                            <span class="text-xs font-black uppercase text-gray-700 dark:text-gray-200">{{ $t('hives.box_label') }} #{{ selectedBox.order }}</span>
+                            <span class="text-xs font-bold uppercase text-gray-700 dark:text-gray-200">{{ $t('hives.box_label') }} #{{ selectedBox.order }}</span>
                             <span 
-                              class="px-2.5 py-0.5 text-[10px] font-black rounded-full uppercase"
+                              class="px-2.5 py-0.5 text-xs font-bold rounded-full uppercase"
                               :class="selectedBox.box_type === 'BROOD' ? 'bg-amber-500/20 text-amber-700 dark:bg-amber-600/20 dark:text-amber-300' : 'bg-yellow-400/25 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-300'"
                             >
                               {{ selectedBox.box_type === 'BROOD' ? $t('hives.brood_chamber') : $t('hives.honey_chamber') }}
@@ -673,7 +667,7 @@
                           </div>
 
                           <div>
-                            <label class="block text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.box_type_label') }}</label>
+                            <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.box_type_label') }}</label>
                             <select 
                               v-model="selectedBox.box_type"
                               class="w-full px-3 py-2 bg-white dark:bg-dark-card border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold text-gray-800 dark:text-gray-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/40"
@@ -685,7 +679,7 @@
 
                           <div class="grid grid-cols-2 gap-3">
                             <div>
-                              <label class="block text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.box_frame_count') }}</label>
+                              <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.box_frame_count') }}</label>
                               <input 
                                 v-model.number="selectedBox.frame_count"
                                 type="number"
@@ -696,7 +690,7 @@
                             </div>
 
                             <div>
-                              <label class="block text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.box_frame_type') }}</label>
+                              <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider mb-1">{{ $t('hives.box_frame_type') }}</label>
                               <select 
                                 v-model="selectedBox.frame_type_id"
                                 class="w-full px-3 py-2 bg-white dark:bg-dark-card border border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold text-gray-800 dark:text-gray-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/40"
@@ -713,7 +707,7 @@
                             <button 
                               type="button"
                               @click="deleteSelectedBox"
-                              class="w-full py-2 bg-red-50 hover:bg-red-105 dark:bg-red-950/20 dark:hover:bg-red-900/30 text-red-650 dark:text-red-400 font-extrabold text-[11px] rounded-xl tracking-wider uppercase border border-red-200 dark:border-red-900/50 transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                              class="w-full py-2 bg-red-50 hover:bg-red-105 dark:bg-red-950/20 dark:hover:bg-red-900/30 text-red-650 dark:text-red-400 font-bold text-[11px] rounded-xl tracking-wider uppercase border border-red-200 dark:border-red-900/50 transition-colors flex items-center justify-center gap-1 cursor-pointer"
                             >
                               <span>{{ $t('hives.box_remove_btn') }}</span> 🗑️
                             </button>
@@ -725,7 +719,7 @@
                         <button 
                           type="button"
                           @click="addChamber"
-                          class="w-full py-3.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs rounded-xl tracking-wider uppercase border border-amber-400/30 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                          class="w-full py-3.5 bg-primary hover:bg-primary-hover text-white font-bold text-xs rounded-xl tracking-wider uppercase border border-amber-400/30 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/40"
                         >
                           <span class="text-base leading-none">+</span>
                           <span>{{ $t('hives.box_add_btn') }}</span>
@@ -772,7 +766,7 @@
                 </button>
                 <button 
                   type="submit" 
-                  class="px-6 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md cursor-pointer transition-all hover-scale"
+                  class="px-6 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md cursor-pointer transition-all hover-scale"
                 >
                   {{ isEditMode ? $t('common.save') : $t('hives.create_btn') }}
                 </button>
@@ -787,6 +781,7 @@
 
 <script setup>
 import { ref, onMounted, reactive, computed, watch } from 'vue'
+import PageHeader from '../components/PageHeader.vue'
 import { useConfirmStore } from '../stores/confirm'
 import { useApiaryStore } from '../stores/apiary'
 import { useI18n } from 'vue-i18n'

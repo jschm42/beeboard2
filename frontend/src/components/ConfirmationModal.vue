@@ -41,7 +41,7 @@
               </svg>
             </div>
             <div class="flex-grow pt-1 text-left">
-              <h3 class="text-lg font-black text-gray-900 dark:text-white leading-tight">
+              <h3 class="text-lg font-bold text-gray-900 dark:text-white leading-tight">
                 {{ confirmStore.title }}
               </h3>
             </div>
@@ -59,13 +59,13 @@
         <div class="p-6 bg-gray-50 dark:bg-dark-bg/40 border-t border-gray-100 dark:border-dark-border/80 flex items-center justify-end gap-3">
           <button 
             @click="cancel"
-            class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 dark:bg-dark-border dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-extrabold text-xs rounded-xl uppercase tracking-wider transition-all duration-150 cursor-pointer"
+            class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 dark:bg-dark-border dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold text-xs rounded-xl uppercase tracking-wider transition-all duration-150 cursor-pointer"
           >
             {{ confirmStore.cancelText }}
           </button>
           <button 
             @click="confirm"
-            class="px-6 py-2.5 text-white font-extrabold text-xs rounded-xl shadow-lg uppercase tracking-wider transition-all hover-scale duration-150 cursor-pointer"
+            class="px-6 py-2.5 text-white font-bold text-xs rounded-xl shadow-lg uppercase tracking-wider transition-all hover-scale duration-150 cursor-pointer"
             :class="confirmBtnClass"
           >
             {{ confirmStore.confirmText }}

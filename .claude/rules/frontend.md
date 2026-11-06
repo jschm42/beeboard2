@@ -18,4 +18,8 @@ paths:
 5. **Sicherheit**: Markdown/HTML aus Backend oder KI nur ueber `marked` + `DOMPurify` rendern, nie ungefiltert per
    `v-html`.
 6. **Konsistenz**: Composition API und den Stil der Nachbardateien beibehalten; `const` statt `let`, wo moeglich.
+   * Seitenkopf jeder View ueber `components/PageHeader.vue` (Props `title`, `subtitle`, `icon` oder gleichnamige
+     Slots, Buttons im Slot `actions`). Kein "Zurueck zum Dashboard"-Link, die Sidebar uebernimmt die Navigation.
+   * Typografie: kleinste Schrift `text-[11px]` (Badges), Labels/Meta `text-xs`, Fliesstext `text-sm`.
+     Gewichte nur bis `font-bold`; Hierarchie ueber Groesse statt `font-black`/`font-extrabold`.
 7. **Quality-Gates**: In `frontend/` muessen `npm run lint` und `npm run build` fehlerfrei durchlaufen.

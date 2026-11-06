@@ -23,14 +23,14 @@
         <div class="inline-flex items-center justify-center p-4 bg-primary/10 rounded-2xl mb-3">
           <img :src="beeboardLogo" alt="BeeBoard" class="w-16 h-16 object-contain" />
         </div>
-        <h2 class="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">Bee<span class="text-primary">Board</span></h2>
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Bee<span class="text-primary">Board</span></h2>
         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 font-mono tracking-widest">v{{ APP_VERSION }}</p>
         <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Verwalte deine Bienenvölker mit modernster Präzision</p>
       </div>
 
       <!-- Onboarding Header (only shown during first-run) -->
       <div v-if="setupRequired" class="text-center space-y-2 bg-amber-50/70 dark:bg-gray-900/80 p-4 rounded-2xl border border-primary/25">
-        <div class="inline-flex items-center space-x-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full text-xs font-black text-primary uppercase tracking-widest">
+        <div class="inline-flex items-center space-x-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full text-xs font-bold text-primary uppercase tracking-widest">
           <span class="inline-block h-2 w-2 rounded-full bg-primary"></span>
           <span>Ersteinrichtung</span>
         </div>

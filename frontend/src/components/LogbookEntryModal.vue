@@ -65,6 +65,8 @@
                   <option value="INSPECTION_EXACT">{{ $t('logbook.type_inspection_exact') }}</option>
                   <option value="INSPECTION_EIGHTHS">{{ $t('logbook.type_inspection_eighths') }}</option>
                   <option value="VARROA_COUNT">{{ $t('logbook.type_varroa_count') }}</option>
+                  <!-- Treatments are recorded in the treatments module; keep the option so legacy entries stay editable -->
+                  <option v-if="selectedTypeOption === 'VARROA_TREATMENT'" value="VARROA_TREATMENT">{{ $t('logbook.type_varroa_treatment') }}</option>
                 </select>
               </div>
             </div>
@@ -104,7 +106,7 @@
                 <p class="text-[11px] md:text-xs font-bold text-gray-700 dark:text-gray-300">
                   {{ $t('logbook.drag_drop_area') }}
                 </p>
-                <p class="text-[10px] text-gray-400 mt-0.5 md:mt-1">
+                <p class="text-xs text-gray-400 mt-0.5 md:mt-1">
                   {{ $t('logbook.drag_drop_hint') }}
                 </p>
               </div>
@@ -153,7 +155,7 @@
                     :title="$t('logbook.delete_image')"
                     @click="removeEntryFile(idx)"
                   >
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    <Trash2 class="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
@@ -162,7 +164,7 @@
             <!-- SUB-FORM: INSPECTION DETAILS -->
             <div v-if="entryForm.entryType === 'INSPECTION'" class="space-y-4 border-t border-gray-100 dark:border-dark-border pt-4">
               <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">
+                <h4 class="text-xs font-bold uppercase text-gray-500 tracking-wider">
                   {{ $t('logbook.assessment_variant') }}
                 </h4>
               </div>
@@ -173,7 +175,7 @@
 
               <div v-else class="space-y-4 animate-scale">
                 <div class="p-4 bg-gray-50 dark:bg-dark-bg/60 border border-gray-200 dark:border-dark-border rounded-2xl space-y-2.5">
-                  <span class="block text-[10px] font-black text-gray-500 uppercase tracking-wide">{{ $t('logbook.categories_to_record') }}</span>
+                  <span class="block text-xs font-bold text-gray-500 uppercase tracking-wide">{{ $t('logbook.categories_to_record') }}</span>
                   <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs font-bold text-gray-700 dark:text-gray-300">
                     <label class="flex items-center space-x-1.5 cursor-pointer hover:text-primary transition-colors">
                       <input v-model="activeCategories.brood" type="checkbox" class="rounded text-primary focus:ring-primary h-4 w-4 border-gray-300 dark:border-dark-border">
@@ -202,6 +204,10 @@
                   </div>
                 </div>
 
+                <div v-if="entryForm.inspectionDetail.boxes.length === 0" class="p-4 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 rounded-2xl text-xs text-amber-600 dark:text-amber-400 font-bold">
+                  ⚠️ {{ $t('logbook.no_boxes_configured') }}
+                </div>
+
                 <div class="space-y-3">
                   <div
                     v-for="box in entryForm.inspectionDetail.boxes"
@@ -209,17 +215,17 @@
                     class="p-4 bg-white dark:bg-dark-card border rounded-2xl shadow-sm space-y-3 border-gray-200 dark:border-dark-border"
                   >
                     <div class="flex justify-between items-center pb-2 border-b border-gray-50 dark:border-dark-border">
-                      <span class="text-xs font-extrabold text-gray-800 dark:text-gray-200 flex items-center">
+                      <span class="text-xs font-bold text-gray-800 dark:text-gray-200 flex items-center">
                         {{ $t('logbook.box_label', { order: box.order, type: box.box_type === 'BROOD' ? $t('logbook.brood_chamber') : $t('logbook.honey_chamber') }) }}
                       </span>
-                      <span class="text-[9px] font-bold text-gray-400 font-mono">
+                      <span class="text-[11px] font-bold text-gray-400 font-mono">
                         {{ $t('logbook.box_detail_hint', { count: box.frame_count, name: box.frame_type_name, multiplier: box.multiplier }) }}
                       </span>
                     </div>
 
                     <div class="grid grid-cols-2 sm:grid-cols-6 gap-3 text-center">
                       <div v-if="activeCategories.brood" class="space-y-1">
-                        <span class="text-[9px] text-amber-500 font-bold uppercase">{{ $t('logbook.brood') }}</span>
+                        <span class="text-[11px] text-amber-500 font-bold uppercase">{{ $t('logbook.brood') }}</span>
                         <input
                           v-model.number="box.brood"
                           type="number"
@@ -232,7 +238,7 @@
                       </div>
 
                       <div v-if="activeCategories.bees" class="space-y-1">
-                        <span class="text-[9px] text-green-500 font-bold uppercase">{{ $t('logbook.bees') }}</span>
+                        <span class="text-[11px] text-green-500 font-bold uppercase">{{ $t('logbook.bees') }}</span>
                         <input
                           v-model.number="box.bees"
                           type="number"
@@ -245,7 +251,7 @@
                       </div>
 
                       <div v-if="activeCategories.drones" class="space-y-1">
-                        <span class="text-[9px] text-sky-500 font-bold uppercase">{{ $t('logbook.drones') }}</span>
+                        <span class="text-[11px] text-sky-500 font-bold uppercase">{{ $t('logbook.drones') }}</span>
                         <input
                           v-model.number="box.drones"
                           type="number"
@@ -258,7 +264,7 @@
                       </div>
 
                       <div v-if="activeCategories.drone_brood" class="space-y-1">
-                        <span class="text-[9px] text-orange-500 font-bold uppercase">{{ $t('logbook.drone_brood') }}</span>
+                        <span class="text-[11px] text-orange-500 font-bold uppercase">{{ $t('logbook.drone_brood') }}</span>
                         <input
                           v-model.number="box.drone_brood"
                           type="number"
@@ -271,7 +277,7 @@
                       </div>
 
                       <div v-if="activeCategories.pollen" class="space-y-1">
-                        <span class="text-[9px] text-purple-500 font-bold uppercase">{{ $t('logbook.pollen') }}</span>
+                        <span class="text-[11px] text-purple-500 font-bold uppercase">{{ $t('logbook.pollen') }}</span>
                         <input
                           v-model.number="box.pollen"
                           type="number"
@@ -284,7 +290,7 @@
                       </div>
 
                       <div v-if="activeCategories.food" class="space-y-1">
-                        <span class="text-[9px] text-yellow-500 font-bold uppercase">{{ $t('logbook.food') }}</span>
+                        <span class="text-[11px] text-yellow-500 font-bold uppercase">{{ $t('logbook.food') }}</span>
                         <input
                           v-model.number="box.food"
                           type="number"
@@ -303,7 +309,7 @@
 
             <!-- SUB-FORM: VARROA COUNT DETAILS -->
             <div v-if="entryForm.entryType === 'VARROA_COUNT'" class="space-y-3 border-t border-gray-100 dark:border-dark-border pt-4">
-              <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">{{ $t('logbook.varroa_windel_result') }}</h4>
+              <h4 class="text-xs font-bold uppercase text-gray-500 tracking-wider">{{ $t('logbook.varroa_windel_result') }}</h4>
               <div>
                 <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('logbook.varroa_raw_count_label') }}</label>
                 <input
@@ -311,15 +317,17 @@
                   type="number"
                   required
                   min="0"
+                  step="1"
+                  inputmode="numeric"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                 >
-                <p class="text-[10px] text-gray-400 mt-1 italic">{{ $t('logbook.varroa_calc_hint') }}</p>
+                <p class="text-xs text-gray-400 mt-1 italic">{{ $t('logbook.varroa_calc_hint') }}</p>
               </div>
             </div>
 
             <!-- SUB-FORM: VARROA TREATMENT DETAILS -->
             <div v-if="entryForm.entryType === 'VARROA_TREATMENT'" class="space-y-3 border-t border-gray-100 dark:border-dark-border pt-4">
-              <h4 class="text-xs font-extrabold uppercase text-gray-500 tracking-wider">{{ $t('logbook.treatment_method') }}</h4>
+              <h4 class="text-xs font-bold uppercase text-gray-500 tracking-wider">{{ $t('logbook.treatment_method') }}</h4>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 <div>
                   <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">{{ $t('logbook.treatment_product_label') }}</label>
@@ -355,7 +363,7 @@
 
             <div class="flex justify-end space-x-2 pt-3 md:pt-4 border-t border-gray-100 dark:border-dark-border">
               <button type="button" class="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" @click="close">{{ $t('common.cancel') }}</button>
-              <button type="submit" class="px-5 py-2 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md">
+              <button type="submit" class="px-5 py-2 bg-primary hover:bg-primary-hover text-white font-bold text-sm rounded-xl shadow-md">
                 {{ $t('common.save') }}
               </button>
             </div>
@@ -370,9 +378,10 @@
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
-import { Camera, Upload } from 'lucide-vue-next'
+import { Camera, Trash2, Upload } from 'lucide-vue-next'
 import { useErrorStore } from '../stores/error'
 import { useConfirmStore } from '../stores/confirm'
+import { todayIsoDate } from '../utils/logbook'
 
 const props = defineProps({
   show: { type: Boolean, default: false },
@@ -392,7 +401,7 @@ const isEditMode = computed(() => !!props.editingEntry)
 
 const entryForm = reactive({
   hiveId: '',
-  date: new Date().toISOString().substring(0, 10),
+  date: todayIsoDate(),
   entryType: 'GENERAL',
   notes: '',
   inspectionDetail: {
@@ -442,17 +451,19 @@ const filteredHivesForEntry = computed(() => {
   if (!props.selectedSession) return props.hives
 
   const scope = props.selectedSession.scope_type || 'APIARY'
+  let filtered = props.hives
   if (scope === 'HIVE') {
     const linkedIds = props.selectedSession.linked_hives?.map(h => h.id) || []
-    return props.hives.filter(h => linkedIds.includes(h.id))
+    filtered = props.hives.filter(h => linkedIds.includes(h.id))
   } else if (scope === 'LOCATION') {
     const linkedIds = props.selectedSession.linked_locations?.map(l => l.id) || []
-    return props.hives.filter(h => linkedIds.includes(h.location_id))
+    filtered = props.hives.filter(h => linkedIds.includes(h.location_id))
   } else if (scope === 'APIARY') {
     const linkedIds = props.selectedSession.linked_apiaries?.map(a => a.id) || []
-    return props.hives.filter(h => linkedIds.includes(h.apiary_id))
+    filtered = props.hives.filter(h => linkedIds.includes(h.apiary_id))
   }
-  return props.hives
+  // Legacy logbooks without linked scope objects must not lock the user out of selecting a hive.
+  return filtered.length > 0 ? filtered : props.hives
 })
 
 watch(() => props.show, (newVal) => {
@@ -509,7 +520,7 @@ function resetForm() {
   } else {
     entryForm.hiveId = ''
   }
-  entryForm.date = new Date().toISOString().substring(0, 10)
+  entryForm.date = todayIsoDate()
   selectedTypeOption.value = 'GENERAL'
   entryForm.notes = ''
   entryForm.inspectionDetail.assessmentMode = 'boxes'
@@ -533,7 +544,7 @@ function resetForm() {
 
 function open(entry) {
   if (entry) {
-    entryForm.hiveId = entry.hive_id
+    entryForm.hiveId = entry.hive_id || ''
     entryForm.date = entry.date
     entryForm.entryType = entry.entry_type
     entryForm.notes = entry.notes || ''
@@ -637,7 +648,7 @@ function applyDraft(draft) {
   }
 
   entryForm.hiveId = targetHiveId
-  entryForm.date = draft.date || new Date().toISOString().substring(0, 10)
+  entryForm.date = draft.date || todayIsoDate()
   const draftType = draft.entry_type || 'GENERAL'
   if (draftType === 'INSPECTION') {
     selectedTypeOption.value = 'INSPECTION_EXACT'
@@ -711,12 +722,27 @@ async function submitEntryForm() {
       errorStore.showError(t('logbook.select_hive_for_inspection'))
       return
     }
+    if (entryForm.entryType === 'INSPECTION' && entryForm.inspectionDetail.boxes.length === 0) {
+      errorStore.showError(t('logbook.no_boxes_configured'))
+      return
+    }
+
+    const rawMiteCount = Number(entryForm.varroaCountDetail.rawCount)
+    if (entryForm.entryType === 'VARROA_COUNT' && (!Number.isInteger(rawMiteCount) || rawMiteCount < 0)) {
+      errorStore.showError(t('logbook.varroa_invalid_count'))
+      return
+    }
 
     const isExact = entryForm.inspectionDetail.boxMode === 'exact'
 
+    // Editing keeps the entry in its original logbook (e.g. when edited from the table view).
+    const sessionId = isEditMode.value
+      ? props.editingEntry.session_id ?? null
+      : props.selectedSession?.id ?? null
+
     const payload = {
       hive_id: entryForm.hiveId || null,
-      session_id: props.selectedSession ? props.selectedSession.id : null,
+      session_id: sessionId,
       date: entryForm.date,
       entry_type: entryForm.entryType,
       notes: entryForm.notes.trim() || null,
@@ -773,7 +799,7 @@ async function submitEntryForm() {
         }),
       } : null,
       varroa_count_detail: entryForm.entryType === 'VARROA_COUNT' ? {
-        raw_count: entryForm.varroaCountDetail.rawCount,
+        raw_count: rawMiteCount,
       } : null,
       varroa_treatment_detail: entryForm.entryType === 'VARROA_TREATMENT' ? {
         product: entryForm.varroaTreatmentDetail.product.trim(),

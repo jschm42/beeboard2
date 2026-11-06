@@ -6,8 +6,8 @@
       <div class="flex items-center space-x-2">
         <span class="text-2xl animate-bounce">🐝</span>
         <div>
-          <h3 class="font-extrabold text-sm tracking-wide uppercase">{{ $t('ai_assistant.title') }}</h3>
-          <p class="text-[10px] text-amber-100 font-bold">{{ $t('ai_assistant.subtitle') }}</p>
+          <h3 class="font-bold text-sm tracking-wide uppercase">{{ $t('ai_assistant.title') }}</h3>
+          <p class="text-xs text-amber-100 font-bold">{{ $t('ai_assistant.subtitle') }}</p>
         </div>
       </div>
       <button 
@@ -56,12 +56,12 @@
         >
           <!-- Message text with formatting -->
           <div class="whitespace-pre-line font-medium">{{ msg.text }}</div>
-          <span class="text-[8px] mt-1 text-right opacity-60 font-bold block">{{ msg.time }}</span>
+          <span class="text-[11px] mt-1 text-right opacity-60 font-bold block">{{ msg.time }}</span>
         </div>
 
         <div v-if="aiLoading" class="flex items-center space-x-2 bg-gray-100 dark:bg-dark-bg border border-gray-200 dark:border-gray-800 mr-auto rounded-2xl rounded-tl-none p-3 max-w-[85%]">
           <svg class="animate-spin h-4 w-4 text-primary shrink-0" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-          <span class="text-[10px] text-gray-400 font-bold">{{ $t('ai_assistant.analyzing') }}</span>
+          <span class="text-xs text-gray-400 font-bold">{{ $t('ai_assistant.analyzing') }}</span>
         </div>
       </div>
 
@@ -90,7 +90,7 @@
       
       <!-- Freetext input form -->
       <div class="space-y-3">
-        <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ $t('ai_assistant.freetext_label') }}</label>
+        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ $t('ai_assistant.freetext_label') }}</label>
         <textarea 
           v-model="draftText"
           rows="5"
@@ -102,7 +102,7 @@
           type="button" 
           @click="generateDraft"
           :disabled="draftLoading || !draftText.trim()"
-          class="w-full py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md hover-scale flex items-center justify-center space-x-2"
+          class="w-full py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md hover-scale flex items-center justify-center space-x-2"
         >
           <span v-if="draftLoading">
             <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -113,7 +113,7 @@
 
       <!-- Generated Draft Display -->
       <div v-if="generatedDraft" class="bg-amber-500/5 dark:bg-amber-500/10 border-2 border-dashed border-amber-500/20 p-4 rounded-2xl space-y-3 relative overflow-hidden animate-scale">
-        <h4 class="text-xs font-black text-amber-700 dark:text-amber-400 uppercase tracking-wider flex items-center space-x-1">
+        <h4 class="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider flex items-center space-x-1">
           <span>{{ isHoneyDraft ? $t('ai_assistant.draft_honey_title') : $t('ai_assistant.draft_inspection_title') }}</span>
         </h4>
         
@@ -139,8 +139,8 @@
           
           <!-- Inspection Details preview -->
           <div v-if="generatedDraft.entry_type === 'INSPECTION' && generatedDraft.inspection_detail" class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700/60">
-            <p class="font-bold text-[10px] text-gray-400 uppercase">{{ $t('ai_assistant.inspection_sum') }}:</p>
-            <div class="grid grid-cols-3 gap-2 mt-1 font-mono text-[10px]">
+            <p class="font-bold text-xs text-gray-400 uppercase">{{ $t('ai_assistant.inspection_sum') }}:</p>
+            <div class="grid grid-cols-3 gap-2 mt-1 font-mono text-xs">
               <div class="bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded text-center">{{ $t('ai_assistant.brood') }}: {{ getInspectionSum('brood_eighths') }} W.</div>
               <div class="bg-green-500/10 text-green-600 px-2 py-0.5 rounded text-center">{{ $t('ai_assistant.bees') }}: {{ getInspectionSum('bee_eighths') }} W.</div>
               <div class="bg-yellow-500/10 text-yellow-600 px-2 py-0.5 rounded text-center">{{ $t('ai_assistant.food') }}: {{ getInspectionSum('food_eighths') }} W.</div>
@@ -149,13 +149,13 @@
 
           <!-- Varroa Count details preview -->
           <div v-if="generatedDraft.entry_type === 'VARROA_COUNT' && generatedDraft.varroa_count_detail" class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700/60">
-            <p class="font-bold text-[10px] text-gray-400 uppercase">{{ $t('ai_assistant.varroa_values') }}:</p>
+            <p class="font-bold text-xs text-gray-400 uppercase">{{ $t('ai_assistant.varroa_values') }}:</p>
             <p class="text-[11px] font-bold">{{ $t('ai_assistant.raw_value') }}: {{ generatedDraft.varroa_count_detail.raw_count }} {{ $t('ai_assistant.mites') }}</p>
           </div>
 
           <!-- Varroa Treatment details preview -->
           <div v-if="generatedDraft.entry_type === 'VARROA_TREATMENT' && generatedDraft.varroa_treatment_detail" class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700/60">
-            <p class="font-bold text-[10px] text-gray-400 uppercase">{{ $t('ai_assistant.treatment') }}:</p>
+            <p class="font-bold text-xs text-gray-400 uppercase">{{ $t('ai_assistant.treatment') }}:</p>
             <p class="text-[11px] font-bold">{{ generatedDraft.varroa_treatment_detail.product }} ({{ $t('ai_assistant.dosage') }}: {{ generatedDraft.varroa_treatment_detail.dosage }})</p>
           </div>
         </div>
@@ -163,7 +163,7 @@
         <button 
           type="button" 
           @click="applyDraft"
-          class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-sm hover-scale mt-3 flex items-center justify-center space-x-1"
+          class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-sm hover-scale mt-3 flex items-center justify-center space-x-1"
         >
           <span>{{ isHoneyDraft ? $t('ai_assistant.btn_apply_honey') : $t('ai_assistant.btn_apply_form') }}</span>
         </button>

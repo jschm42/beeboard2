@@ -329,3 +329,92 @@ def test_logbook_entry_optional_hive(client: TestClient, db: Session):
 
 
 
+
+def _setup_user_apiary_hive(client: TestClient, username: str):
+    client.post("/api/auth/register", json={
+        "username": username,
+        "email": f"{username}@example.com",
+        "password": "strongpassword123",
+        "first_name": "Varroa",
+        "last_name": "Tester"
+    })
+    token = client.post("/api/auth/login", data={
+        "username": username,
+        "password": "strongpassword123"
+    }).json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    apiary_id = client.post("/api/apiaries", json={"name": "Varroa Apiary", "address": "Mite Road 1"}, headers=headers).json()["id"]
+    loc_id = client.post(f"/api/locations?apiary_id={apiary_id}", json={"name": "Wiese", "address": "Feldweg 1"}, headers=headers).json()["id"]
+    frame_type_id = client.get("/api/hives/frame-types", headers=headers).json()[0]["id"]
+    hive_id = client.post(f"/api/hives?apiary_id={apiary_id}", json={
+        "name": "Varroa Hive",
+        "location_id": loc_id,
+        "frame_type_id": frame_type_id,
+        "queen_year": 2026,
+        "is_active": True
+    }, headers=headers).json()["id"]
+    return headers, apiary_id, hive_id
+
+
+def test_logbook_varroa_count_create_list_update(client: TestClient, db: Session):
+    headers, apiary_id, hive_id = _setup_user_apiary_hive(client, "varroacounter")
+    session_id = client.post(f"/api/logbook/sessions?apiary_id={apiary_id}", json={
+        "title": "Varroa-Kontrolle",
+        "scope_type": "APIARY",
+        "linked_apiary_ids": [apiary_id]
+    }, headers=headers).json()["id"]
+
+    # Autumn date -> seeded AUTUMN multiplier (500)
+    create_resp = client.post(f"/api/logbook/entries?apiary_id={apiary_id}", json={
+        "hive_id": hive_id,
+        "session_id": session_id,
+        "date": "2026-10-01",
+        "entry_type": "VARROA_COUNT",
+        "varroa_count_detail": {"raw_count": 4}
+    }, headers=headers)
+    assert create_resp.status_code == 201
+    detail = create_resp.json()["varroa_count_detail"]
+    assert detail["raw_count"] == 4
+    assert detail["season"] == "AUTUMN"
+    assert detail["estimated_total"] == 2000.0
+
+    list_resp = client.get(f"/api/logbook/entries?apiary_id={apiary_id}&session_id={session_id}", headers=headers)
+    assert list_resp.status_code == 200
+    assert [e["varroa_count_detail"]["raw_count"] for e in list_resp.json()] == [4]
+
+    entry_id = create_resp.json()["id"]
+    update_resp = client.put(f"/api/logbook/entries/{entry_id}", json={
+        "hive_id": hive_id,
+        "session_id": session_id,
+        "date": "2026-04-01",
+        "entry_type": "VARROA_COUNT",
+        "varroa_count_detail": {"raw_count": 2}
+    }, headers=headers)
+    assert update_resp.status_code == 200
+    updated = update_resp.json()["varroa_count_detail"]
+    assert updated["season"] == "SPRING"
+    assert updated["estimated_total"] == 240.0
+    assert update_resp.json()["session_id"] == session_id
+
+
+def test_logbook_varroa_count_rejects_negative(client: TestClient, db: Session):
+    headers, apiary_id, hive_id = _setup_user_apiary_hive(client, "varroanegative")
+    resp = client.post(f"/api/logbook/entries?apiary_id={apiary_id}", json={
+        "hive_id": hive_id,
+        "date": "2026-10-01",
+        "entry_type": "VARROA_COUNT",
+        "varroa_count_detail": {"raw_count": -3}
+    }, headers=headers)
+    assert resp.status_code == 422
+
+
+def test_logbook_varroa_count_foreign_apiary_forbidden(client: TestClient, db: Session):
+    _, apiary_id, hive_id = _setup_user_apiary_hive(client, "varroaowner")
+    intruder_headers, _, _ = _setup_user_apiary_hive(client, "varroaintruder")
+    resp = client.post(f"/api/logbook/entries?apiary_id={apiary_id}", json={
+        "hive_id": hive_id,
+        "date": "2026-10-01",
+        "entry_type": "VARROA_COUNT",
+        "varroa_count_detail": {"raw_count": 1}
+    }, headers=intruder_headers)
+    assert resp.status_code in (403, 404)

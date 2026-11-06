@@ -8,7 +8,7 @@
       <div class="w-full max-w-lg rounded-2xl bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border shadow-2xl overflow-hidden animate-scale flex flex-col max-h-[90vh]">
         <!-- Header -->
         <div class="px-6 py-4 border-b border-gray-200 dark:border-dark-border flex items-center justify-between shrink-0">
-          <h2 class="text-lg font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
+          <h2 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
             📅 {{ form.id ? $t('tasks.custom_event_modal_edit_title') : $t('tasks.custom_event_modal_title') }}
           </h2>
           <button
@@ -125,7 +125,7 @@
                 :key="index"
                 type="button"
                 @click="toggleWeekday(index)"
-                class="w-8 h-8 rounded border text-[11px] font-black transition-all flex items-center justify-center cursor-pointer"
+                class="w-8 h-8 rounded border text-[11px] font-bold transition-all flex items-center justify-center cursor-pointer"
                 :class="form.recurrence_weekdays.includes(index)
                   ? 'bg-primary border-primary text-white'
                   : 'bg-white dark:bg-dark-bg border-gray-200 dark:border-gray-700 text-gray-500 hover:border-gray-300'"
@@ -152,7 +152,7 @@
 
           <!-- Existing events list -->
           <div v-if="events.length" class="pt-4 border-t border-gray-100 dark:border-dark-border space-y-2">
-            <h4 class="text-xs font-extrabold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
               {{ $t('tasks.custom_event_list_title') }}
             </h4>
             <div class="space-y-1.5 max-h-48 overflow-y-auto">
@@ -196,7 +196,7 @@
             <button
               type="submit"
               :disabled="submitting || !form.title.trim()"
-              class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md disabled:opacity-50 hover-scale cursor-pointer flex items-center justify-center space-x-1.5"
+              class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md disabled:opacity-50 hover-scale cursor-pointer flex items-center justify-center space-x-1.5"
             >
               <svg v-if="submitting" class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

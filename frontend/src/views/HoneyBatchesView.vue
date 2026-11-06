@@ -1,36 +1,29 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans">
     
-    <!-- Back to Dashboard Link -->
-    <router-link to="/dashboard" class="inline-flex items-center text-sm font-semibold text-primary hover:text-primary-hover mb-4 transition-colors duration-200">
-      <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-      {{ $t('common.back_to_dashboard') }}
-    </router-link>
 
-    <!-- Header Area -->
-    <div class="mb-8 flex flex-col md:flex-row md:justify-between md:items-center space-y-4 md:space-y-0">
-      <div>
-        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">🍯 {{ $t('honey_batches.title') }}</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">{{ $t('honey_batches.subtitle') }}</p>
-      </div>
-      
-      <div class="flex items-center space-x-3">
+    <PageHeader>
+      <template #title>🍯 {{ $t('honey_batches.title') }}</template>
+      <template #subtitle>{{ $t('honey_batches.subtitle') }}</template>
+      <template #actions>
+        <div class="flex items-center space-x-3">
         <button 
           @click="exportCSV" 
           :disabled="batches.length === 0"
-          class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-dark-card dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-extrabold text-sm rounded-xl transition-all duration-200 hover-scale flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-dark-card dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-bold text-sm rounded-xl transition-all duration-200 hover-scale flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
           <span>{{ $t('honey_batches.export_csv_btn') }}</span>
         </button>
         <button 
           @click="openCreateModal" 
-          class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-2"
+          class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-sm rounded-xl shadow-md shadow-primary/20 hover-scale flex items-center justify-center space-x-2"
         >
           <span>{{ $t('honey_batches.new_batch_btn') }}</span>
         </button>
       </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <!-- Alert Message -->
     <div v-if="alertMessage" class="mb-6 p-4 rounded-xl text-sm flex items-start space-x-2" :class="alertClass">
@@ -59,7 +52,7 @@
         <button 
           @click="generateAIDraft" 
           :disabled="aiLoading || !aiDraftText.trim()"
-          class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-sm rounded-xl shadow-md transition-all duration-200 shrink-0 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed hover-scale"
+          class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm rounded-xl shadow-md transition-all duration-200 shrink-0 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed hover-scale"
         >
           <svg class="animate-spin h-4 w-4 text-white" v-if="aiLoading" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
           <span>{{ $t('honey_batches.ai_draft_btn') }}</span>
@@ -121,7 +114,7 @@
                     :placeholder="$t('honey_batches.custom_honey_type_placeholder')"
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                   />
-                  <span class="text-[10px] text-gray-500 dark:text-gray-400 mt-1 block">
+                  <span class="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
                     {{ $t('honey_batches.honey_type_hint') }}
                   </span>
                 </div>
@@ -165,7 +158,7 @@
                   max="100"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-dark-bg dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                 />
-                <span v-if="form.water_content_percent > 18" class="text-[10px] text-red-500 font-bold block mt-1">{{ $t('honey_batches.water_content_warning') }}</span>
+                <span v-if="form.water_content_percent > 18" class="text-xs text-red-500 font-bold block mt-1">{{ $t('honey_batches.water_content_warning') }}</span>
               </div>
 
               <div>
@@ -315,7 +308,7 @@
           </button>
           <button 
             type="submit" 
-            class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md hover-scale"
+            class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-sm rounded-xl shadow-md hover-scale"
           >
             {{ $t('common.save') }}
           </button>
@@ -334,7 +327,7 @@
       <div class="text-4xl mb-4">🍯</div>
       <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-1">{{ $t('honey_batches.empty_title') }}</h3>
       <p class="text-gray-500 dark:text-gray-400 mb-6">{{ $t('honey_batches.empty_desc') }}</p>
-      <button @click="openCreateModal" class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-sm rounded-xl shadow-md hover-scale">
+      <button @click="openCreateModal" class="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold text-sm rounded-xl shadow-md hover-scale">
         {{ $t('honey_batches.create_first_btn') }}
       </button>
     </div>
@@ -374,7 +367,7 @@
                     <div class="text-[11px] text-gray-500 dark:text-gray-400 flex items-center space-x-1 mt-0.5">
                       <span>MHD: {{ formatDate(b.best_before_date) }}</span>
                       <span 
-                        class="px-1.5 py-0.2 text-[9px] font-bold rounded-full"
+                        class="px-1.5 py-0.2 text-[11px] font-bold rounded-full"
                         :class="b.is_exact_date ? 'bg-green-500/10 text-green-600' : 'bg-amber-500/10 text-amber-600'"
                       >
                         {{ b.is_exact_date ? $t('honey_batches.exact_date_badge') : $t('honey_batches.month_year_badge') }}
@@ -445,7 +438,7 @@
                   <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 w-max">
                     {{ $t('honey_batches.reserve_sample_taken_badge') }}
                   </span>
-                  <span v-if="b.reserve_sample_id" class="text-[10px] font-mono text-gray-500 dark:text-gray-400 mt-0.5">
+                  <span v-if="b.reserve_sample_id" class="text-xs font-mono text-gray-500 dark:text-gray-400 mt-0.5">
                     ID: {{ b.reserve_sample_id }}
                   </span>
                 </div>
@@ -486,7 +479,7 @@
           <div>
             <div class="flex items-center space-x-2">
               <span class="text-2xl">🫙</span>
-              <h3 class="text-xl font-extrabold text-gray-900 dark:text-white">
+              <h3 class="text-xl font-bold text-gray-900 dark:text-white">
                 {{ $t('honey_batches.bottlings_modal_title', { number: selectedBatch?.batch_number || $t('honey_batches.mhd_exemption') }) }}
               </h3>
             </div>
@@ -504,19 +497,19 @@
         <div class="p-6 bg-gray-50/50 dark:bg-dark-bg/40 border-b border-gray-100 dark:border-dark-border grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div class="bg-white dark:bg-dark-card p-3.5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
             <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">{{ $t('honey_batches.summary_harvest') }}</span>
-            <span class="text-lg font-extrabold text-gray-900 dark:text-white block mt-0.5">{{ formatNumber(selectedBatch?.quantity_kg) }} kg</span>
+            <span class="text-lg font-bold text-gray-900 dark:text-white block mt-0.5">{{ formatNumber(selectedBatch?.quantity_kg) }} kg</span>
           </div>
           <div class="bg-white dark:bg-dark-card p-3.5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
             <span class="text-[11px] font-bold text-amber-500 uppercase tracking-wider block">{{ $t('honey_batches.summary_bottled') }}</span>
-            <span class="text-lg font-extrabold text-amber-600 dark:text-amber-400 block mt-0.5">{{ formatNumber(selectedBatch?.total_bottled_kg) }} kg</span>
+            <span class="text-lg font-bold text-amber-600 dark:text-amber-400 block mt-0.5">{{ formatNumber(selectedBatch?.total_bottled_kg) }} kg</span>
           </div>
           <div class="bg-white dark:bg-dark-card p-3.5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
             <span class="text-[11px] font-bold uppercase tracking-wider block" :class="getRemainingKg(selectedBatch) <= 0.001 ? 'text-green-600' : 'text-primary'">{{ $t('honey_batches.summary_remaining') }}</span>
-            <span class="text-lg font-extrabold block mt-0.5" :class="getRemainingKg(selectedBatch) <= 0.001 ? 'text-green-600' : 'text-primary'">{{ formatNumber(getRemainingKg(selectedBatch)) }} kg</span>
+            <span class="text-lg font-bold block mt-0.5" :class="getRemainingKg(selectedBatch) <= 0.001 ? 'text-green-600' : 'text-primary'">{{ formatNumber(getRemainingKg(selectedBatch)) }} kg</span>
           </div>
           <div class="bg-white dark:bg-dark-card p-3.5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
             <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">{{ $t('honey_batches.summary_jars') }}</span>
-            <span class="text-lg font-extrabold text-gray-900 dark:text-white block mt-0.5">{{ selectedBatch?.total_bottled_jars || 0 }} Stk.</span>
+            <span class="text-lg font-bold text-gray-900 dark:text-white block mt-0.5">{{ selectedBatch?.total_bottled_jars || 0 }} Stk.</span>
           </div>
         </div>
 
@@ -530,7 +523,7 @@
             </h4>
             <button 
               @click="openAddBottlingForm" 
-              class="px-4 py-2 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs rounded-xl shadow-md hover-scale flex items-center space-x-1.5"
+              class="px-4 py-2 bg-primary hover:bg-primary-hover text-white font-bold text-xs rounded-xl shadow-md hover-scale flex items-center space-x-1.5"
             >
               <span>{{ $t('honey_batches.new_bottling_btn') }}</span>
             </button>
@@ -539,7 +532,7 @@
           <!-- Bottling Entry / Edit Form -->
           <div v-if="showBottlingForm" class="bg-amber-500/5 border border-amber-500/20 rounded-3xl p-5 shadow-sm animate-scale">
             <div class="flex justify-between items-center mb-4 pb-2 border-b border-amber-500/10">
-              <h4 class="text-sm font-extrabold text-gray-900 dark:text-white flex items-center space-x-2">
+              <h4 class="text-sm font-bold text-gray-900 dark:text-white flex items-center space-x-2">
                 <span>{{ isEditBottlingMode ? $t('honey_batches.edit_bottling_title') : $t('honey_batches.create_bottling_title') }}</span>
               </h4>
               <button @click="closeBottlingForm" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xs font-bold">
@@ -641,7 +634,7 @@
                     class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-800 rounded-2xl p-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 items-center relative"
                   >
                     <div class="md:col-span-2">
-                      <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-0.5">{{ $t('honey_batches.dib_label_start_label') }}</label>
+                      <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-0.5">{{ $t('honey_batches.dib_label_start_label') }}</label>
                       <input 
                         v-model="range.dib_label_start" 
                         type="text" 
@@ -650,7 +643,7 @@
                       />
                     </div>
                     <div class="md:col-span-2">
-                      <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-0.5">{{ $t('honey_batches.dib_label_end_label') }}</label>
+                      <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-0.5">{{ $t('honey_batches.dib_label_end_label') }}</label>
                       <input 
                         v-model="range.dib_label_end" 
                         type="text" 
@@ -698,7 +691,7 @@
                 <button 
                   type="submit" 
                   :disabled="bottlingSubmitting"
-                  class="px-5 py-2 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs rounded-xl shadow-md hover-scale disabled:opacity-50"
+                  class="px-5 py-2 bg-primary hover:bg-primary-hover text-white font-bold text-xs rounded-xl shadow-md hover-scale disabled:opacity-50"
                 >
                   {{ $t('common.save') }}
                 </button>
@@ -714,7 +707,7 @@
             <button 
               v-if="!showBottlingForm" 
               @click="openAddBottlingForm" 
-              class="px-4 py-2 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs rounded-xl shadow-md hover-scale"
+              class="px-4 py-2 bg-primary hover:bg-primary-hover text-white font-bold text-xs rounded-xl shadow-md hover-scale"
             >
               {{ $t('honey_batches.new_bottling_btn') }}
             </button>
@@ -745,7 +738,7 @@
                   <td class="px-4 py-3 whitespace-nowrap font-bold text-gray-900 dark:text-white">
                     {{ bt.quantity_jars !== null ? bt.quantity_jars + ' Stk.' : '—' }}
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap font-extrabold text-amber-600 dark:text-amber-400">
+                  <td class="px-4 py-3 whitespace-nowrap font-bold text-amber-600 dark:text-amber-400">
                     {{ bt.quantity_kg !== null && bt.quantity_kg !== undefined ? formatNumber(bt.quantity_kg) + ' kg' : '—' }}
                   </td>
                   <td class="px-4 py-3">
@@ -753,7 +746,7 @@
                       <div v-for="r in bt.dib_ranges" :key="r.id" class="font-mono text-gray-700 dark:text-gray-300">
                         {{ r.dib_label_start || '?' }} &rarr; {{ r.dib_label_end || '?' }}
                       </div>
-                      <span class="text-[10px] text-gray-400 font-bold">
+                      <span class="text-xs text-gray-400 font-bold">
                         {{ $t('honey_batches.dib_count_suffix', { count: getDIBTotalCount(bt.dib_ranges) }) }}
                       </span>
                     </div>
@@ -791,7 +784,7 @@
         <div class="px-6 py-4 bg-gray-50 dark:bg-dark-bg border-t border-gray-100 dark:border-dark-border flex justify-end">
           <button 
             @click="closeBottlingsModal" 
-            class="px-5 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-extrabold text-sm rounded-xl transition-all hover-scale"
+            class="px-5 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-bold text-sm rounded-xl transition-all hover-scale"
           >
             {{ $t('common.close') }}
           </button>
@@ -805,6 +798,7 @@
 
 <script setup>
 import { ref, onMounted, reactive, watch } from 'vue'
+import PageHeader from '../components/PageHeader.vue'
 import { useI18n } from 'vue-i18n'
 import { useApiaryStore } from '../stores/apiary'
 import { useConfirmStore } from '../stores/confirm'
